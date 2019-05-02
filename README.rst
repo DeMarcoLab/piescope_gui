@@ -14,20 +14,23 @@ Development installation
 
 Fork the repository at: https://github.com/DeMarcoLab/fibsem_gui.git
 
-git clone https://github.com/$YOUR_GITHUB_USERNAME/fibsem_gui.git
-cd fibsem_gui
-conda env create -f environment.yml
-conda activate fibsem_gui
-pip install -e .
+.. codeblock::
 
-python fibsem_gui\main.py
+   git clone https://github.com/$YOUR_GITHUB_USERNAME/fibsem_gui.git
+   cd fibsem_gui
+   conda env create -f environment.yml
+   conda activate fibsem_gui
+   pip install -e .
+
+   python fibsem_gui\main.py
 
 
 Running the tests
 -----------------
 
-cd fibsem_gui
-pytest
+.. codeblock::
+   cd fibsem_gui
+   pytest
 
 
 Features
