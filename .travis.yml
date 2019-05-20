@@ -22,7 +22,7 @@ install:
   - python setup.py install
 
 script:
-  - py.test -s -v --cov=./
+  - pytest
   - flake8 fibsem_gui
 
 after_success:
