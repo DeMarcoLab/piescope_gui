@@ -1,0 +1,20 @@
+name: fibsem_gui
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.6
+  - autopep8
+  - coverage
+  - coveralls
+  - flake8
+  - ipython
+  - pytest
+  - pytest-cov
+  - pytest-faulthandler
+  - pytest-mock
+  - pytest-qt
+  - pip:
+    - pyqt5
+    - pytest-xvfb
