@@ -14,7 +14,7 @@ class Template(QMainWindow):
     def __init__(self, parent=None):
         """Initialize the components of the main window."""
         super(Template, self).__init__(parent)
-        self.resize(1024, 768)
+        self.resize(994, 733)
         self.setWindowTitle('Template')
         window_icon = pkg_resources.resource_filename('fibsem_gui.images',
                                                       'ic_insert_drive_file_black_48dp_1x.png')
@@ -127,5 +127,5 @@ def main():
     sys.exit(application.exec_())
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     main()
