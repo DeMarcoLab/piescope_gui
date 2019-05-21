@@ -2,6 +2,10 @@
 fibsem_gui
 ===============================
 
+.. image:: https://ci.appveyor.com/api/projects/status/bnsr1sliamycehiv/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/GenevieveBuckley/fibsem-gui-9sta2/branch/master
+
+
 A PyQt5 GUI application
 
 Development installation
