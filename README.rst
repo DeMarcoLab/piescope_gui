@@ -2,11 +2,6 @@
 fibsem_gui
 ===============================
 
-
-.. image:: https://travis-ci.com/DeMarcoLab/fibsem_gui.svg?branch=master
-    :target: https://travis-ci.com/DeMarcoLab/fibsem_gui
-
-
 A PyQt5 GUI application
 
 Development installation
