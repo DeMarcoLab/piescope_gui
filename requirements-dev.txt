@@ -1,0 +1,12 @@
+autopep8
+coverage
+coveralls
+flake8
+ipython
+pylint
+pytest
+pytest-cov
+pytest-faulthandler
+pytest-mock
+pytest-qt
+pytest-xvfb

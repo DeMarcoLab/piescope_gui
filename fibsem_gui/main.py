@@ -4,20 +4,29 @@ import pkg_resources
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFileDialog,
-                             QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QAction,
+                             QApplication,
+                             QDesktopWidget,
+                             QDialog,
+                             QFileDialog,
+                             QHBoxLayout,
+                             QLabel,
+                             QMainWindow,
+                             QToolBar,
+                             QVBoxLayout,
+                             QWidget)
 
 
 class Template(QMainWindow):
-    """Create the main window that stores all of the widgets necessary for the application."""
+    """Main window with all widgets necessary for the application."""
 
     def __init__(self, parent=None):
         """Initialize the components of the main window."""
         super(Template, self).__init__(parent)
-        self.resize(1024, 768)
+        self.resize(1000, 750)
         self.setWindowTitle('Template')
-        window_icon = pkg_resources.resource_filename('fibsem_gui.images',
-                                                      'ic_insert_drive_file_black_48dp_1x.png')
+        window_icon = pkg_resources.resource_filename(
+            'fibsem_gui.images', 'ic_insert_drive_file_black_48dp_1x.png')
         self.setWindowIcon(QIcon(window_icon))
 
         self.widget = QWidget()
@@ -35,7 +44,7 @@ class Template(QMainWindow):
         self.tool_bar_items()
 
     def file_menu(self):
-        """Create a file submenu with an Open File item that opens a file dialog."""
+        """Create file submenu with an Open File item to open a file dialog."""
         self.file_sub_menu = self.menu_bar.addMenu('File')
 
         self.open_action = QAction('Open File', self)
@@ -52,7 +61,7 @@ class Template(QMainWindow):
         self.file_sub_menu.addAction(self.exit_action)
 
     def help_menu(self):
-        """Create a help submenu with an About item tha opens an about dialog."""
+        """Create help submenu with an About item tha opens an about dialog."""
         self.help_sub_menu = self.menu_bar.addMenu('Help')
 
         self.about_action = QAction('About', self)
@@ -68,15 +77,15 @@ class Template(QMainWindow):
         self.addToolBar(Qt.TopToolBarArea, self.tool_bar)
         self.tool_bar.setMovable(False)
 
-        open_icon = pkg_resources.resource_filename('fibsem_gui.images',
-                                                    'ic_open_in_new_black_48dp_1x.png')
+        open_icon = pkg_resources.resource_filename(
+            'fibsem_gui.images', 'ic_open_in_new_black_48dp_1x.png')
         tool_bar_open_action = QAction(QIcon(open_icon), 'Open File', self)
         tool_bar_open_action.triggered.connect(self.open_file)
 
         self.tool_bar.addAction(tool_bar_open_action)
 
     def open_file(self):
-        """Open a QFileDialog to allow the user to open a file into the application."""
+        """Allow user to open a file into the application with QFileDialog."""
         filename, accepted = QFileDialog.getOpenFileName(self, 'Open File')
 
         if accepted:
@@ -92,8 +101,8 @@ class AboutDialog(QDialog):
         super(AboutDialog, self).__init__(parent)
 
         self.setWindowTitle('About')
-        help_icon = pkg_resources.resource_filename('fibsem_gui.images',
-                                                    'ic_help_black_48dp_1x.png')
+        help_icon = pkg_resources.resource_filename(
+            'fibsem_gui.images', 'ic_help_black_48dp_1x.png')
         self.setWindowIcon(QIcon(help_icon))
         self.resize(300, 200)
 
@@ -127,5 +136,5 @@ def main():
     sys.exit(application.exec_())
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     main()
