@@ -1,45 +1,37 @@
+build: false
+
 platform:
   - x64
 
-branches:
-  only:
-    - master
-
 environment:
   matrix:
-    - PYVER: 37
-    - PYVER: 36
-    - PYVER: 35
-    - PYVER: 27
+    - PYTHON_VERSION: 2.7
+      MINICONDA: C:\Miniconda
+    - PYTHON_VERSION: 3.4
+      MINICONDA: C:\Miniconda3
+    - PYTHON_VERSION: 3.5.2
+      MINICONDA: C:\Miniconda3
+    - PYTHON_VERSION: 3.5
+      MINICONDA: C:\Miniconda3
+    - PYTHON_VERSION: 3.6
+      MINICONDA: C:\Miniconda3
+    - PYTHON_VERSION: 3.7
+      MINICONDA: C:\Miniconda3
+
+init:
+  - "ECHO %PYTHON_VERSION% %MINICONDA%"
 
 install:
-    # If there is a newer build queued for the same PR, cancel this one.
-    - cmd: >
-        .gen_ci_support\\ff_ci_pr_build.py -v
-        --ci "appveyor"
-        "%APPVEYOR_ACCOUNT_NAME%/%APPVEYOR_PROJECT_SLUG%"
-        "%APPVEYOR_BUILD_NUMBER%"
-        "%APPVEYOR_PULL_REQUEST_NUMBER%"
-    # Install Miniconda.
-    - cmd: call .appveyor_support\\install_miniconda.bat
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - "conda create -q -n test-environment python=%PYTHON_VERSION% pip"
+  - activate test-environment
+  - pip install -r requirements.txt
+  - pip install -r requirements-dev.txt
+  - pip install .
 
-    # Create the test environment.
-    - cmd: set "CONDA_ENV_TYPE=tst_py%PYVER%"
-    - cmd: call .appveyor_support\\create_env.bat
-
-    # Install the package and dependencies.
-    - cmd: pip install -e .
-
-# Skip .NET project specific build phase.
-build: off
-
-# Run tests and measure test coverage.
 test_script:
-    - cmd: pytest
-    - cmd: flake8 fibsem_gui
-    - cmd: coverage erase
-    - cmd: coverage run --source . setup.py test
-    - cmd: coverage report -m
-
-on_success:
-    - cmd: coveralls || exit 0
+  - pytest
+  - flake8
