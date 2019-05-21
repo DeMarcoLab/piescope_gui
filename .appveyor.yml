@@ -3,6 +3,10 @@ build: false
 platform:
   - x64
 
+matrix:
+  allow_failures:
+    - PYTHON_VERSION: 3.5.2
+
 environment:
   matrix:
     - PYTHON_VERSION: 3.5.2
