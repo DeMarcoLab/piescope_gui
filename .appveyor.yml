@@ -31,5 +31,5 @@ install:
   - pip install .
 
 test_script:
-  - python -m pytest
+  - pytest
   - flake8
