@@ -1,4 +1,4 @@
-name: fibsem_gui
+name: piescope_gui
 
 channels:
   - conda-forge
