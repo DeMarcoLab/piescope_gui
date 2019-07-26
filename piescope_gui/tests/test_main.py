@@ -24,7 +24,7 @@ def test_window_geometry(window):
     """Check that the window width and height are set as declared."""
     # PyQt5 with Python>=3.5 appears buggy, window resize is off
     # We assert a relatively wide range instead of a single number
-    margin_of_error = 50  # pixels
+    margin_of_error = 60  # pixels
     assert window.width() > 1000 - margin_of_error
     assert window.width() < 1000 + margin_of_error
     assert window.height() > 750 - margin_of_error
