@@ -45,7 +45,7 @@ def save_image(self):
 
 
 def update_display(self):
-    """Updating display of GUI with current image"""
+    """Update the GUI display with the current image"""
     if self.string_list:
         slider_value = str(self.slider_stack.value())
         max_value = str(len(self.string_list))
@@ -65,4 +65,17 @@ def update_display(self):
         self.current_pixmap = QtGui.QPixmap.fromImage(self.current_image)
         self.label_image.setPixmap(self.current_pixmap)
 
-        # self.fill_save_information()
+        self.fill_save_information()
+        """Updating display of GUI with current image"""
+
+
+def fill_save_information(self):
+    """Fills Save Destination and Save Filename using image path"""
+    [destination, self.save_name] = p.split(self.current_path)
+    if not self.checkBox_save_destination.isChecked():
+
+        destination = destination + self.delim
+        self.save_destination = destination
+        self.lineEdit_save_destination.setText(self.save_destination)
+
+    self.lineEdit_save_filename.setText(self.save_name)

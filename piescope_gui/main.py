@@ -43,6 +43,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def update_display(self):
         interface.update_display(self)
 
+    def fill_save_information(self):
+        interface.fill_save_information(self)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
