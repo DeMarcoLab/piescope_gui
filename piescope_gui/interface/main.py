@@ -79,3 +79,13 @@ def fill_save_information(self):
         self.lineEdit_save_destination.setText(self.save_destination)
 
     self.lineEdit_save_filename.setText(self.save_name)
+
+
+def fill_destination(self):
+    """Fills the destination box with the text from the directory"""
+    if not self.checkBox_save_destination.isChecked():
+        self.save_destination = p.normpath(
+            QtWidgets.QFileDialog.getExistingDirectory(
+                self, 'File Destination'))
+        destination_text = self.save_destination + self.delim
+        self.lineEdit_save_destination.setText(destination_text)

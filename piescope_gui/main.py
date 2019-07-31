@@ -26,13 +26,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.actionOpen.triggered.connect(self.open_images)
         self.actionSave.triggered.connect(self.save_image)
+        self.slider_stack.valueChanged.connect(self.update_display)
+        self.button_save_destination.clicked.connect(self.fill_destination)
 
         self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
         self.short_o.activated.connect(self.open_images)
         self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
         self.short_s.activated.connect(self.save_image)
-
-        self.slider_stack.valueChanged.connect(self.update_display)
 
     def open_images(self):
         interface.open_images(self)
@@ -45,6 +45,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def fill_save_information(self):
         interface.fill_save_information(self)
+
+    def fill_destination(self):
+        interface.fill_destination(self)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
