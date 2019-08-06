@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import piescope_gui.interface.main as interface
 import piescope_gui.designer.main as gui_main
+import piescope_gui.inputoutput.main as inout
 import os.path as p
 
 
@@ -34,6 +35,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
         self.short_s.activated.connect(self.save_image)
 
+        self.button_get_basler.clicked.connect(self.get_basler_image)
+
     def open_images(self):
         interface.open_images(self)
 
@@ -48,6 +51,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def fill_destination(self):
         interface.fill_destination(self)
+
+    def get_basler_image(self):
+        inout.get_basler_image(self)
 
 
 if __name__ == '__main__':
