@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import piescope_gui.interface.main as interface
 import piescope_gui.designer.main as gui_main
+import piescope_gui.inputoutput.main as inout
 import os.path as p
 
 
@@ -16,7 +17,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.statusbar.addPermanentWidget(self.status, 1)
 
         self.save_name = ""
+        self.power1 = 0
+        self.power2 = 0
+        self.power3 = 0
+        self.power4 = 0
         self.array_list = []
+        self.laser_list = []
+        self.power_list = []
         self.string_list = []
         self.current_path = ""
         self.current_image = ""
@@ -28,6 +35,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.actionSave.triggered.connect(self.save_image)
         self.slider_stack.valueChanged.connect(self.update_display)
         self.button_save_destination.clicked.connect(self.fill_destination)
+
+        self.slider_laser1.valueChanged.connect(self.update_laser_power_1)
+        self.slider_laser2.valueChanged.connect(self.update_laser_power_2)
+        self.slider_laser3.valueChanged.connect(self.update_laser_power_3)
+        self.slider_laser4.valueChanged.connect(self.update_laser_power_4)
+
+        self.checkBox_laser1.clicked.connect(self.update_laser_list_1)
+        self.checkBox_laser2.clicked.connect(self.update_laser_list_2)
+        self.checkBox_laser3.clicked.connect(self.update_laser_list_3)
+        self.checkBox_laser4.clicked.connect(self.update_laser_list_4)
 
         self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
         self.short_o.activated.connect(self.open_images)
@@ -48,6 +65,30 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def fill_destination(self):
         interface.fill_destination(self)
+
+    def update_laser_list_1(self):
+        inout.update_laser_list_1(self)
+
+    def update_laser_list_2(self):
+        inout.update_laser_list_2(self)
+
+    def update_laser_list_3(self):
+        inout.update_laser_list_3(self)
+
+    def update_laser_list_4(self):
+        inout.update_laser_list_4(self)
+
+    def update_laser_power_1(self):
+        inout.update_laser_power_1(self)
+
+    def update_laser_power_2(self):
+        inout.update_laser_power_2(self)
+
+    def update_laser_power_3(self):
+        inout.update_laser_power_3(self)
+
+    def update_laser_power_4(self):
+        inout.update_laser_power_4(self)
 
 
 if __name__ == '__main__':
