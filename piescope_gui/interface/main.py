@@ -28,11 +28,11 @@ def save_image(self):
         dir_exists = p.isdir(self.lineEdit_save_destination.text())
         if not dir_exists:
             os.makedirs(self.lineEdit_save_destination.text())
-            inout.save_image(self, display_image, dest)
+            inout.save_image(display_image, dest)
         else:
             exists = p.isfile(dest)
             if not exists:
-                inout.save_image(self, display_image, dest)
+                inout.save_image(display_image, dest)
             else:
                 count = 1
                 while exists:
@@ -41,7 +41,7 @@ def save_image(self):
                            ").tiff"
                     exists = p.isfile(dest)
                     count = count + 1
-                inout.save_image(self, display_image, dest)
+                inout.save_image(display_image, dest)
 
 
 def update_display(self):

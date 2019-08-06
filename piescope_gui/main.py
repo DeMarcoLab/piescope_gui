@@ -51,6 +51,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
         self.short_s.activated.connect(self.save_image)
 
+        self.button_get_basler.clicked.connect(self.get_basler_image)
+
+    def get_basler_image(self):
+        inout.get_basler_image(self)
+
     def open_images(self):
         interface.open_images(self)
 
@@ -89,7 +94,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def update_laser_power_4(self):
         inout.update_laser_power_4(self)
-
+        
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
