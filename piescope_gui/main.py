@@ -46,12 +46,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.checkBox_laser3.clicked.connect(self.update_laser_list_3)
         self.checkBox_laser4.clicked.connect(self.update_laser_list_4)
 
+        # self.pushButton_volume.clicked.connect(self.acquire_volume)
+
         self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
         self.short_o.activated.connect(self.open_images)
         self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
         self.short_s.activated.connect(self.save_image)
 
         self.button_get_basler.clicked.connect(self.get_basler_image)
+
+    # need to import piescope and ensure all 3 parts are working together before implementing this
+    # def acquire_volume(self):
+        # Write tests/error checking
+        # piescope.volume(params)
 
     def get_basler_image(self):
         inout.get_basler_image(self)

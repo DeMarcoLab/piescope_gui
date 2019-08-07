@@ -49,10 +49,12 @@ def update_laser_list_1(self):
         self.laser_list.append("laser1")
         self.power_list.append("50")
         self.slider_laser1.setEnabled(1)
+        self.spinBox_laser1.setEnabled(1)
     else:
         self.laser_list.remove("laser1")
         self.power_list.remove("50")
         self.slider_laser1.setEnabled(0)
+        self.spinBox_laser1.setEnabled(0)
 
 
 def update_laser_list_2(self):
@@ -60,10 +62,12 @@ def update_laser_list_2(self):
         self.laser_list.append("laser2")
         self.power_list.append("25")
         self.slider_laser2.setEnabled(1)
+        self.spinBox_laser2.setEnabled(1)
     else:
         self.laser_list.remove("laser2")
         self.power_list.remove("25")
         self.slider_laser2.setEnabled(0)
+        self.spinBox_laser2.setEnabled(0)
 
 
 def update_laser_list_3(self):
@@ -71,11 +75,12 @@ def update_laser_list_3(self):
         self.laser_list.append("laser3")
         self.power_list.append("12")
         self.slider_laser3.setEnabled(1)
-
+        self.spinBox_laser3.setEnabled(1)
     else:
         self.laser_list.remove("laser3")
         self.power_list.remove("12")
         self.slider_laser3.setEnabled(0)
+        self.spinBox_laser3.setEnabled(0)
 
 
 def update_laser_list_4(self):
@@ -83,11 +88,12 @@ def update_laser_list_4(self):
         self.laser_list.append("laser4")
         self.power_list.append("1")
         self.slider_laser4.setEnabled(1)
-
+        self.spinBox_laser4.setEnabled(1)
     else:
         self.laser_list.remove("laser4")
         self.power_list.remove("1")
         self.slider_laser4.setEnabled(0)
+        self.spinBox_laser4.setEnabled(0)
 
 
 def update_laser_power_1(self):
