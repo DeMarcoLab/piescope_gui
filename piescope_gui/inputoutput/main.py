@@ -88,4 +88,5 @@ def get_basler_image(self):
     basler = detector.Basler()
     self.string_list = ["Basler_image"]
     self.array_list = basler.camera_grab()
+    print(self.array_list)
     self.update_display()

@@ -21,7 +21,13 @@ def open_images(self):
 def save_image(self):
     """Save image on display """
     if self.current_image:
-        display_image = self.imagearray_list[self.slider_stack.value() - 1]
+        max_value = len(self.string_list)
+        if max_value == 1:
+            display_image = self.array_list
+            print(display_image)
+        else:
+            display_image = self.array_list[self.slider_stack.value() - 1]
+            print(display_image)
         [save_base, ext] = p.splitext(self.lineEdit_save_filename.text())
         dest = self.lineEdit_save_destination.text() + self.delim \
                + save_base + ".tiff"
@@ -58,6 +64,7 @@ def update_display(self):
             image_array = self.array_list
 
         self.current_image = q.array2qimage(image_array)
+        print(self.current_image)
         self.current_path = p.normpath(image_string)
 
         self.status.setText("Image " + slider_value + " of " + max_value)
