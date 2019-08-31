@@ -38,19 +38,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.slider_stack.valueChanged.connect(self.update_display)
         self.button_save_destination.clicked.connect(self.fill_destination)
 
-        self.slider_laser1.valueChanged.connect(self.update_laser_power_1)
-        self.slider_laser2.valueChanged.connect(self.update_laser_power_2)
-        self.slider_laser3.valueChanged.connect(self.update_laser_power_3)
-        self.slider_laser4.valueChanged.connect(self.update_laser_power_4)
+        self.slider_laser1.valueChanged.connect(lambda:
+                                             self.update_laser_dict("laser1"))
+        self.slider_laser2.valueChanged.connect(lambda:
+                                             self.update_laser_dict("laser2"))
+        self.slider_laser3.valueChanged.connect(lambda:
+                                             self.update_laser_dict("laser3"))
+        self.slider_laser4.valueChanged.connect(lambda:
+                                             self.update_laser_dict("laser4"))
 
         self.checkBox_laser1.clicked.connect(lambda:
-                                             self.update_laser_list("laser1"))
+                                             self.update_laser_dict("laser1"))
         self.checkBox_laser2.clicked.connect(lambda:
-                                             self.update_laser_list("laser2"))
+                                             self.update_laser_dict("laser2"))
         self.checkBox_laser3.clicked.connect(lambda:
-                                             self.update_laser_list("laser3"))
+                                             self.update_laser_dict("laser3"))
         self.checkBox_laser4.clicked.connect(lambda:
-                                             self.update_laser_list("laser4"))
+                                             self.update_laser_dict("laser4"))
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
 
@@ -99,20 +103,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         interface.fill_destination(self)
 
     def update_laser_list(self, laser):
-        inout.update_laser_list(self, laser)
+        inout.update_laser_dict(self, laser)
 
-    def update_laser_power_1(self):
-        inout.update_laser_power_1(self)
-
-    def update_laser_power_2(self):
-        inout.update_laser_power_2(self)
-
-    def update_laser_power_3(self):
-        inout.update_laser_power_3(self)
-
-    def update_laser_power_4(self):
-        inout.update_laser_power_4(self)
-        
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
