@@ -102,7 +102,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def fill_destination(self):
         interface.fill_destination(self)
 
-    def update_laser_list(self, laser):
+    def update_laser_dict(self, laser):
         inout.update_laser_dict(self, laser)
 
 
