@@ -1,4 +1,5 @@
 import skimage.io as io
+import threading
 from piescope.lm import detector
 
 
@@ -90,3 +91,17 @@ def get_basler_image(self):
     self.array_list = basler.camera_grab()
     print(self.array_list)
     self.update_display()
+
+
+def live_imaging(self):
+    if self.liveCheck is True:
+        self.stop_event = threading.Event()
+        self.c_thread = threading.Thread(
+            target=self.live_imaging_event_listener, args=(self.stop_event,))
+        self.c_thread.start()
+        self.liveCheck = False
+        self.button_live_basler.setDown(True)
+    else:
+        self.stop_event.set()
+        self.liveCheck = True
+        self.button_live_basler.setDown(False)

@@ -21,6 +21,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.power2 = 0
         self.power3 = 0
         self.power4 = 0
+        self.liveCheck = True
         self.array_list = []
         self.laser_list = []
         self.power_list = []
@@ -55,13 +56,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_get_basler.clicked.connect(self.get_basler_image)
 
+        self.button_live_basler.clicked.connect(self.basler_live_image)
+
     # need to import piescope and ensure all 3 parts are working together before implementing this
     # def acquire_volume(self):
         # Write tests/error checking
         # piescope.volume(params)
 
+    def live_imaging_event_listener(self, stop_event):
+        state = True
+        while state and not stop_event.isSet():
+            self.get_basler_image()
+
     def get_basler_image(self):
         inout.get_basler_image(self)
+
+    def basler_live_image(self):
+        inout.live_imaging(self)
 
     def open_images(self):
         interface.open_images(self)
