@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import piescope_gui.interface.main as interface
 import piescope_gui.designer.main as gui_main
 import piescope_gui.inputoutput.main as inout
+import piescope.lm.volume as volume
 import os.path as p
 
 
@@ -23,7 +24,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.power4 = 0
         self.liveCheck = True
         self.array_list = []
-        self.laser_list = []
+        self.laser_list = {}
         self.power_list = []
         self.string_list = []
         self.current_path = ""
@@ -42,12 +43,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.slider_laser3.valueChanged.connect(self.update_laser_power_3)
         self.slider_laser4.valueChanged.connect(self.update_laser_power_4)
 
-        self.checkBox_laser1.clicked.connect(self.update_laser_list_1)
-        self.checkBox_laser2.clicked.connect(self.update_laser_list_2)
-        self.checkBox_laser3.clicked.connect(self.update_laser_list_3)
-        self.checkBox_laser4.clicked.connect(self.update_laser_list_4)
+        self.checkBox_laser1.clicked.connect(lambda:
+                                             self.update_laser_list("laser1"))
+        self.checkBox_laser2.clicked.connect(lambda:
+                                             self.update_laser_list("laser2"))
+        self.checkBox_laser3.clicked.connect(lambda:
+                                             self.update_laser_list("laser3"))
+        self.checkBox_laser4.clicked.connect(lambda:
+                                             self.update_laser_list("laser4"))
 
-        # self.pushButton_volume.clicked.connect(self.acquire_volume)
+        self.pushButton_volume.clicked.connect(self.acquire_volume)
 
         self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
         self.short_o.activated.connect(self.open_images)
@@ -58,10 +63,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
-    # need to import piescope and ensure all 3 parts are working together before implementing this
-    # def acquire_volume(self):
-        # Write tests/error checking
-        # piescope.volume(params)
+    def acquire_volume(self):
+        exposure_time = str(self.lineEdit_exposure.text())
+        laser_list = self.laser_list
+        laser_power_list = self.power_list
+        no_z_slices = str(self.lineEdit_slice_number.text())
+        z_slice_distance = str(self.lineEdit_slice_distance.text())
+        volume.volume_acquisition(exposure_time, laser_list, laser_power_list,
+                                  no_z_slices, z_slice_distance)
 
     def live_imaging_event_listener(self, stop_event):
         state = True
@@ -89,17 +98,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def fill_destination(self):
         interface.fill_destination(self)
 
-    def update_laser_list_1(self):
-        inout.update_laser_list_1(self)
-
-    def update_laser_list_2(self):
-        inout.update_laser_list_2(self)
-
-    def update_laser_list_3(self):
-        inout.update_laser_list_3(self)
-
-    def update_laser_list_4(self):
-        inout.update_laser_list_4(self)
+    def update_laser_list(self, laser):
+        inout.update_laser_list(self, laser)
 
     def update_laser_power_1(self):
         inout.update_laser_power_1(self)

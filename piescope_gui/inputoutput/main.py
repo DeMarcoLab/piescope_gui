@@ -17,17 +17,49 @@ def save_image(image, dest):
     io.imsave(dest, image)
 
 
+def update_laser_list(self, laser):
+    if laser == "laser1":
+        laser_box = self.spinBox_laser1
+        laser_check = self.checkBox_laser1
+        laser_slider = self.slider_laser1
+    elif laser == "laser2":
+        laser_box = self.spinBox_laser2
+        laser_check = self.checkBox_laser2
+        laser_slider = self.slider_laser2
+    elif laser == "laser3":
+        laser_box = self.spinBox_laser3
+        laser_check = self.checkBox_laser3
+        laser_slider = self.slider_laser3
+    elif laser == "laser4":
+        laser_slider = self.slider_laser4
+        laser_check = self.checkBox_laser4
+        laser_box = self.spinBox_laser4
+    else:
+        ValueError()
+
+    if laser_check.isChecked():
+        self.laser_list[laser] = laser_box.text()
+        laser_slider.setEnabled(1)
+        laser_box.setEnabled(1)
+        print(self.laser_list)
+    else:
+        self.laser_list.pop(laser)
+        laser_slider.setEnabled(0)
+        laser_box.setEnabled(0)
+
+
 def update_laser_list_1(self):
     if self.checkBox_laser1.isChecked():
-        self.laser_list.append("laser1")
-        self.power_list.append("50")
+        x = self.spinBox_laser1.text()
+        self.laser_list["laser1"] = x#self.spinBox_laser1.text()
         self.slider_laser1.setEnabled(1)
         self.spinBox_laser1.setEnabled(1)
+        print(self.laser_list)
     else:
-        self.laser_list.remove("laser1")
-        self.power_list.remove("50")
+        self.laser_list.pop("laser1")
         self.slider_laser1.setEnabled(0)
         self.spinBox_laser1.setEnabled(0)
+        print(self.laser_list)
 
 
 def update_laser_list_2(self):
@@ -70,7 +102,8 @@ def update_laser_list_4(self):
 
 
 def update_laser_power_1(self):
-    print(str(self.slider_laser1.value()))
+    if self.checkBox_laser1.isChecked():
+        print(str(self.slider_laser1.value()))
 
 
 def update_laser_power_2(self):
