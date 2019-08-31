@@ -3,6 +3,10 @@ import threading
 from piescope.lm import detector
 
 
+def save_image(image, dest):
+    io.imsave(dest, image)
+
+
 def create_array_list(input_list):
 
     if len(input_list) > 1:
@@ -11,10 +15,6 @@ def create_array_list(input_list):
         array_list = io.imread(input_list[0])
 
     return array_list
-
-
-def save_image(image, dest):
-    io.imsave(dest, image)
 
 
 def update_laser_dict(self, laser):
@@ -38,12 +38,12 @@ def update_laser_dict(self, laser):
         ValueError()
 
     if laser_check.isChecked():
-        self.laser_list[laser] = laser_box.text()
+        self.laser_dict[laser] = laser_box.text()
         laser_slider.setEnabled(1)
         laser_box.setEnabled(1)
-        print(self.laser_list)
+        print(self.laser_dict)
     else:
-        self.laser_list.pop(laser)
+        self.laser_dict.pop(laser)
         laser_slider.setEnabled(0)
         laser_box.setEnabled(0)
 

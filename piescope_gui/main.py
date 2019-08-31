@@ -24,8 +24,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.power4 = 0
         self.liveCheck = True
         self.array_list = []
-        self.laser_list = {}
-        self.power_list = []
+        self.laser_dict = {}
         self.string_list = []
         self.current_path = ""
         self.current_image = ""
@@ -37,6 +36,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.actionSave.triggered.connect(self.save_image)
         self.slider_stack.valueChanged.connect(self.update_display)
         self.button_save_destination.clicked.connect(self.fill_destination)
+
+        self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
+        self.short_o.activated.connect(self.open_images)
+        self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
+        self.short_s.activated.connect(self.save_image)
 
         self.slider_laser1.valueChanged.connect(lambda:
                                              self.update_laser_dict("laser1"))
@@ -58,22 +62,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
 
-        self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
-        self.short_o.activated.connect(self.open_images)
-        self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
-        self.short_s.activated.connect(self.save_image)
-
         self.button_get_basler.clicked.connect(self.get_basler_image)
 
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
     def acquire_volume(self):
         exposure_time = str(self.lineEdit_exposure.text())
-        laser_list = self.laser_list
-        laser_power_list = self.power_list
+        laser_dict = self.laser_dict
         no_z_slices = str(self.lineEdit_slice_number.text())
         z_slice_distance = str(self.lineEdit_slice_distance.text())
-        volume.volume_acquisition(exposure_time, laser_list, laser_power_list,
+        volume.volume_acquisition(exposure_time, laser_dict,
                                   no_z_slices, z_slice_distance)
 
     def live_imaging_event_listener(self, stop_event):
