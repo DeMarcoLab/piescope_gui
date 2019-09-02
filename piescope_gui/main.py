@@ -67,10 +67,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
     def acquire_volume(self):
-        exposure_time = str(self.lineEdit_exposure.text())
+        exposure_time = self.lineEdit_exposure.text()
         laser_dict = self.laser_dict
-        no_z_slices = str(self.lineEdit_slice_number.text())
-        z_slice_distance = str(self.lineEdit_slice_distance.text())
+        no_z_slices = self.lineEdit_slice_number.text()
+        z_slice_distance = self.lineEdit_slice_distance.text()
         volume.volume_acquisition(exposure_time, laser_dict,
                                   no_z_slices, z_slice_distance)
 
