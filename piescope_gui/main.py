@@ -106,7 +106,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         inout.update_laser_dict(self, laser)
 
     def initialise_stage(self):
-        inout.initialise_stage(self)
+        inout.initialise_stage()
+
+    def move_absolute(self):
+        distance = int(self.lineEdit_move_absolute.text())
+        inout.move_absolute(distance)
+
+    def move_relative(self):
+        distance = int(self.lineEdit_move_relative.text())
+        inout.move_relative(distance)
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])

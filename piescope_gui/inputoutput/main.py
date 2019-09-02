@@ -74,3 +74,13 @@ def initialise_stage():
     stage = objective.StageController()
     stage.initialise_system_parameters(0, 0, 0, 0)
     print("Stage initialised")
+
+
+def move_absolute(distance):
+    stage = objective.StageController()
+    stage.move_absolute(distance)
+
+
+def move_relative(distance):
+    stage = objective.StageController()
+    stage.move_relative(distance)
