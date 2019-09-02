@@ -66,6 +66,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
+        self.pushButton_initialise_stage.connect(self.initialise_stage)
+
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
         laser_dict = self.laser_dict
@@ -103,6 +105,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def update_laser_dict(self, laser):
         inout.update_laser_dict(self, laser)
 
+    def initialise_stage(self):
+        inout.initialise_stage(self)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])

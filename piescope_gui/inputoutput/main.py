@@ -1,7 +1,7 @@
 import skimage.io as io
 import threading
 from piescope.lm import detector
-
+import piescope.lm.objective as objective
 
 def save_image(image, dest):
     io.imsave(dest, image)
@@ -68,3 +68,9 @@ def live_imaging(self):
         self.stop_event.set()
         self.liveCheck = True
         self.button_live_basler.setDown(False)
+
+
+def initialise_stage():
+    stage = objective.StageController()
+    stage.initialise_system_parameters(0, 0, 0, 0)
+    print("Stage initialised")

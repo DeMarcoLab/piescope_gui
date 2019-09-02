@@ -42,7 +42,7 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="4" column="1">
+       <item row="3" column="1">
         <widget class="QFrame" name="frame_slider">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -126,7 +126,7 @@
          </layout>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="4" column="1">
         <widget class="QFrame" name="frame_save_destination">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -193,117 +193,7 @@
          </layout>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QFrame" name="frame_image">
-         <property name="frameShape">
-          <enum>QFrame::StyledPanel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Raised</enum>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="checkBox_Emit">
-            <property name="text">
-             <string>Emit</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QComboBox" name="comboBox_Laser">
-            <item>
-             <property name="text">
-              <string>Laser 1</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Laser 2</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Laser 3</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Laser 4</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QSpinBox" name="spinBox_level">
-            <property name="maximum">
-             <number>100</number>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="checkBox_Enabled">
-            <property name="text">
-             <string>Enabled</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_image">
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QPushButton" name="button_power">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>60</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Power</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="7" column="1">
-        <widget class="QPushButton" name="button_get_basler">
-         <property name="text">
-          <string>Get Basler Image</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="1">
-        <widget class="QPushButton" name="button_live_basler">
-         <property name="text">
-          <string>Live Basler View</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="1">
+       <item row="5" column="1">
         <widget class="QFrame" name="frame_2">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -325,6 +215,33 @@
          </layout>
         </widget>
        </item>
+       <item row="7" column="1">
+        <widget class="QPushButton" name="button_live_basler">
+         <property name="text">
+          <string>Live Basler View</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QPushButton" name="button_get_basler">
+         <property name="text">
+          <string>Get Basler Image</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </widget>
     </item>
@@ -336,8 +253,18 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QGridLayout" name="gridLayout_6">
-       <item row="1" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_volume_title">
+         <property name="text">
+          <string>Volume Acquisition</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QTabWidget" name="tabwidget_volume">
          <property name="currentIndex">
           <number>0</number>
@@ -615,30 +542,7 @@
          </widget>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_volume_title">
-         <property name="text">
-          <string>Volume Acquisition</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <spacer name="verticalSpacer_5">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="2" column="0">
+       <item>
         <widget class="QPushButton" name="pushButton_volume">
          <property name="text">
           <string>Acquire Volume</string>
@@ -646,6 +550,58 @@
          <property name="flat">
           <bool>false</bool>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="lineEdit_move_absolute"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="pushButton_move_relative">
+            <property name="text">
+             <string>Move Relative</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="pushButton_move_absolute">
+            <property name="text">
+             <string>Move Absolute</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="lineEdit_move_relative"/>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QPushButton" name="pushButton_initialise_stage">
+            <property name="text">
+             <string>Initialise Stage</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
