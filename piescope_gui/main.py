@@ -86,16 +86,28 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.get_basler_image()
 
     def get_basler_image(self):
-        inout.get_basler_image(self)
+        try:
+            inout.get_basler_image(self)
+        except:
+            print('Could not grab basler image')
+            return
 
     def basler_live_image(self):
-        inout.live_imaging(self)
+        try:
+            inout.live_imaging(self)
+        except:
+            print('Live imaging failed')
+            return
 
     def open_images(self):
         interface.open_images(self)
 
     def save_image(self):
-        interface.save_image(self)
+        try:
+            interface.save_image(self)
+        except:
+            print('Could not save image')
+            return
 
     def update_display(self):
         interface.update_display(self)

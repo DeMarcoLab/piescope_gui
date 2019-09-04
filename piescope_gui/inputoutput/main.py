@@ -83,7 +83,8 @@ def initialise_stage():
         print("Stage initialised")
     except:
         print('Could not initialise stage parameters')
-        return 
+        return
+
 
 def move_absolute(distance):
     try:
