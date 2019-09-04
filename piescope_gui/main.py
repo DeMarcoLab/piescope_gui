@@ -66,7 +66,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
-        self.pushButton_initialise_stage.connect(self.initialise_stage)
+        self.pushButton_initialise_stage.clicked.connect(self.initialise_stage)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
