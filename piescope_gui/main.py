@@ -66,6 +66,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
+        self.pushButton_move_absolute.clicked.connect(self.move_absolute)
+
+        self.pushButton_move_relative.clicked.connect(self.move_relative)
+
         self.pushButton_initialise_stage.clicked.connect(self.initialise_stage)
 
     def acquire_volume(self):
