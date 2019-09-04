@@ -72,10 +72,18 @@ def live_imaging(self):
 
 
 def initialise_stage():
-    stage = objective.StageController()
-    stage.initialise_system_parameters(0, 0, 0, 0)
-    print("Stage initialised")
+    try:
+        stage = objective.StageController()
+    except:
+        print('Could not connect to stage')
+        return
 
+    try:
+        stage.initialise_system_parameters(0, 0, 0, 0)
+        print("Stage initialised")
+    except:
+        print('Could not initialise stage parameters')
+        return 
 
 def move_absolute(distance):
     try:
