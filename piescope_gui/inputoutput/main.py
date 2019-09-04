@@ -3,6 +3,7 @@ import threading
 from piescope.lm import detector
 import piescope.lm.objective as objective
 
+
 def save_image(image, dest):
     io.imsave(dest, image)
 
@@ -77,10 +78,28 @@ def initialise_stage():
 
 
 def move_absolute(distance):
-    stage = objective.StageController()
-    stage.move_absolute(distance)
+    try:
+        stage = objective.StageController()
+    except:
+        print('Could not connect to stage')
+        return
+
+    try:
+        stage.move_absolute(distance)
+    except:
+        print('Could not move the stage by %s' % distance)
+        return
 
 
 def move_relative(distance):
-    stage = objective.StageController()
-    stage.move_relative(distance)
+    try:
+        stage = objective.StageController()
+    except:
+        print('Could not connect to stage')
+        return
+
+    try:
+        stage.move_relative(distance)
+    except:
+        print('Could not move the stage by %s' % distance)
+        return
