@@ -1,9 +1,9 @@
 ===============================
-fibsem_gui
+piescope_gui
 ===============================
 
 .. image:: https://ci.appveyor.com/api/projects/status/bnsr1sliamycehiv/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/GenevieveBuckley/fibsem-gui-9sta2/branch/master
+    :target: https://ci.appveyor.com/project/GenevieveBuckley/piescope-gui-9sta2/branch/master
 
 
 A PyQt5 GUI application
@@ -11,23 +11,23 @@ A PyQt5 GUI application
 Development installation
 ------------------------
 
-Fork the repository at: https://github.com/DeMarcoLab/fibsem_gui.git
+Fork the repository at: https://github.com/DeMarcoLab/piescope_gui.git
 
 Then install with:
 
 .. code-block::
 
-   git clone https://github.com/$YOUR_GITHUB_USERNAME/fibsem_gui.git
-   cd fibsem_gui
+   git clone https://github.com/$YOUR_GITHUB_USERNAME/piescope_gui.git
+   cd piescope_gui
    conda env create -f environment.yml
-   conda activate fibsem_gui
+   conda activate piescope_gui
    pip install -e .
 
 To launch the GUI:
 
 .. code-block::
 
-   python fibsem_gui\main.py
+   python piescope_gui\main.py
 
 
 Running the tests
@@ -37,7 +37,7 @@ Pytest is used for this project. To run the tests:
 
 .. code-block::
 
-   cd fibsem_gui
+   cd piescope_gui
    pytest
 
 
