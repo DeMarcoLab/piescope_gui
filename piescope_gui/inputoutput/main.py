@@ -3,12 +3,12 @@ import threading
 from piescope.lm import detector
 import piescope.lm.objective as objective
 
+
 def save_image(image, dest):
     io.imsave(dest, image)
 
 
 def create_array_list(input_list):
-
     if len(input_list) > 1:
         array_list = io.imread_collection(input_list)
     else:
@@ -18,19 +18,19 @@ def create_array_list(input_list):
 
 
 def update_laser_dict(self, laser):
-    if laser == "laser1":
+    if laser == "laser640":
         laser_box = self.spinBox_laser1
         laser_check = self.checkBox_laser1
         laser_slider = self.slider_laser1
-    elif laser == "laser2":
+    elif laser == "laser561":
         laser_box = self.spinBox_laser2
         laser_check = self.checkBox_laser2
         laser_slider = self.slider_laser2
-    elif laser == "laser3":
+    elif laser == "laser488":
         laser_box = self.spinBox_laser3
         laser_check = self.checkBox_laser3
         laser_slider = self.slider_laser3
-    elif laser == "laser4":
+    elif laser == "laser405":
         laser_slider = self.slider_laser4
         laser_check = self.checkBox_laser4
         laser_box = self.spinBox_laser4
@@ -71,16 +71,50 @@ def live_imaging(self):
 
 
 def initialise_stage():
-    stage = objective.StageController()
-    stage.initialise_system_parameters(0, 0, 0, 0)
-    print("Stage initialised")
+    try:
+        stage = objective.StageController()
+    except:
+        print('Could not connect to stage')
+        return
+
+    try:
+        stage.initialise_system_parameters()
+        print("Stage initialised")
+    except:
+        print('Could not initialise stage parameters')
+        return
 
 
 def move_absolute(distance):
-    stage = objective.StageController()
-    stage.move_absolute(distance)
+    try:
+        stage = objective.StageController()
+    except:
+        print('Could not connect to stage')
+        return
+
+    try:
+        stage.move_absolute(distance)
+    except:
+        print('Could not move the stage by %s' % distance)
+        return
 
 
 def move_relative(distance):
+    try:
+        stage = objective.StageController()
+    except:
+        print('Could not connect to stage')
+        return
+
+    try:
+        stage.move_relative(distance)
+    except:
+        print('Could not move the stage by %s' % distance)
+        return
+
+
+def current_position():
     stage = objective.StageController()
-    stage.move_relative(distance)
+    pos = stage.current_position()
+    return pos
+

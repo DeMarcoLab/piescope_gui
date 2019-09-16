@@ -43,22 +43,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.short_s.activated.connect(self.save_image)
 
         self.slider_laser1.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser1"))
+                                             self.update_laser_dict("laser640"))
         self.slider_laser2.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser2"))
+                                             self.update_laser_dict("laser561"))
         self.slider_laser3.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser3"))
+                                             self.update_laser_dict("laser488"))
         self.slider_laser4.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser4"))
+                                             self.update_laser_dict("laser405"))
 
         self.checkBox_laser1.clicked.connect(lambda:
-                                             self.update_laser_dict("laser1"))
+                                             self.update_laser_dict("laser640"))
         self.checkBox_laser2.clicked.connect(lambda:
-                                             self.update_laser_dict("laser2"))
+                                             self.update_laser_dict("laser561"))
         self.checkBox_laser3.clicked.connect(lambda:
-                                             self.update_laser_dict("laser3"))
+                                             self.update_laser_dict("laser488"))
         self.checkBox_laser4.clicked.connect(lambda:
-                                             self.update_laser_dict("laser4"))
+                                             self.update_laser_dict("laser405"))
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
 
@@ -66,7 +66,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_live_basler.clicked.connect(self.basler_live_image)
 
-        self.pushButton_move_absolute.clicked.connect(self.move_absolute)
+        self.pushButton_move_absolute.clicked.connect(self.current_position)
 
         self.pushButton_move_relative.clicked.connect(self.move_relative)
 
@@ -77,7 +77,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         laser_dict = self.laser_dict
         no_z_slices = self.lineEdit_slice_number.text()
         z_slice_distance = self.lineEdit_slice_distance.text()
-        volume.volume_acquisition(exposure_time, laser_dict,
+        volume.volume_acquisition(self, exposure_time, laser_dict,
                                   no_z_slices, z_slice_distance)
 
     def live_imaging_event_listener(self, stop_event):
@@ -86,16 +86,28 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.get_basler_image()
 
     def get_basler_image(self):
-        inout.get_basler_image(self)
+        try:
+            inout.get_basler_image(self)
+        except:
+            print('Could not grab basler image')
+            return
 
     def basler_live_image(self):
-        inout.live_imaging(self)
+        try:
+            inout.live_imaging(self)
+        except:
+            print('Live imaging failed')
+            return
 
     def open_images(self):
         interface.open_images(self)
 
     def save_image(self):
-        interface.save_image(self)
+        try:
+            interface.save_image(self)
+        except:
+            print('Could not save image')
+            return
 
     def update_display(self):
         interface.update_display(self)
@@ -119,6 +131,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def move_relative(self):
         distance = int(self.lineEdit_move_relative.text())
         inout.move_relative(distance)
+
+    def current_position(self):
+        current_position = inout.current_position()
+        print(current_position)
 
 
 if __name__ == '__main__':
