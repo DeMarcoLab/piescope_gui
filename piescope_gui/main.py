@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-import piescope_gui.interface.main as interface
-import piescope_gui.designer.main as gui_main
-import piescope_gui.inputoutput.main as inout
+import piescope_gui.gui_interaction as interface
+import piescope_gui.qtdesigner_files.main as gui_main
+import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
 

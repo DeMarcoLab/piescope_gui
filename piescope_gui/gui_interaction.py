@@ -1,8 +1,9 @@
+"""Functions that interact directly with or update the user interface"""
 from PyQt5 import QtWidgets, QtGui
 import qimage2ndarray as q
 import os
 import os.path as p
-import piescope_gui.inputoutput.main as inout
+import piescope_gui.piescope_interaction as inout
 
 
 def open_images(self):

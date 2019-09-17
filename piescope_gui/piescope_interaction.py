@@ -1,3 +1,4 @@
+"""Functions to interact with or get information from the piescope setup"""
 import skimage.io as io
 import threading
 from piescope.lm import detector
