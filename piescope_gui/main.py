@@ -5,6 +5,8 @@ import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
 
+DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
+
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):
@@ -16,6 +18,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.status = QtWidgets.QLabel(self.statusbar)
         self.status.setAlignment(QtCore.Qt.AlignRight)
         self.statusbar.addPermanentWidget(self.status, 1)
+        self.lineEdit_save_destination.setText(DEFAULT_PATH)
+        self.checkBox_save_destination.setChecked(1)
 
         self.save_name = ""
         self.power1 = 0
