@@ -20,6 +20,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.statusbar.addPermanentWidget(self.status, 1)
         self.lineEdit_save_destination.setText(DEFAULT_PATH)
         self.checkBox_save_destination.setChecked(1)
+        self.lineEdit_save_filename.setText("Image")
 
         self.save_name = ""
         self.power1 = 0
