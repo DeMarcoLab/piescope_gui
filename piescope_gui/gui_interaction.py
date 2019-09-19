@@ -97,3 +97,9 @@ def fill_destination(self):
                 self, 'File Destination'))
         destination_text = self.save_destination + self.delim
         self.lineEdit_save_destination.setText(destination_text)
+
+
+def error_msg(self, message):
+    error_dialog = QtWidgets.QErrorMessage()
+    error_dialog.showMessage(message)
+    error_dialog.exec_()
