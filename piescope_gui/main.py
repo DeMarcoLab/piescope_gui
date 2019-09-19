@@ -42,23 +42,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
         self.short_s.activated.connect(self.save_image)
 
-        self.slider_laser1.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser640"))
-        self.slider_laser2.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser561"))
-        self.slider_laser3.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser488"))
-        self.slider_laser4.valueChanged.connect(lambda:
-                                             self.update_laser_dict("laser405"))
+        self.slider_laser1.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser640"))
+        self.slider_laser2.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser561"))
+        self.slider_laser3.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser488"))
+        self.slider_laser4.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser405"))
 
-        self.checkBox_laser1.clicked.connect(lambda:
-                                             self.update_laser_dict("laser640"))
-        self.checkBox_laser2.clicked.connect(lambda:
-                                             self.update_laser_dict("laser561"))
-        self.checkBox_laser3.clicked.connect(lambda:
-                                             self.update_laser_dict("laser488"))
-        self.checkBox_laser4.clicked.connect(lambda:
-                                             self.update_laser_dict("laser405"))
+        self.checkBox_laser1.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser640"))
+        self.checkBox_laser2.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser561"))
+        self.checkBox_laser3.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser488"))
+        self.checkBox_laser4.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser405"))
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
 
