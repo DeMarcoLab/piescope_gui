@@ -1,140 +1,146 @@
-import sys
 
-import pkg_resources
+from PyQt5 import QtWidgets, QtGui, QtCore
+import piescope_gui.gui_interaction as interface
+import piescope_gui.qtdesigner_files.main as gui_main
+import piescope_gui.piescope_interaction as inout
+import piescope.lm.volume as volume
+import os.path as p
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (QAction,
-                             QApplication,
-                             QDesktopWidget,
-                             QDialog,
-                             QFileDialog,
-                             QHBoxLayout,
-                             QLabel,
-                             QMainWindow,
-                             QToolBar,
-                             QVBoxLayout,
-                             QWidget)
+DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
 
 
-class Template(QMainWindow):
-    """Main window with all widgets necessary for the application."""
+class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
+    def __init__(self):
+        super(GUIMainWindow, self).__init__()
+        self.setupUi(self)
 
-    def __init__(self, parent=None):
-        """Initialize the components of the main window."""
-        super(Template, self).__init__(parent)
-        self.resize(1000, 750)
-        self.setWindowTitle('Template')
-        window_icon = pkg_resources.resource_filename(
-            'piescope_gui.images', 'ic_insert_drive_file_black_48dp_1x.png')
-        self.setWindowIcon(QIcon(window_icon))
+        self.setWindowTitle("PIEScope User Interface")
+        self.statusbar.setSizeGripEnabled(0)
+        self.status = QtWidgets.QLabel(self.statusbar)
+        self.status.setAlignment(QtCore.Qt.AlignRight)
+        self.statusbar.addPermanentWidget(self.status, 1)
+        self.lineEdit_save_destination.setText(DEFAULT_PATH)
+        self.checkBox_save_destination.setChecked(1)
+        self.lineEdit_save_filename.setText("Image")
 
-        self.widget = QWidget()
-        self.layout = QHBoxLayout(self.widget)
+        self.save_name = ""
+        self.power1 = 0
+        self.power2 = 0
+        self.power3 = 0
+        self.power4 = 0
+        self.liveCheck = True
+        self.array_list = []
+        self.laser_dict = {}
+        self.string_list = []
+        self.current_path = ""
+        self.current_image = ""
+        self.current_pixmap = []
+        self.save_destination = ""
+        self.delim = p.normpath("/")
 
-        self.menu_bar = self.menuBar()
-        self.about_dialog = AboutDialog()
+        self.actionOpen.triggered.connect(self.open_images)
+        self.actionSave.triggered.connect(self.save_image)
+        self.slider_stack.valueChanged.connect(self.update_display)
+        self.button_save_destination.clicked.connect(self.fill_destination)
 
-        self.status_bar = self.statusBar()
-        self.status_bar.showMessage('Ready', 5000)
+        self.short_o = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+O"), self)
+        self.short_o.activated.connect(self.open_images)
+        self.short_s = QtWidgets.QShortcut(QtGui.QKeySequence("Ctrl+S"), self)
+        self.short_s.activated.connect(self.save_image)
 
-        self.file_menu()
-        self.help_menu()
+        self.slider_laser1.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser640"))
+        self.slider_laser2.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser561"))
+        self.slider_laser3.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser488"))
+        self.slider_laser4.valueChanged.connect(lambda: self.update_laser_dict(
+                                                "laser405"))
 
-        self.tool_bar_items()
+        self.checkBox_laser1.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser640"))
+        self.checkBox_laser2.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser561"))
+        self.checkBox_laser3.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser488"))
+        self.checkBox_laser4.clicked.connect(lambda: self.update_laser_dict(
+                                                "laser405"))
 
-    def file_menu(self):
-        """Create file submenu with an Open File item to open a file dialog."""
-        self.file_sub_menu = self.menu_bar.addMenu('File')
+        self.pushButton_volume.clicked.connect(self.acquire_volume)
 
-        self.open_action = QAction('Open File', self)
-        self.open_action.setStatusTip('Open a file into Template.')
-        self.open_action.setShortcut('CTRL+O')
-        self.open_action.triggered.connect(self.open_file)
+        self.button_get_basler.clicked.connect(self.get_basler_image)
 
-        self.exit_action = QAction('Exit Application', self)
-        self.exit_action.setStatusTip('Exit the application.')
-        self.exit_action.setShortcut('CTRL+Q')
-        self.exit_action.triggered.connect(lambda: QApplication.quit())
+        self.button_live_basler.clicked.connect(self.basler_live_image)
 
-        self.file_sub_menu.addAction(self.open_action)
-        self.file_sub_menu.addAction(self.exit_action)
+        self.pushButton_move_absolute.clicked.connect(self.current_position)
 
-    def help_menu(self):
-        """Create help submenu with an About item tha opens an about dialog."""
-        self.help_sub_menu = self.menu_bar.addMenu('Help')
+        self.pushButton_move_relative.clicked.connect(self.move_relative)
 
-        self.about_action = QAction('About', self)
-        self.about_action.setStatusTip('About the application.')
-        self.about_action.setShortcut('CTRL+H')
-        self.about_action.triggered.connect(lambda: self.about_dialog.exec_())
+        self.pushButton_initialise_stage.clicked.connect(self.initialise_stage)
 
-        self.help_sub_menu.addAction(self.about_action)
+    def acquire_volume(self):
+        exposure_time = self.lineEdit_exposure.text()
+        laser_dict = self.laser_dict
+        no_z_slices = self.lineEdit_slice_number.text()
+        z_slice_distance = self.lineEdit_slice_distance.text()
+        volume.volume_acquisition(self, exposure_time, laser_dict,
+                                  no_z_slices, z_slice_distance)
 
-    def tool_bar_items(self):
-        """Create a tool bar for the main window."""
-        self.tool_bar = QToolBar()
-        self.addToolBar(Qt.TopToolBarArea, self.tool_bar)
-        self.tool_bar.setMovable(False)
+    def live_imaging_event_listener(self, stop_event):
+        state = True
+        while state and not stop_event.isSet():
+            self.get_basler_image()
 
-        open_icon = pkg_resources.resource_filename(
-            'piescope_gui.images', 'ic_open_in_new_black_48dp_1x.png')
-        tool_bar_open_action = QAction(QIcon(open_icon), 'Open File', self)
-        tool_bar_open_action.triggered.connect(self.open_file)
+    def get_basler_image(self):
+        try:
+            inout.get_basler_image(self)
+        except:
+            print('Could not grab basler image')
+            return
 
-        self.tool_bar.addAction(tool_bar_open_action)
+    def basler_live_image(self):
+        try:
+            inout.live_imaging(self)
+        except:
+            print('Live imaging failed')
+            return
 
-    def open_file(self):
-        """Allow user to open a file into the application with QFileDialog."""
-        filename, accepted = QFileDialog.getOpenFileName(self, 'Open File')
+    def open_images(self):
+        interface.open_images(self)
 
-        if accepted:
-            with open(filename) as file:
-                file.read()
+    def save_image(self):
+        try:
+            interface.save_image(self)
+        except:
+            print('Could not save image')
+            return
 
+    def update_display(self):
+        interface.update_display(self)
 
-class AboutDialog(QDialog):
-    """Create the necessary elements to show helpful text in a dialog."""
+    def fill_save_information(self):
+        interface.fill_save_information(self)
 
-    def __init__(self, parent=None):
-        """Display a dialog that shows application information."""
-        super(AboutDialog, self).__init__(parent)
+    def fill_destination(self):
+        interface.fill_destination(self)
 
-        self.setWindowTitle('About')
-        help_icon = pkg_resources.resource_filename(
-            'piescope_gui.images', 'ic_help_black_48dp_1x.png')
-        self.setWindowIcon(QIcon(help_icon))
-        self.resize(300, 200)
+    def update_laser_dict(self, laser):
+        inout.update_laser_dict(self, laser)
 
-        author = QLabel('DeMarco Lab')
-        author.setAlignment(Qt.AlignCenter)
+    def initialise_stage(self):
+        inout.initialise_stage()
 
-        icons = QLabel('Material design icons created by Google')
-        icons.setAlignment(Qt.AlignCenter)
+    def move_absolute(self):
+        distance = int(self.lineEdit_move_absolute.text())
+        inout.move_absolute(distance)
 
-        github = QLabel('GitHub: ''')
-        github.setAlignment(Qt.AlignCenter)
-
-        self.layout = QVBoxLayout()
-        self.layout.setAlignment(Qt.AlignVCenter)
-
-        self.layout.addWidget(author)
-        self.layout.addWidget(icons)
-        self.layout.addWidget(github)
-
-        self.setLayout(self.layout)
-
-
-def main():
-    application = QApplication(sys.argv)
-    window = Template()
-    desktop = QDesktopWidget().availableGeometry()
-    width = (desktop.width() - window.width()) / 2
-    height = (desktop.height() - window.height()) / 2
-    window.show()
-    window.move(width, height)
-    sys.exit(application.exec_())
-
-
+    def move_relative(self):
+        distance = int(self.lineEdit_move_relative.text())
+        inout.move_relative(distance)
+        
+        
 if __name__ == '__main__':
-    main()
+    app = QtWidgets.QApplication([])
+    qt_app = GUIMainWindow()
+    qt_app.show()
+    app.exec_()
