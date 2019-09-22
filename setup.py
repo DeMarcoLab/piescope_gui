@@ -31,7 +31,9 @@ setup(
     zip_safe=False,
     keywords='piescope_gui',
     classifiers=[
-        'Programming Language :: Python :: 3.6', .7
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
     tests_require=test_requirements

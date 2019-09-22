@@ -1,3 +1,4 @@
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 import piescope_gui.gui_interaction as interface
 import piescope_gui.qtdesigner_files.main as gui_main
@@ -136,12 +137,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def move_relative(self):
         distance = int(self.lineEdit_move_relative.text())
         inout.move_relative(distance)
-
-    def current_position(self):
-        current_position = inout.current_position()
-        print(current_position)
-
-
+        
+        
 if __name__ == '__main__':
     app = QtWidgets.QApplication([])
     qt_app = GUIMainWindow()
