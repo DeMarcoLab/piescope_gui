@@ -1,5 +1,5 @@
 """Functions that interact directly with or update the user interface"""
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 import qimage2ndarray as q
 import os
 import os.path as p
@@ -71,7 +71,8 @@ def update_display(self):
         self.status.setText("Image " + slider_value + " of " + max_value)
 
         self.current_pixmap = QtGui.QPixmap.fromImage(self.current_image)
-        self.label_image.setPixmap(self.current_pixmap)
+        self.current_pixmap = self.current_pixmap.scaled(960, 600, QtCore.Qt.KeepAspectRatio)
+        self.label_fm_image.setPixmap(self.current_pixmap)
 
         self.fill_save_information()
         """Updating display of GUI with current image"""
