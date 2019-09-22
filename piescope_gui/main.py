@@ -26,7 +26,7 @@ class Template(QMainWindow):
         self.resize(1000, 750)
         self.setWindowTitle('Template')
         window_icon = pkg_resources.resource_filename(
-            'fibsem_gui.images', 'ic_insert_drive_file_black_48dp_1x.png')
+            'piescope_gui.images', 'ic_insert_drive_file_black_48dp_1x.png')
         self.setWindowIcon(QIcon(window_icon))
 
         self.widget = QWidget()
@@ -78,7 +78,7 @@ class Template(QMainWindow):
         self.tool_bar.setMovable(False)
 
         open_icon = pkg_resources.resource_filename(
-            'fibsem_gui.images', 'ic_open_in_new_black_48dp_1x.png')
+            'piescope_gui.images', 'ic_open_in_new_black_48dp_1x.png')
         tool_bar_open_action = QAction(QIcon(open_icon), 'Open File', self)
         tool_bar_open_action.triggered.connect(self.open_file)
 
@@ -102,7 +102,7 @@ class AboutDialog(QDialog):
 
         self.setWindowTitle('About')
         help_icon = pkg_resources.resource_filename(
-            'fibsem_gui.images', 'ic_help_black_48dp_1x.png')
+            'piescope_gui.images', 'ic_help_black_48dp_1x.png')
         self.setWindowIcon(QIcon(help_icon))
         self.resize(300, 200)
 
