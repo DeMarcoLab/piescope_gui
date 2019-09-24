@@ -2,9 +2,12 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 import piescope_gui.gui_interaction as interface
 import piescope_gui.qtdesigner_files.main as gui_main
+import piescope_gui.qtdesigner_files.correlate as gui_correlate
 import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
+import correlateim.main as corr
+
 
 DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
 
@@ -13,6 +16,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):
         super(GUIMainWindow, self).__init__()
         self.setupUi(self)
+
+        self._correlate_window = None
 
         self.setWindowTitle("PIEScope User Interface")
         self.statusbar.setSizeGripEnabled(0)
@@ -78,6 +83,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pushButton_initialise_stage.clicked.connect(self.initialise_stage)
 
+        self.pushButton_3.clicked.connect(self.correlateim)
+
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
         laser_dict = self.laser_dict
@@ -141,6 +148,33 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def current_position(self):
         current_position = inout.current_position()
         print(current_position)
+
+    def correlateim(self):
+        # self._correlate_window = GUICorrelateWindow()
+        # self._correlate_window.show()
+        # self._correlate_window.setWindowTitle("Control Point Selection Tool")
+
+        input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
+        input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
+        output_filename = "C:\\Users\\David\\images\\output.tiff"
+        corr.correlate_image(self, input_filename_1, input_filename_2, output_filename)
+
+
+class GUICorrelateWindow(gui_correlate.Ui_MainWindow, QtWidgets.QMainWindow):
+    def __init__(self):
+        super(GUICorrelateWindow, self).__init__()
+        self.setupUi(self)
+
+        self.setWindowTitle("Correlation Window")
+        # self.statusbar.setSizeGripEnabled(0)
+        # self.status = QtWidgets.QLabel(self.statusbar)
+        # self.status.setAlignment(QtCore.Qt.AlignRight)
+        # self.statusbar.addPermanentWidget(self.status, 1)
+        # self.lineEdit_save_destination.setText(DEFAULT_PATH)
+        # self.checkBox_save_destination.setChecked(1)
+        # self.lineEdit_save_filename.setText("Image")
+
+
 
 
 if __name__ == '__main__':
