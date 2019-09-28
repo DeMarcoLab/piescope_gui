@@ -6,6 +6,7 @@ import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
 import piescope_gui.correlation.main as correlate
+import correlateim.main as corr
 
 
 DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
@@ -149,29 +150,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         print(current_position)
 
     def correlateim(self):
-        # self._correlate_window = GUICorrelateWindow()
-        # self._correlate_window.show()
-        # self._correlate_window.setWindowTitle("Control Point Selection Tool")
-
         input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
         input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
         output_filename = "C:\\Users\\David\\images\\output.tiff"
         correlate.open_correlation_window(input_filename_1, input_filename_2, self)
-
-
-class GUICorrelateWindow(gui_correlate.Ui_MainWindow, QtWidgets.QMainWindow):
-    def __init__(self):
-        super(GUICorrelateWindow, self).__init__()
-        self.setupUi(self)
-
-        self.setWindowTitle("Correlation Window")
-        # self.statusbar.setSizeGripEnabled(0)
-        # self.status = QtWidgets.QLabel(self.statusbar)
-        # self.status.setAlignment(QtCore.Qt.AlignRight)
-        # self.statusbar.addPermanentWidget(self.status, 1)
-        # self.lineEdit_save_destination.setText(DEFAULT_PATH)
-        # self.checkBox_save_destination.setChecked(1)
-        # self.lineEdit_save_filename.setText("Image")
 
 
 if __name__ == '__main__':
