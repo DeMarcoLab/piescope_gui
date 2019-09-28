@@ -443,16 +443,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushButton_volume">
-            <property name="text">
-             <string>Acquire Volume</string>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QFrame" name="frame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
@@ -461,34 +451,34 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
-             <item row="2" column="1">
+             <item row="7" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_relative"/>
+             </item>
+             <item row="6" column="1">
               <widget class="QLineEdit" name="lineEdit_move_absolute"/>
              </item>
-             <item row="3" column="0">
+             <item row="7" column="0">
               <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
                 <string>Move Relative</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
+             <item row="6" column="0">
               <widget class="QPushButton" name="pushButton_move_absolute">
                <property name="text">
                 <string>Move Absolute</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_relative"/>
-             </item>
-             <item row="1" column="0" colspan="2">
+             <item row="5" column="0" colspan="2">
               <widget class="QPushButton" name="pushButton_initialise_stage">
                <property name="text">
                 <string>Initialise Stage</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0" colspan="2">
+             <item row="1" column="0" colspan="2">
               <spacer name="verticalSpacer_2">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -500,6 +490,36 @@
                 </size>
                </property>
               </spacer>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_4">
+               <property name="text">
+                <string>Correlation</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_volume">
+               <property name="text">
+                <string>Acquire Volume</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
