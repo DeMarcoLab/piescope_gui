@@ -18,6 +18,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 
+
 def open_correlation_window(image_1, image_2, main_gui):
     global img1
     global img2
@@ -27,4 +28,18 @@ def open_correlation_window(image_1, image_2, main_gui):
     img2 = image_2
     gui = main_gui
 
-    app = QApplication(sys.argv)
+    print("Hi")
+    # app = QApplication(sys.argv)
+    window = _MainWindow()
+    window.show()
+    return
+
+
+class _MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__(parent=gui)
+
+        self.create_window()
+
+    def create_window(self):
+        self.setWindowTitle("Control Point Selection Tool")

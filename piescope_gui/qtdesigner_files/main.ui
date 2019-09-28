@@ -505,7 +505,7 @@
               </spacer>
              </item>
              <item row="2" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_4">
+              <widget class="QPushButton" name="pushButton_correlation">
                <property name="text">
                 <string>Correlation</string>
                </property>

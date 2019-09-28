@@ -82,7 +82,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pushButton_initialise_stage.clicked.connect(self.initialise_stage)
 
-        self.pushButton_3.clicked.connect(self.correlateim)
+        self.pushButton_correlation.clicked.connect(self.correlateim)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
@@ -156,7 +156,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
         input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
         output_filename = "C:\\Users\\David\\images\\output.tiff"
-        # corr.correlate_image(self, input_filename_1, input_filename_2, output_filename)
+        correlate.open_correlation_window(input_filename_1, input_filename_2, self)
 
 
 class GUICorrelateWindow(gui_correlate.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -172,8 +172,6 @@ class GUICorrelateWindow(gui_correlate.Ui_MainWindow, QtWidgets.QMainWindow):
         # self.lineEdit_save_destination.setText(DEFAULT_PATH)
         # self.checkBox_save_destination.setChecked(1)
         # self.lineEdit_save_filename.setText("Image")
-
-
 
 
 if __name__ == '__main__':
