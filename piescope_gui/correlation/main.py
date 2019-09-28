@@ -32,8 +32,6 @@ def open_correlation_window(image_1, image_2, main_gui):
     img2 = image_2
     gui = main_gui
 
-    print("Hi")
-    # app = QApplication(sys.argv)
     window = _MainWindow()
     window.show()
     return
@@ -297,7 +295,6 @@ class _PlotCanvas(FigureCanvas):
         self.fig.canvas.draw()
 
     def createConn(self):
-        print("Bye")
         self.fig.canvas.mpl_connect("figure_enter_event", self.activeFigure)
         self.fig.canvas.mpl_connect("figure_leave_event", self.leftFigure)
         self.fig.canvas.mpl_connect("axes_enter_event", self.activeAxes)
@@ -344,6 +341,7 @@ class _PlotCanvas(FigureCanvas):
                 self.lastIDP += 1
 
             self.updateCanvas()
+
 
 class _ControlPoint:
     def __init__(self, idp, x, y, other):
