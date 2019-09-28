@@ -1,4 +1,3 @@
-
 from PyQt5 import QtWidgets, QtGui, QtCore
 import piescope_gui.gui_interaction as interface
 import piescope_gui.qtdesigner_files.main as gui_main
@@ -6,7 +5,7 @@ import piescope_gui.qtdesigner_files.correlate as gui_correlate
 import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
-import correlateim.main as corr
+import piescope_gui.correlation.main as correlate
 
 
 DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
@@ -157,7 +156,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
         input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
         output_filename = "C:\\Users\\David\\images\\output.tiff"
-        corr.correlate_image(self, input_filename_1, input_filename_2, output_filename)
+        # corr.correlate_image(self, input_filename_1, input_filename_2, output_filename)
 
 
 class GUICorrelateWindow(gui_correlate.Ui_MainWindow, QtWidgets.QMainWindow):
