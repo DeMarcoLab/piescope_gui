@@ -153,7 +153,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
         input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
         output_filename = "C:\\Users\\David\\images\\output.tiff"
-        correlate.open_correlation_window(self, input_filename_1, input_filename_2, output_filename)
+        correlate.open_correlation_window(input_filename_1, input_filename_2, self)
 
 
 if __name__ == '__main__':
