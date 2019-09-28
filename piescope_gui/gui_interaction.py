@@ -71,7 +71,8 @@ def update_display(self):
         self.status.setText("Image " + slider_value + " of " + max_value)
 
         self.current_pixmap = QtGui.QPixmap.fromImage(self.current_image)
-        self.current_pixmap = self.current_pixmap.scaled(960, 600, QtCore.Qt.KeepAspectRatio)
+        self.current_pixmap = self.current_pixmap.scaled(
+            960, 600, QtCore.Qt.KeepAspectRatio)
         self.label_fm_image.setPixmap(self.current_pixmap)
 
         self.fill_save_information()
