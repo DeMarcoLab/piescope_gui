@@ -6,7 +6,6 @@ import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
 import piescope_gui.correlation.main as correlate
-import correlateim.main as corr
 
 
 DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
@@ -152,8 +151,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def correlateim(self):
         input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
         input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
-        output_filename = "C:\\Users\\David\\images\\output.tiff"
-        correlate.open_correlation_window(input_filename_1, input_filename_2, self)
+        output_filename = "C:\\Users\\David\\images\\output.tiff" #"C:\\Users\\David Dierickx\\Pictures\\output.tiff"
+        correlate.open_correlation_window(self, input_filename_1, input_filename_2, output_filename)
 
 
 if __name__ == '__main__':
