@@ -54,22 +54,6 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <item row="1" column="1">
-     <spacer name="spacer">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Minimum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
     <item row="0" column="0">
      <widget class="QFrame" name="Main_Frame">
       <property name="sizePolicy">
@@ -443,7 +427,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QFrame" name="frame">
+           <widget class="QFrame" name="frame_buttons_extra">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -593,7 +577,7 @@
            </spacer>
           </item>
           <item row="4" column="0">
-           <widget class="QFrame" name="frame_basler">
+           <widget class="QFrame" name="frame_buttons_FM">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -623,7 +607,7 @@
               <number>4</number>
              </property>
              <item row="3" column="2">
-              <widget class="QPushButton" name="button_live_basler">
+              <widget class="QPushButton" name="button_live_image_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -636,7 +620,7 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="QPushButton" name="button_get_basler">
+              <widget class="QPushButton" name="button_get_image_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -684,7 +668,7 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QFrame" name="frame_slider">
+           <widget class="QFrame" name="frame_slider_FM">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -697,14 +681,14 @@
                <item>
                 <layout class="QHBoxLayout" name="layout_image_horizontal">
                  <item>
-                  <widget class="QLabel" name="label_slider">
+                  <widget class="QLabel" name="label_slider_FM">
                    <property name="text">
                     <string>Stack Slider</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <spacer name="spacer_slider">
+                  <spacer name="spacer_slider_FM">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -717,7 +701,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QSpinBox" name="spinbox_slider">
+                  <widget class="QSpinBox" name="spinbox_slider_FM">
                    <property name="minimumSize">
                     <size>
                      <width>37</width>
@@ -744,7 +728,7 @@
                 </layout>
                </item>
                <item>
-                <widget class="QSlider" name="slider_stack">
+                <widget class="QSlider" name="slider_stack_FM">
                  <property name="minimum">
                   <number>1</number>
                  </property>
@@ -830,7 +814,7 @@
               <number>0</number>
              </property>
              <item row="2" column="0">
-              <widget class="QLabel" name="label_fm_image">
+              <widget class="QLabel" name="label_image_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                  <horstretch>0</horstretch>
@@ -858,7 +842,7 @@
            </widget>
           </item>
           <item row="0" column="0">
-           <widget class="QFrame" name="frame_save_destination">
+           <widget class="QFrame" name="frame_save_destination_FM">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -867,7 +851,7 @@
             </property>
             <layout class="QGridLayout" name="gridLayout_3">
              <item row="1" column="1">
-              <widget class="QLabel" name="label_save_destination">
+              <widget class="QLabel" name="label_save_destination_FM">
                <property name="text">
                 <string>Save Destination</string>
                </property>
@@ -890,10 +874,10 @@
               </spacer>
              </item>
              <item row="4" column="1" colspan="3">
-              <widget class="QLineEdit" name="lineEdit_save_filename"/>
+              <widget class="QLineEdit" name="lineEdit_save_filename_FM"/>
              </item>
              <item row="1" column="2">
-              <widget class="QCheckBox" name="checkBox_save_destination">
+              <widget class="QCheckBox" name="checkBox_save_destination_FM">
                <property name="minimumSize">
                 <size>
                  <width>128</width>
@@ -928,7 +912,7 @@
               </spacer>
              </item>
              <item row="2" column="3">
-              <widget class="QToolButton" name="button_save_destination">
+              <widget class="QToolButton" name="button_save_destination_FM">
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
                </property>
@@ -941,14 +925,14 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="QLabel" name="label_save_filename">
+              <widget class="QLabel" name="label_save_filename_FM">
                <property name="text">
                 <string>Save Filename</string>
                </property>
               </widget>
              </item>
              <item row="2" column="1" colspan="2">
-              <widget class="QLineEdit" name="lineEdit_save_destination">
+              <widget class="QLineEdit" name="lineEdit_save_destination_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -970,7 +954,7 @@
               </widget>
              </item>
              <item row="0" column="1" colspan="3">
-              <widget class="QLabel" name="label_2">
+              <widget class="QLabel" name="label_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                  <horstretch>0</horstretch>
@@ -1051,7 +1035,7 @@
            <number>0</number>
           </property>
           <item row="3" column="0">
-           <widget class="QFrame" name="frame_slider_2">
+           <widget class="QFrame" name="frame_slider_FIBSEM">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -1093,7 +1077,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QSpinBox" name="spinbox_slider_2">
+                  <widget class="QSpinBox" name="spinbox_slider_FIBSEM">
                    <property name="minimumSize">
                     <size>
                      <width>37</width>
@@ -1120,7 +1104,7 @@
                 </layout>
                </item>
                <item>
-                <widget class="QSlider" name="slider_stack_2">
+                <widget class="QSlider" name="slider_stack_FIBSEM">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -1181,130 +1165,6 @@
             </layout>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QFrame" name="frame_4">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_15">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <item row="1" column="0">
-              <spacer name="horizontalSpacer_13">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="3">
-              <spacer name="horizontalSpacer_14">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="0" column="1" colspan="2">
-              <widget class="QPushButton" name="pushButton_3">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Connect to microscope</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="button_live_basler_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Live SEM View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QPushButton" name="pushButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Get FIB Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="QPushButton" name="button_get_basler_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Get SEM Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="pushButton_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Live FIB View</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
           <item row="2" column="0" colspan="2">
            <widget class="QFrame" name="frame_label_FIBSEM">
             <property name="sizePolicy">
@@ -1336,7 +1196,7 @@
               <number>0</number>
              </property>
              <item row="0" column="0">
-              <widget class="QLabel" name="label_fm_image_2">
+              <widget class="QLabel" name="label_image_FIBSEM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -1364,7 +1224,7 @@
            </widget>
           </item>
           <item row="1" column="0" colspan="2">
-           <widget class="QFrame" name="frame_save_destination_2">
+           <widget class="QFrame" name="frame_save_destination_FIBSEM">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -1395,7 +1255,7 @@
               </spacer>
              </item>
              <item row="2" column="1" colspan="3">
-              <widget class="QLineEdit" name="lineEdit_save_destination_2">
+              <widget class="QLineEdit" name="lineEdit_save_destination_FIBSEM">
                <property name="minimumSize">
                 <size>
                  <width>480</width>
@@ -1411,7 +1271,7 @@
               </widget>
              </item>
              <item row="1" column="3">
-              <widget class="QCheckBox" name="checkBox_save_destination_2">
+              <widget class="QCheckBox" name="checkBox_save_destination_FIBSEM">
                <property name="minimumSize">
                 <size>
                  <width>128</width>
@@ -1430,7 +1290,7 @@
               </widget>
              </item>
              <item row="2" column="4">
-              <widget class="QToolButton" name="button_save_destination_2">
+              <widget class="QToolButton" name="button_save_destination_FIBSEM">
                <property name="layoutDirection">
                 <enum>Qt::LeftToRight</enum>
                </property>
@@ -1443,7 +1303,7 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="QLabel" name="label_save_filename_2">
+              <widget class="QLabel" name="label_save_filename_FIBSEM">
                <property name="text">
                 <string>Save Filename</string>
                </property>
@@ -1466,17 +1326,17 @@
               </spacer>
              </item>
              <item row="1" column="1">
-              <widget class="QLabel" name="label_save_destination_2">
+              <widget class="QLabel" name="label_save_destination_FIBSEM">
                <property name="text">
                 <string>Save Destination</string>
                </property>
               </widget>
              </item>
              <item row="4" column="1" colspan="4">
-              <widget class="QLineEdit" name="lineEdit_save_filename_2"/>
+              <widget class="QLineEdit" name="lineEdit_save_filename_FIBSEM"/>
              </item>
              <item row="0" column="1" colspan="4">
-              <widget class="QLabel" name="label_3">
+              <widget class="QLabel" name="label_FIBSEM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
@@ -1494,6 +1354,130 @@
                </property>
                <property name="margin">
                 <number>6</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QFrame" name="frame_buttons_FIBSEM">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_15">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>4</number>
+             </property>
+             <item row="1" column="3">
+              <spacer name="horizontalSpacer_14">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>1</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="1" column="0">
+              <spacer name="horizontalSpacer_13">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>1</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="1" colspan="2">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Connect to microscope</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QPushButton" name="button_get_image_FIB">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Get FIB Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="button_live_image_FIB">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Live FIB View</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="button_get_image_SEM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Get SEM Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QPushButton" name="button_live_image_SEM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Live SEM View</string>
                </property>
               </widget>
              </item>
@@ -1521,54 +1505,78 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
+    <widget class="QMenu" name="menuOpen">
+     <property name="title">
+      <string>Open</string>
+     </property>
+     <addaction name="actionOpen_FM_Image"/>
+     <addaction name="actionOpen_FIBSEM_Image"/>
+    </widget>
+    <widget class="QMenu" name="menuSave">
+     <property name="title">
+      <string>Save</string>
+     </property>
+     <addaction name="actionSave_FM_Image"/>
+     <addaction name="actionSave_FIBSEM_Image"/>
+    </widget>
+    <addaction name="menuOpen"/>
+    <addaction name="menuSave"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOpen">
+  <action name="actionOpen_FM_Image">
    <property name="text">
-    <string>Open</string>
+    <string>Open FM Image</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionOpen_FIBSEM_Image">
    <property name="text">
-    <string>Save</string>
+    <string>Open FIBSEM Image</string>
+   </property>
+  </action>
+  <action name="actionSave_FM_Image">
+   <property name="text">
+    <string>Save FM Image</string>
+   </property>
+  </action>
+  <action name="actionSave_FIBSEM_Image">
+   <property name="text">
+    <string>Save FIBSEM Image</string>
    </property>
   </action>
  </widget>
  <resources/>
  <connections>
   <connection>
-   <sender>spinbox_slider</sender>
+   <sender>spinbox_slider_FM</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>slider_stack</receiver>
+   <receiver>slider_stack_FM</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>540</x>
-     <y>462</y>
+     <x>871</x>
+     <y>595</y>
     </hint>
     <hint type="destinationlabel">
-     <x>224</x>
-     <y>491</y>
+     <x>591</x>
+     <y>624</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>slider_stack</sender>
+   <sender>slider_stack_FM</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>spinbox_slider</receiver>
+   <receiver>spinbox_slider_FM</receiver>
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>327</x>
-     <y>491</y>
+     <x>694</x>
+     <y>624</y>
     </hint>
     <hint type="destinationlabel">
-     <x>540</x>
-     <y>462</y>
+     <x>871</x>
+     <y>595</y>
     </hint>
    </hints>
   </connection>
@@ -1579,11 +1587,11 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>629</x>
-     <y>136</y>
+     <x>88</x>
+     <y>134</y>
     </hint>
     <hint type="destinationlabel">
-     <x>728</x>
+     <x>241</x>
      <y>135</y>
     </hint>
    </hints>
@@ -1595,12 +1603,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>761</x>
-     <y>138</y>
+     <x>241</x>
+     <y>135</y>
     </hint>
     <hint type="destinationlabel">
-     <x>624</x>
-     <y>140</y>
+     <x>88</x>
+     <y>134</y>
     </hint>
    </hints>
   </connection>
@@ -1611,12 +1619,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>638</x>
-     <y>201</y>
+     <x>88</x>
+     <y>212</y>
     </hint>
     <hint type="destinationlabel">
-     <x>694</x>
-     <y>202</y>
+     <x>241</x>
+     <y>213</y>
     </hint>
    </hints>
   </connection>
@@ -1627,12 +1635,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>774</x>
-     <y>206</y>
+     <x>241</x>
+     <y>213</y>
     </hint>
     <hint type="destinationlabel">
-     <x>633</x>
-     <y>214</y>
+     <x>88</x>
+     <y>212</y>
     </hint>
    </hints>
   </connection>
@@ -1643,12 +1651,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>627</x>
-     <y>273</y>
+     <x>88</x>
+     <y>284</y>
     </hint>
     <hint type="destinationlabel">
-     <x>714</x>
-     <y>275</y>
+     <x>241</x>
+     <y>285</y>
     </hint>
    </hints>
   </connection>
@@ -1659,12 +1667,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>779</x>
-     <y>282</y>
+     <x>241</x>
+     <y>285</y>
     </hint>
     <hint type="destinationlabel">
-     <x>628</x>
-     <y>287</y>
+     <x>88</x>
+     <y>284</y>
     </hint>
    </hints>
   </connection>
@@ -1675,12 +1683,12 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>631</x>
-     <y>346</y>
+     <x>88</x>
+     <y>356</y>
     </hint>
     <hint type="destinationlabel">
-     <x>720</x>
-     <y>346</y>
+     <x>241</x>
+     <y>357</y>
     </hint>
    </hints>
   </connection>
@@ -1691,12 +1699,44 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>761</x>
-     <y>355</y>
+     <x>241</x>
+     <y>357</y>
     </hint>
     <hint type="destinationlabel">
-     <x>638</x>
-     <y>359</y>
+     <x>88</x>
+     <y>356</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_stack_FIBSEM</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>spinbox_slider_FIBSEM</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1512</x>
+     <y>608</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1521</x>
+     <y>591</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinbox_slider_FIBSEM</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>slider_stack_FIBSEM</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1508</x>
+     <y>585</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1460</x>
+     <y>608</y>
     </hint>
    </hints>
   </connection>

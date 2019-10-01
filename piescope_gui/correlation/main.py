@@ -18,11 +18,19 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 
+from piescope_gui.correlation._version import __version__
 
-def open_correlation_window(image_1, image_2, main_gui):
+
+def open_correlation_window(main_gui, image_1, image_2, output_path):
     global img1
     global img2
+    global img1_path
+    global img2_path
     global gui
+    global output
+
+    img1_path = image_1
+    img2_path = image_2
 
     image_1 = skimage.color.gray2rgb(plt.imread(image_1))
     image_2 = skimage.color.gray2rgb(plt.imread(image_2))
@@ -31,10 +39,28 @@ def open_correlation_window(image_1, image_2, main_gui):
     img1 = image_1
     img2 = image_2
     gui = main_gui
+    output = output_path
 
     window = _MainWindow()
     window.show()
     return
+
+
+def correlate_images(image_1, image_2, output, matched_points_dict):
+    if matched_points_dict == []:
+        print('No control points selected, exiting.')
+        return
+
+    src, dst = point_coords(matched_points_dict)
+    transformation = calculate_transform(src, dst)
+    image_1_aligned = apply_transform(image_1, transformation)
+    result = overlay_images(image_1_aligned, image_2)
+    save_text(img1_path, img2_path, output, transformation, matched_points_dict)
+    plt.imsave(output, result)
+    plt.imshow(result)
+    plt.show()
+    return result
+
 
 
 class _MainWindow(QMainWindow):
@@ -119,7 +145,15 @@ class _MainWindow(QMainWindow):
         self.delButton.clicked.connect(self.delCP)
 
     def menu_quit(self):
+        matched_points_dict = self.get_dictlist()
+        correlate_images(img1, img2, output, matched_points_dict)
         self.close()
+
+    def get_dictlist(self):
+        dictlist = []
+        for cp in self.wp.canvas.CPlist:
+            dictlist.append(cp.getdict)
+        return dictlist
 
     def pickmodechange(self):
 
@@ -419,6 +453,180 @@ class _ControlPoint:
         }
 
         return dict
+
+
+def point_coords(matched_points_dict):
+    """Create source & destination coordinate numpy arrays from cpselect dict.
+
+    Matched points is an array where:
+    * the number of rows is equal to the number of points selected.
+    * the first column is the point index label.
+    * the second and third columns are the source x, y coordinates.
+    * the last two columns are the destination x, y coordinates.
+
+    Parameters
+    ----------
+    matched_points_dict : dict
+        Dictionary returned from cpselect containing matched point coordinates.
+
+    Returns
+    -------
+    (src, dst)
+        Row, column coordaintes of source and destination matched points.
+        Tuple contains two N x 2 ndarrays, where N is the number of points.
+    """
+
+    matched_points = np.array([list(point.values())
+                               for point in matched_points_dict])
+    src = np.flip(matched_points[:, 1:3], axis=1)  # flip for row, column index
+    dst = np.flip(matched_points[:, 3:], axis=1)   # flip for row, column index
+
+    return src, dst
+
+
+def calculate_transform(src, dst, model=AffineTransform()):
+    """Calculate transformation matrix from matched coordinate pairs.
+
+    Parameters
+    ----------
+    src : ndarray
+        Matched row, column coordinates from source image.
+    dst : ndarray
+        Matched row, column coordinates from destination image.
+    model : scikit-image transformation class, optional.
+        By default, model=AffineTransform()
+
+
+    Returns
+    -------
+    ndarray
+        Transformation matrix.
+    """
+
+    model.estimate(src, dst)
+    print('Transformation matrix:')
+    print(model.params)
+
+    return model.params
+
+
+def apply_transform(image, transformation, inverse=True, multichannel=True):
+    """Apply transformation to a 2D image.
+
+    Parameters
+    ----------
+    image : ndarray
+        Input image array. 2D grayscale image expected, or
+        2D plus color channels if multichannel kwarg is set to True.
+    transformation : ndarray
+        Affine transformation matrix. 3 x 3 shape.
+    inverse : bool, optional
+        Inverse transformation, eg: aligning source image coords to destination
+        By default `inverse=True`.
+    multichannel : bool, optional
+        Treat the last dimension as color, transform each color separately.
+        By default `multichannel=True`.
+
+    Returns
+    -------
+    ndarray
+        Image warped by transformation matrix.
+    """
+
+    if inverse:
+        transformation = np.linalg.inv(transformation)
+
+    if not multichannel:
+        if image.ndim == 2:
+            image = skimage.color.gray2rgb(image)
+        elif image.ndim != transformation.shape[0] - 1:
+            raise ValueError('Unexpected number of image dimensions for the '
+                             'input transformation. Did you need to use: '
+                             'multichannel=True ?')
+
+    # move channel axis to the front for easier iteration over array
+    image = np.moveaxis(image, -1, 0)
+    warped_img = np.array([ndi.affine_transform((img_channel), transformation)
+                           for img_channel in image])
+    warped_img = np.moveaxis(warped_img, 0, -1)
+
+    return warped_img
+
+
+def overlay_images(image_1, image_2, transparency=0.5):
+    """Blend two RGB images together.
+
+    Parameters
+    ----------
+    image_1 : ndarray
+        2D RGB image.
+    image_2 : ndarray
+        2D RGB image.
+    transparency : float, optional
+        Transparency alpha parameter between 0 - 1, by default 0.5
+
+    Returns
+    -------
+    ndarray
+        Blended 2D RGB image.
+    """
+
+    image_1 = skimage.img_as_float(image_1)
+    image_2 = skimage.img_as_float(image_2)
+    blended = transparency * image_1 + (1 - transparency) * image_2
+    blended = np.clip(blended, 0, 1)
+
+    return blended
+
+
+def save_text(input_filename_1, input_filename_2, output_filename,
+              transformation, matched_points_dict):
+    """Save text summary of transformation matrix and image control points.
+
+    Parameters
+    ----------
+    input_filename_1 : str
+        Filename of input image 1.
+    input_filename_2 : str
+        Filename of input image 2.
+    output_filename : str
+        Filename for saving output overlay image file.
+    transformation : ndarray
+        Transformation matrix relating the two images.
+    matched_points_dict : list of dict
+        User selected matched control point pairs.
+
+    Returns
+    -------
+    str
+        Filename of output text file.
+    """
+
+    output_text_filename = os.path.splitext(output_filename)[0] + '.txt'
+    with open(output_text_filename, 'w') as f:
+        f.write(_timestamp() + '\n')
+        f.write('correlateim version {}\n'.format(__version__))
+        f.write('\nUSER INPUT\n')
+        f.write(input_filename_1 + '\n')
+        f.write(input_filename_2 + '\n')
+        f.write('\nTRANSFORMATION MATRIX\n')
+        f.write(str(transformation) + '\n')
+        f.write('\nUSER SELECTED CONTROL POINTS\n')
+        f.write(str(matched_points_dict) + '\n')
+
+    return output_text_filename
+
+
+def _timestamp():
+    """Create timestamp string of current local time.
+
+    Returns
+    -------
+    str
+        Timestamp string
+    """
+    timestamp = time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
+    return timestamp
 
 
 if __name__ == "__main__":
