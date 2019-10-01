@@ -9,13 +9,22 @@ def save_image(image, dest):
     io.imsave(dest, image)
 
 
-def create_array_list(input_list):
-    if len(input_list) > 1:
-        array_list = io.imread_collection(input_list)
-    else:
-        array_list = io.imread(input_list[0])
+def create_array_list(input_list, modality):
+    if modality == "FM":
+        if len(input_list) > 1:
+            array_list_FM = io.imread_collection(input_list)
+        else:
+            array_list_FM = io.imread(input_list[0])
 
-    return array_list
+        return array_list_FM
+
+    elif modality == "FIBSEM":
+        if len(input_list) > 1:
+            array_list_FIBSEM = io.imread_collection(input_list)
+        else:
+            array_list_FIBSEM = io.imread(input_list[0])
+
+        return array_list_FIBSEM
 
 
 def update_laser_dict(self, laser):
@@ -51,24 +60,25 @@ def update_laser_dict(self, laser):
 
 def get_basler_image(self):
     basler = detector.Basler()
-    self.string_list = ["Basler_image"]
-    self.array_list = basler.camera_grab()
-    print(self.array_list)
-    self.update_display()
+    self.string_list_FM = ["Basler_image"]
+    self.array_list_FM = basler.camera_grab()
+    print(self.array_list_FM)
+    self.slider_stack_FM.setValue(1)
+    self.update_display("FM")
 
 
-def live_imaging(self):
+def basler_live_imaging(self):
     if self.liveCheck is True:
         self.stop_event = threading.Event()
         self.c_thread = threading.Thread(
             target=self.live_imaging_event_listener, args=(self.stop_event,))
         self.c_thread.start()
         self.liveCheck = False
-        self.button_live_basler.setDown(True)
+        self.button_live_image_FM.setDown(True)
     else:
         self.stop_event.set()
         self.liveCheck = True
-        self.button_live_basler.setDown(False)
+        self.button_live_image_FM.setDown(False)
 
 
 def initialise_stage():
