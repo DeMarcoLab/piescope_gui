@@ -435,30 +435,66 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
-             <item row="7" column="1">
+             <item row="11" column="1">
               <widget class="QLineEdit" name="lineEdit_move_relative"/>
              </item>
-             <item row="6" column="1">
+             <item row="10" column="1">
               <widget class="QLineEdit" name="lineEdit_move_absolute"/>
              </item>
-             <item row="7" column="0">
+             <item row="7" column="0" colspan="2">
+              <spacer name="verticalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="9" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_initialise_stage">
+               <property name="text">
+                <string>Initialise Stage</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_correlation">
+               <property name="text">
+                <string>Correlation</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="11" column="0">
               <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
                 <string>Move Relative</string>
                </property>
               </widget>
              </item>
-             <item row="6" column="0">
-              <widget class="QPushButton" name="pushButton_move_absolute">
+             <item row="0" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_volume">
                <property name="text">
-                <string>Move Absolute</string>
+                <string>Acquire Volume</string>
                </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_initialise_stage">
-               <property name="text">
-                <string>Initialise Stage</string>
+               <property name="flat">
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -475,8 +511,15 @@
                </property>
               </spacer>
              </item>
-             <item row="3" column="0" colspan="2">
-              <spacer name="verticalSpacer">
+             <item row="10" column="0">
+              <widget class="QPushButton" name="pushButton_move_absolute">
+               <property name="text">
+                <string>Move Absolute</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <spacer name="verticalSpacer_7">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
@@ -488,20 +531,30 @@
                </property>
               </spacer>
              </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_correlation">
+             <item row="5" column="0" colspan="2">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
-                <string>Correlation</string>
+                <string>Connect to microscope</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_volume">
+             <item row="6" column="0">
+              <widget class="QPushButton" name="to_light_microscope">
                <property name="text">
-                <string>Acquire Volume</string>
+                <string>To Light Microscope</string>
                </property>
-               <property name="flat">
-                <bool>false</bool>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <widget class="QPushButton" name="to_electron_microscope">
+               <property name="text">
+                <string>To Electron Microscope</string>
                </property>
               </widget>
              </item>
@@ -1390,6 +1443,45 @@
              <property name="spacing">
               <number>4</number>
              </property>
+             <item row="2" column="2">
+              <widget class="QPushButton" name="button_live_image_SEM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Live SEM View</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QPushButton" name="button_get_image_SEM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Get SEM Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="button_live_image_FIB">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Live FIB View</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="3">
               <spacer name="horizontalSpacer_14">
                <property name="orientation">
@@ -1416,19 +1508,6 @@
                </property>
               </spacer>
              </item>
-             <item row="0" column="1" colspan="2">
-              <widget class="QPushButton" name="connect_microscope">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Connect to microscope</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="1">
               <widget class="QPushButton" name="button_get_image_FIB">
                <property name="sizePolicy">
@@ -1439,45 +1518,6 @@
                </property>
                <property name="text">
                 <string>Get FIB Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QPushButton" name="button_live_image_FIB">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Live FIB View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="button_get_image_SEM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Get SEM Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="QPushButton" name="button_live_image_SEM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Live SEM View</string>
                </property>
               </widget>
              </item>

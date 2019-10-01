@@ -28,6 +28,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.checkBox_save_destination_FIBSEM.setChecked(1)
         self.lineEdit_save_filename_FIBSEM.setText("Image")
 
+        self.microscope = None
         self.save_name = ""
         self.power1 = 0
         self.power2 = 0
@@ -85,6 +86,20 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.checkBox_laser4.clicked.connect(lambda: self.update_laser_dict(
                                                 "laser405"))
 
+        self.to_light_microscope.clicked.connect(
+            lambda: self.move_to_light_microscope(
+                self.microscope, 50.0e-3, 0.0))
+
+        self.to_electron_microscope.clicked.connect(
+            lambda: self.move_to_electron_microscope(
+                self.microscope, -50.0e-3, 0.0))
+
+        self.button_get_image_FIB.clicked.connect(
+            lambda: self.get_FIB_image(self.microscope))
+
+        self.button_get_image_SEM.clicked.connect(
+            lambda: self.get_SEM_image(self.microscope))
+
         self.pushButton_volume.clicked.connect(self.acquire_volume)
 
         self.button_get_image_FM.clicked.connect(self.get_basler_image)
@@ -98,6 +113,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_initialise_stage.clicked.connect(self.initialise_stage)
 
         self.pushButton_correlation.clicked.connect(self.correlateim)
+
+        self.connect_microscope.clicked.connect(self.connect_to_microscope)
+
+    def connect_to_microscope(self):
+        inout.connect_to_microscope(self)
+
+    def move_to_light_microscope(self, microscope, x, y):
+        inout.move_to_light_microscope(self, microscope, x, y)
+
+    def move_to_electron_microscope(self, microscope, x, y):
+        inout.move_to_electron_microscope(self, microscope, x, y)
+
+    def get_SEM_image(self, microscope):
+        inout.get_SEM_image(self, microscope)
+
+    def get_FIB_image(self, microscope):
+        inout.get_FIB_image(self, microscope)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
