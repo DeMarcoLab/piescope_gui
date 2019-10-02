@@ -231,13 +231,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         print(current_position)
 
     def correlateim(self):
-        input_filename_1 = self.current_path_FM
-        input_filename_2 = self.current_path_FIBSEM
+        input_filename_1 = self.array_list_FM
+        input_filename_2 = self.array_list_FIBSEM
         output_filename = self.correlation_output_path.text()
-        print(self.current_path_FM)
-        # correlate.open_correlation_window(self, input_filename_1,
-        #                                   input_filename_2, output_filename)
-        self.temp = tempfile.TemporaryFile(dir=p.normpath("C:\\Users\\TaleeshaDesktop\\Github\\correlateim\\data"))
+        correlate.open_correlation_window(self, input_filename_1,
+                                          input_filename_2, output_filename)
 
 
 if __name__ == '__main__':

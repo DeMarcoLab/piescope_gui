@@ -1,4 +1,5 @@
 import os
+import os.path as p
 import sys
 import time
 
@@ -29,11 +30,20 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
     global gui
     global output
 
-    img1_path = image_1
-    img2_path = image_2
+    if type(image_1) == str:
+        print("Image 1 given as path")
+        image_1 = skimage.color.gray2rgb(plt.imread(image_1))
+    else:
+        print("Image 1 given as array")
+        image_1 = skimage.color.gray2rgb(image_1)
 
-    image_1 = skimage.color.gray2rgb(plt.imread(image_1))
-    image_2 = skimage.color.gray2rgb(plt.imread(image_2))
+    if type(image_2) == str:
+        print("Image 2 given as path")
+        image_2 = skimage.color.gray2rgb(plt.imread(image_2))
+    else:
+        print("Image 2 given as array")
+        image_2 = skimage.color.gray2rgb(image_2)
+
     image_1 = skimage.transform.resize(image_1, image_2.shape)
 
     img1 = image_1
@@ -55,7 +65,7 @@ def correlate_images(image_1, image_2, output, matched_points_dict):
     transformation = calculate_transform(src, dst)
     image_1_aligned = apply_transform(image_1, transformation)
     result = overlay_images(image_1_aligned, image_2)
-    save_text(img1_path, img2_path, output, transformation, matched_points_dict)
+    save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
     plt.imshow(result)
     plt.show()
@@ -579,16 +589,12 @@ def overlay_images(image_1, image_2, transparency=0.5):
     return blended
 
 
-def save_text(input_filename_1, input_filename_2, output_filename,
+def save_text(output_filename,
               transformation, matched_points_dict):
     """Save text summary of transformation matrix and image control points.
 
     Parameters
     ----------
-    input_filename_1 : str
-        Filename of input image 1.
-    input_filename_2 : str
-        Filename of input image 2.
     output_filename : str
         Filename for saving output overlay image file.
     transformation : ndarray
@@ -606,9 +612,6 @@ def save_text(input_filename_1, input_filename_2, output_filename,
     with open(output_text_filename, 'w') as f:
         f.write(_timestamp() + '\n')
         f.write('correlateim version {}\n'.format(__version__))
-        f.write('\nUSER INPUT\n')
-        f.write(input_filename_1 + '\n')
-        f.write(input_filename_2 + '\n')
         f.write('\nTRANSFORMATION MATRIX\n')
         f.write(str(transformation) + '\n')
         f.write('\nUSER SELECTED CONTROL POINTS\n')
