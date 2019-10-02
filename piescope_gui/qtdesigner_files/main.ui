@@ -1459,7 +1459,7 @@
               <number>4</number>
              </property>
              <item row="2" column="2">
-              <widget class="QPushButton" name="button_live_image_SEM">
+              <widget class="QPushButton" name="button_last_image_SEM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -1467,7 +1467,7 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Live SEM View</string>
+                <string>Grab Last SEM</string>
                </property>
               </widget>
              </item>
@@ -1485,7 +1485,7 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QPushButton" name="button_live_image_FIB">
+              <widget class="QPushButton" name="button_last_image_FIB">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -1493,7 +1493,7 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Live FIB View</string>
+                <string>Grab Last FIB</string>
                </property>
               </widget>
              </item>

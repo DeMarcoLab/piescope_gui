@@ -117,9 +117,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.connect_microscope.clicked.connect(self.connect_to_microscope)
 
-        self.button_live_image_FIB.clicked.connect(self.SEM_live_image)
+        self.button_last_image_FIB.clicked.connect(self.get_last_FIB_image)
 
-        self.button_live_image_SEM.clicked.connect(self.FIB_live_image)
+        self.button_last_image_SEM.clicked.connect(self.get_last_SEM_image)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
@@ -149,35 +149,44 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_FIB_image(self, microscope):
         inout.get_FIB_image(self, microscope)
 
-    def SEM_live_image(self):
-        try:
-            inout.SEM_live_imaging(self)
-        except:
-            print('Live imaging failed')
-            return
+    def get_last_SEM_image(self, microscope):
+        inout.get_last_SEM_image(self, microscope)
 
-    def FIB_live_image(self):
-        try:
-            inout.FIB_live_imaging(self)
-        except:
-            print('Live imaging failed')
-            return
+    def get_last_FIB_image(self, microscope):
+        inout.get_last_FIB_image(self, microscope)
 
-    def live_imaging_event_listener_FIB(self, stop_event):
-        state = True
-        while state and not stop_event.isSet():
-            try:
-                self.get_FIB_image(self.microscope)
-            except:
-                print("Failling")
 
-    def live_imaging_event_listener_SEM(self, stop_event):
-        state = True
-        while state and not stop_event.isSet():
-            try:
-                self.get_SEM_image(self.microscope)
-            except:
-                print("Failling")
+    # Return to this if there is time
+    # def SEM_live_image(self):
+    #     try:
+    #         inout.SEM_live_imaging(self)
+    #     except:
+    #         print('Live imaging failed')
+    #         return
+    #
+    # def FIB_live_image(self):
+    #     try:
+    #         inout.FIB_live_imaging(self)
+    #     except:
+    #         print('Live imaging failed')
+    #         return
+    #
+    #
+    # def live_imaging_event_listener_FIB(self, stop_event):
+    #     state = True
+    #     while state and not stop_event.isSet():
+    #         try:
+    #             self.get_FIB_image(self.microscope)
+    #         except:
+    #             print("Failling")
+    #
+    # def live_imaging_event_listener_SEM(self, stop_event):
+    #     state = True
+    #     while state and not stop_event.isSet():
+    #         try:
+    #             self.get_SEM_image(self.microscope)
+    #         except:
+    #             print("Failling")
 
     def get_basler_image(self):
         try:
