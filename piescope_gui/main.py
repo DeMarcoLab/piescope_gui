@@ -6,14 +6,14 @@ import piescope.lm.volume as volume
 import os.path as p
 import piescope_gui.correlation.main as correlate
 
-
-DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
+import tempfile
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):
         super(GUIMainWindow, self).__init__()
         self.setupUi(self)
+        self.DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
 
         self.setWindowTitle("PIEScope User Interface")
         self.statusbar.setSizeGripEnabled(0)
@@ -21,13 +21,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.status.setAlignment(QtCore.Qt.AlignRight)
 
         self.statusbar.addPermanentWidget(self.status, 1)
-        self.lineEdit_save_destination_FM.setText(DEFAULT_PATH)
+        self.lineEdit_save_destination_FM.setText(self.DEFAULT_PATH)
         self.checkBox_save_destination_FM.setChecked(1)
         self.lineEdit_save_filename_FM.setText("Image")
-        self.lineEdit_save_destination_FIBSEM.setText(DEFAULT_PATH)
+        self.lineEdit_save_destination_FIBSEM.setText(self.DEFAULT_PATH)
         self.checkBox_save_destination_FIBSEM.setChecked(1)
         self.lineEdit_save_filename_FIBSEM.setText("Image")
 
+        self.temp = None
         self.microscope = None
         self.save_name = ""
         self.power1 = 0
@@ -116,20 +117,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.connect_microscope.clicked.connect(self.connect_to_microscope)
 
-    def connect_to_microscope(self):
-        inout.connect_to_microscope(self)
+        self.button_live_image_FIB.clicked.connect(self.SEM_live_image)
 
-    def move_to_light_microscope(self, microscope, x, y):
-        inout.move_to_light_microscope(self, microscope, x, y)
-
-    def move_to_electron_microscope(self, microscope, x, y):
-        inout.move_to_electron_microscope(self, microscope, x, y)
-
-    def get_SEM_image(self, microscope):
-        inout.get_SEM_image(self, microscope)
-
-    def get_FIB_image(self, microscope):
-        inout.get_FIB_image(self, microscope)
+        self.button_live_image_SEM.clicked.connect(self.FIB_live_image)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
@@ -139,10 +129,55 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         volume.volume_acquisition(self, exposure_time, laser_dict,
                                   no_z_slices, z_slice_distance)
 
-    def live_imaging_event_listener(self, stop_event):
+    def connect_to_microscope(self):
+        inout.connect_to_microscope(self)
+
+    def move_to_light_microscope(self, microscope, x, y):
+        inout.move_to_light_microscope(self, microscope, x, y)
+
+    def move_to_electron_microscope(self, microscope, x, y):
+        inout.move_to_electron_microscope(self, microscope, x, y)
+
+    def live_imaging_event_listener_FM(self, stop_event):
         state = True
         while state and not stop_event.isSet():
             self.get_basler_image()
+
+    def get_SEM_image(self, microscope):
+        inout.get_SEM_image(self, microscope)
+
+    def get_FIB_image(self, microscope):
+        inout.get_FIB_image(self, microscope)
+
+    def SEM_live_image(self):
+        try:
+            inout.SEM_live_imaging(self)
+        except:
+            print('Live imaging failed')
+            return
+
+    def FIB_live_image(self):
+        try:
+            inout.FIB_live_imaging(self)
+        except:
+            print('Live imaging failed')
+            return
+
+    def live_imaging_event_listener_FIB(self, stop_event):
+        state = True
+        while state and not stop_event.isSet():
+            try:
+                self.get_FIB_image(self.microscope)
+            except:
+                print("Failling")
+
+    def live_imaging_event_listener_SEM(self, stop_event):
+        state = True
+        while state and not stop_event.isSet():
+            try:
+                self.get_SEM_image(self.microscope)
+            except:
+                print("Failling")
 
     def get_basler_image(self):
         try:
@@ -196,10 +231,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         print(current_position)
 
     def correlateim(self):
-        input_filename_1 = "C:\\Users\\David\\images\\worm_fluorescence-microscopy.tif"
-        input_filename_2 = "C:\\Users\\David\\images\\worm_ion-beam-microscopy-tilted.tif"
-        output_filename = "C:\\Users\\David\\images\\output.tiff" #"C:\\Users\\David Dierickx\\Pictures\\output.tiff"
-        correlate.open_correlation_window(self, input_filename_1, input_filename_2, output_filename)
+        input_filename_1 = self.current_path_FM
+        input_filename_2 = self.current_path_FIBSEM
+        output_filename = self.correlation_output_path.text()
+        print(self.current_path_FM)
+        # correlate.open_correlation_window(self, input_filename_1,
+        #                                   input_filename_2, output_filename)
+        self.temp = tempfile.TemporaryFile(dir=p.normpath("C:\\Users\\TaleeshaDesktop\\Github\\correlateim\\data"))
 
 
 if __name__ == '__main__':

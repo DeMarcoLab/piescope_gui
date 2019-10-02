@@ -250,6 +250,23 @@
               <item row="3" column="0" colspan="2">
                <widget class="QWidget" name="widget_laser3" native="true">
                 <layout class="QGridLayout" name="gridLayout_10">
+                 <item row="2" column="1">
+                  <widget class="QSlider" name="slider_laser3">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QSpinBox" name="spinBox_laser3">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="0">
                   <widget class="QCheckBox" name="checkBox_laser3">
                    <property name="layoutDirection">
@@ -275,23 +292,6 @@
                     </size>
                    </property>
                   </spacer>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QSlider" name="slider_laser3">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QSpinBox" name="spinBox_laser3">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -349,12 +349,18 @@
                 </property>
                </widget>
               </item>
+              <item row="5" column="1">
+               <widget class="QLineEdit" name="lineEdit_slice_distance"/>
+              </item>
               <item row="7" column="0">
                <widget class="QLabel" name="label_slice_number">
                 <property name="text">
                  <string>Number of Slices</string>
                 </property>
                </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QLineEdit" name="lineEdit_slice_number"/>
               </item>
               <item row="9" column="0">
                <widget class="QLabel" name="label_exposure">
@@ -365,12 +371,6 @@
               </item>
               <item row="9" column="1">
                <widget class="QLineEdit" name="lineEdit_exposure"/>
-              </item>
-              <item row="7" column="1">
-               <widget class="QLineEdit" name="lineEdit_slice_number"/>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLineEdit" name="lineEdit_slice_distance"/>
               </item>
              </layout>
             </widget>
@@ -435,11 +435,25 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
-             <item row="11" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_relative"/>
+             <item row="1" column="0" colspan="2">
+              <spacer name="verticalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </spacer>
              </item>
-             <item row="10" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
+             <item row="6" column="1">
+              <widget class="QPushButton" name="to_electron_microscope">
+               <property name="text">
+                <string>To Electron Microscope</string>
+               </property>
+              </widget>
              </item>
              <item row="7" column="0" colspan="2">
               <spacer name="verticalSpacer_6">
@@ -461,10 +475,53 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_correlation">
+             <item row="5" column="0" colspan="2">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
-                <string>Correlation</string>
+                <string>Connect to microscope</string>
+               </property>
+              </widget>
+             </item>
+             <item row="11" column="0">
+              <widget class="QPushButton" name="pushButton_move_relative">
+               <property name="text">
+                <string>Move Relative</string>
+               </property>
+              </widget>
+             </item>
+             <item row="11" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_relative"/>
+             </item>
+             <item row="10" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
+             </item>
+             <item row="10" column="0">
+              <widget class="QPushButton" name="pushButton_move_absolute">
+               <property name="text">
+                <string>Move Absolute</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_volume">
+               <property name="text">
+                <string>Acquire Volume</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QPushButton" name="to_light_microscope">
+               <property name="text">
+                <string>To Light Microscope</string>
                </property>
               </widget>
              </item>
@@ -481,81 +538,39 @@
                </property>
               </spacer>
              </item>
-             <item row="11" column="0">
-              <widget class="QPushButton" name="pushButton_move_relative">
-               <property name="text">
-                <string>Move Relative</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_volume">
-               <property name="text">
-                <string>Acquire Volume</string>
-               </property>
-               <property name="flat">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0" colspan="2">
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>0</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="10" column="0">
-              <widget class="QPushButton" name="pushButton_move_absolute">
-               <property name="text">
-                <string>Move Absolute</string>
-               </property>
-              </widget>
-             </item>
              <item row="2" column="0" colspan="2">
-              <spacer name="verticalSpacer_7">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QPushButton" name="connect_microscope">
+              <widget class="QFrame" name="frame">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <property name="text">
-                <string>Connect to microscope</string>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QPushButton" name="to_light_microscope">
-               <property name="text">
-                <string>To Light Microscope</string>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QPushButton" name="to_electron_microscope">
-               <property name="text">
-                <string>To Electron Microscope</string>
-               </property>
+               <layout class="QGridLayout" name="gridLayout_16">
+                <item row="2" column="0">
+                 <widget class="QLineEdit" name="correlation_output_path"/>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QToolButton" name="toolButton_correlation_output">
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QPushButton" name="pushButton_correlation">
+                  <property name="text">
+                   <string>Correlation</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>

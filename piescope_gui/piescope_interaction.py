@@ -4,6 +4,7 @@ import threading
 from piescope.lm import detector
 from piescope import fibsem
 from piescope_gui import gui_interaction
+from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
 
 
@@ -62,7 +63,7 @@ def update_laser_dict(self, laser):
 
 def get_basler_image(self):
     basler = detector.Basler()
-    self.string_list_FM = ["Basler_image"]
+    self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
     self.array_list_FM = basler.camera_grab()
     print(self.array_list_FM)
     self.slider_stack_FM.setValue(1)
@@ -73,7 +74,7 @@ def basler_live_imaging(self):
     if self.liveCheck is True:
         self.stop_event = threading.Event()
         self.c_thread = threading.Thread(
-            target=self.live_imaging_event_listener, args=(self.stop_event,))
+            target=self.live_imaging_event_listener_FM, args=(self.stop_event,))
         self.c_thread.start()
         self.liveCheck = False
         self.button_live_image_FM.setDown(True)
@@ -183,6 +184,20 @@ def get_FIB_image(self, microscope):
         gui_interaction.error_msg(self, message="Not connected to microscope")
 
 
+def FIB_live_imaging(self):
+    if self.liveCheck is True:
+        self.stop_event = threading.Event()
+        self.c_thread = threading.Thread(
+            target=self.live_imaging_event_listener_FIB, args=(self.stop_event,))
+        self.c_thread.start()
+        self.liveCheck = False
+        self.button_live_image_FIB.setDown(True)
+    else:
+        self.stop_event.set()
+        self.liveCheck = True
+        self.button_live_image_FIB.setDown(False)
+
+
 def get_SEM_image(self, microscope):
     if self.microscope:
         try:
@@ -195,3 +210,17 @@ def get_SEM_image(self, microscope):
     else:
         print("Not connected to microscope")
         gui_interaction.error_msg(self, message="Not connected to microscope")
+
+
+def SEM_live_imaging(self):
+    if self.liveCheck is True:
+        self.stop_event = threading.Event()
+        self.c_thread = threading.Thread(
+            target=self.live_imaging_event_listener_SEM, args=(self.stop_event,))
+        self.c_thread.start()
+        self.liveCheck = False
+        self.button_live_image_SEM.setDown(True)
+    else:
+        self.stop_event.set()
+        self.liveCheck = True
+        self.button_live_image_SEM.setDown(False)
