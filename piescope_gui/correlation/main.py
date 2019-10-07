@@ -3,6 +3,7 @@ import os.path as p
 import sys
 import time
 
+import matplotlib
 import numpy as np
 import scipy.ndimage as ndi
 import skimage
@@ -18,6 +19,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
+from matplotlib.patches import Rectangle
 
 from piescope_gui import gui_interaction
 from piescope_gui.correlation._version import __version__
@@ -94,14 +96,45 @@ class _MainWindow(QMainWindow):
         self.create_window()
         self.create_conn()
 
+        self.rect = Rectangle((0, 0), 0.2, 0.2, color='k', fill=None, alpha=1)
+        self.wp.canvas.ax11.add_patch(self.rect)
+        self.rect.set_visible(False)
         self.showMaximized()
         self.show()
         self.wp.canvas.fig.subplots_adjust(left=0.01, bottom=0.01, right=0.99, top=0.99)
+
+        self.wp.canvas.mpl_connect('button_press_event', self.on_click)
+        self.wp.canvas.mpl_connect('motion_notify_event', self.on_motion)
 
         q1 = QTimer(self)
         q1.setSingleShot(False)
         q1.timeout.connect(self.updateGUI)
         q1.start(10000)
+
+    def on_click(self, event):
+        if event.button == 1 or event.button == 3:
+            if event.inaxes is not None:
+                self.xclick = event.xdata
+                self.yclick = event.ydata
+                print(self.xclick)
+                print(self.yclick)
+                self.on_press = True
+
+    def on_motion(self, event):
+        if event.button == 1 or event.button == 3 and self.on_press == True:
+            if (self.xclick is not None and self.yclick is not None):
+                x0, y0 = self.xclick, self.yclick
+                x1, y1 = event.xdata, event.ydata
+                if (x1 is not None or y1 is not None):
+                    self.rect.set_width(x1 - x0)
+                    self.rect.set_height(y1 - y0)
+                    self.rect.set_xy((x0, y0))
+                    self.rect.set_visible(True)
+                    print("x0 %s", str(x0))
+                    print("y0 %s", str(y0))
+                    print("x1 %s", str(x1))
+                    print("y1 %s", str(y1))
+                    self.wp.canvas.draw()
 
     def create_window(self):
         self.setWindowTitle("Control Point Selection Tool")
