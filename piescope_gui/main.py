@@ -6,8 +6,6 @@ import piescope.lm.volume as volume
 import os.path as p
 import piescope_gui.correlation.main as correlate
 
-import tempfile
-
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):

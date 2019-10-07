@@ -19,6 +19,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 
+from piescope_gui import gui_interaction
 from piescope_gui.correlation._version import __version__
 
 
@@ -30,29 +31,44 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
     global gui
     global output
 
-    if type(image_1) == str:
-        print("Image 1 given as path")
-        image_1 = skimage.color.gray2rgb(plt.imread(image_1))
-    else:
-        print("Image 1 given as array")
-        image_1 = skimage.color.gray2rgb(image_1)
+    gui = main_gui
+    try:
+        if type(image_1) == str:
+            print("Image 1 given as path")
+            image_1 = skimage.color.gray2rgb(plt.imread(image_1))
+        else:
+            print("Image 1 given as array")
+            image_1 = skimage.color.gray2rgb(image_1)
+    except:
+        gui_interaction.error_msg(gui, "Could not load image 1, make sure there is an image displayed.")
+        return
 
-    if type(image_2) == str:
-        print("Image 2 given as path")
-        image_2 = skimage.color.gray2rgb(plt.imread(image_2))
-    else:
-        print("Image 2 given as array")
-        image_2 = skimage.color.gray2rgb(image_2)
+    try:
+        if type(image_2) == str:
+            print("Image 2 given as path")
+            image_2 = skimage.color.gray2rgb(plt.imread(image_2))
+        else:
+            print("Image 2 given as array")
+            image_2 = skimage.color.gray2rgb(image_2)
+    except:
+        gui_interaction.error_msg(gui, "Could not load image 2, make sure there is an image displayed.")
+        return
 
     image_1 = skimage.transform.resize(image_1, image_2.shape)
 
     img1 = image_1
     img2 = image_2
-    gui = main_gui
-    output = output_path
 
-    window = _MainWindow()
-    window.show()
+    # print(p.isdir(output_path))
+    output = output_path
+    if p.isdir(output):
+        print(output)
+    else:
+        gui_interaction.error_msg(gui, "Error in defining an output path for correlated image")
+        return
+
+    # window = _MainWindow()
+    # window.show()
     return
 
 
@@ -70,7 +86,6 @@ def correlate_images(image_1, image_2, output, matched_points_dict):
     plt.imshow(result)
     plt.show()
     return result
-
 
 
 class _MainWindow(QMainWindow):
