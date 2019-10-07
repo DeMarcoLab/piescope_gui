@@ -67,8 +67,8 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
         gui_interaction.error_msg(gui, "Error in defining an output path for correlated image")
         return
 
-    # window = _MainWindow()
-    # window.show()
+    window = _MainWindow()
+    window.show()
     return
 
 
