@@ -5,6 +5,7 @@ import piescope_gui.piescope_interaction as inout
 import piescope.lm.volume as volume
 import os.path as p
 import piescope_gui.correlation.main as correlate
+import piescope_gui.milling.main as mill
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
@@ -117,7 +118,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_last_image_FIB.clicked.connect(self.get_last_FIB_image)
 
-        self.button_last_image_SEM.clicked.connect(self.get_last_SEM_image)
+        self.button_last_image_SEM.clicked.connect(self.milling)#get_last_SEM_image)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()
@@ -243,6 +244,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         output_filename = self.correlation_output_path.text()
         correlate.open_correlation_window(self, input_filename_1,
                                           input_filename_2, output_filename)
+
+    def milling(self):
+        [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
+        'Open Milling Image', filter="Images (*.bmp *.tif *.tiff *.jpg)")
+        image = inout.create_array_list(image, "MILLING")
+        mill.open_milling_window(self, image)
+
 
 
 if __name__ == '__main__':

@@ -29,6 +29,14 @@ def create_array_list(input_list, modality):
 
         return array_list_FIBSEM
 
+    elif modality == "MILLING":
+        if len(input_list) > 1:
+            array_list_MILLING = io.imread_collection(input_list)
+        else:
+            array_list_MILLING = io.imread(input_list[0])
+
+        return array_list_MILLING
+
 
 def update_laser_dict(self, laser):
     if laser == "laser640":
