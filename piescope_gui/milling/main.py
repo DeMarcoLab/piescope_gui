@@ -48,6 +48,8 @@ class _MainWindow(QMainWindow):
         self.wp.canvas.fig.subplots_adjust(
             left=0.01, bottom=0.01, right=0.99, top=0.99)
 
+        self.x1 = None
+
         q1 = QTimer(self)
         q1.setSingleShot(False)
         q1.start(10000)
@@ -62,7 +64,8 @@ class _MainWindow(QMainWindow):
         vlay = QVBoxLayout()
         vlay2 = QVBoxLayout()
         vlay2.setSpacing(20)
-        hlay_buttons = QHBoxLayout()
+        hlay_buttons_1 = QHBoxLayout()
+        hlay_buttons_2 = QHBoxLayout()
 
         hlay.addLayout(vlay)
         hlay.addLayout(vlay2)
@@ -73,7 +76,50 @@ class _MainWindow(QMainWindow):
         self.exitButton = QPushButton("Return")
         self.exitButton.setFixedHeight(60)
         self.exitButton.setStyleSheet("font-size: 16px;")
-        hlay_buttons.addWidget(self.exitButton)
+
+        self.x0_label = QLabel("X0:")
+        self.x0_label.setFixedHeight(30)
+        self.x0_label.setStyleSheet("font-size: 16px;")
+
+        self.x0_label2 = QLabel("")
+        self.x0_label2.setFixedHeight(30)
+        self.x0_label2.setStyleSheet("font-size: 16px;")
+
+        self.y0_label = QLabel("Y0:")
+        self.y0_label.setFixedHeight(30)
+        self.y0_label.setStyleSheet("font-size: 16px;")
+
+        self.y0_label2 = QLabel("")
+        self.y0_label2.setFixedHeight(30)
+        self.y0_label2.setStyleSheet("font-size: 16px;")
+
+        self.x1_label = QLabel("X1:")
+        self.x1_label.setFixedHeight(30)
+        self.x1_label.setStyleSheet("font-size: 16px;")
+
+        self.x1_label2 = QLabel("")
+        self.x1_label2.setFixedHeight(30)
+        self.x1_label2.setStyleSheet("font-size: 16px;")
+
+        self.y1_label = QLabel("Y1:")
+        self.y1_label.setFixedHeight(30)
+        self.y1_label.setStyleSheet("font-size: 16px;")
+
+        self.y1_label2 = QLabel("")
+        self.y1_label2.setFixedHeight(30)
+        self.y1_label2.setStyleSheet("font-size: 16px;")
+
+        hlay_buttons_1.addWidget(self.x0_label)
+        hlay_buttons_1.addWidget(self.x0_label2)
+        hlay_buttons_1.addWidget(self.y0_label)
+        hlay_buttons_1.addWidget(self.y0_label2)
+        hlay_buttons_2.addWidget(self.x1_label)
+        hlay_buttons_2.addWidget(self.x1_label2)
+        hlay_buttons_2.addWidget(self.y1_label)
+        hlay_buttons_2.addWidget(self.y1_label2)
+        vlay2.addLayout(hlay_buttons_1)
+        vlay2.addLayout(hlay_buttons_2)
+        vlay2.addWidget(self.exitButton)
 
         self.setCentralWidget(widget)
         self.rect = Rectangle((0, 0), 0.2, 0.2, color='k', fill=None, alpha=1)
@@ -82,6 +128,7 @@ class _MainWindow(QMainWindow):
 
         self.wp.canvas.mpl_connect('button_press_event', self.on_click)
         self.wp.canvas.mpl_connect('motion_notify_event', self.on_motion)
+        self.wp.canvas.mpl_connect('button_release_event', self.on_release)
 
 
     def create_conn(self):
@@ -97,23 +144,40 @@ class _MainWindow(QMainWindow):
                 self.yclick = event.ydata
                 print(self.xclick)
                 print(self.yclick)
+                self.dragged = False
+                print(self.dragged)
                 self.on_press = True
 
     def on_motion(self, event):
-        if event.button == 1 or event.button == 3 and self.on_press == True:
+        if event.button == 1 or event.button == 3 and self.on_press:
             if (self.xclick is not None and self.yclick is not None):
                 x0, y0 = self.xclick, self.yclick
-                x1, y1 = event.xdata, event.ydata
-                if (x1 is not None or y1 is not None):
-                    self.rect.set_width(x1 - x0)
-                    self.rect.set_height(y1 - y0)
+                self.x1, self.y1 = event.xdata, event.ydata
+
+                if (self.x1 is not None or self.y1 is not None):
+                    self.dragged = True
+                    self.rect.set_width(self.x1 - x0)
+                    self.rect.set_height(self.y1 - y0)
                     self.rect.set_xy((x0, y0))
                     self.rect.set_visible(True)
                     print("x0 %s", str(x0))
                     print("y0 %s", str(y0))
-                    print("x1 %s", str(x1))
-                    print("y1 %s", str(y1))
+                    print("x1 %s", str(self.x1))
+                    print("y1 %s", str(self.y1))
                     self.wp.canvas.draw()
+                # else:
+                #     gui_interaction.error_msg(gui, "Make sure to drag inside"
+                #                                    "the image")
+                #     return
+
+    def on_release(self, event):
+        if event.button == 1 and self.dragged:
+            print(self.dragged)
+            self.x1_label2.setText("%.1f" % self.x1)
+            self.x0_label2.setText("%.1f" % self.xclick)
+            self.y0_label2.setText("%.1f" % self.yclick)
+            self.y1_label2.setText("%.1f" % self.y1)
+
 
 class _WidgetPlot(QWidget):
     def __init__(self, *args, **kwargs):
