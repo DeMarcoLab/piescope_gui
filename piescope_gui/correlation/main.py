@@ -14,8 +14,10 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from matplotlib import pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import \
+    NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 
@@ -40,7 +42,8 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
             print("Image 1 given as array")
             image_1 = skimage.color.gray2rgb(image_1)
     except:
-        gui_interaction.error_msg(gui, "Could not load image 1, make sure there is an image displayed.")
+        gui_interaction.error_msg(gui, "Could not load image 1, make sure"
+                                       " there is an image displayed.")
         return
 
     try:
@@ -51,7 +54,8 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
             print("Image 2 given as array")
             image_2 = skimage.color.gray2rgb(image_2)
     except:
-        gui_interaction.error_msg(gui, "Could not load image 2, make sure there is an image displayed.")
+        gui_interaction.error_msg(gui, "Could not load image 2, make sure"
+                                       " there is an image displayed.")
         return
 
     image_1 = skimage.transform.resize(image_1, image_2.shape)
@@ -64,7 +68,8 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
     if p.isdir(output):
         print(output)
     else:
-        gui_interaction.error_msg(gui, "Error in defining an output path for correlated image")
+        gui_interaction.error_msg(
+            gui, "Error in defining an output path for correlated image")
         return
 
     window = _MainWindow()
@@ -96,7 +101,8 @@ class _MainWindow(QMainWindow):
 
         self.showMaximized()
         self.show()
-        self.wp.canvas.fig.subplots_adjust(left=0.01, bottom=0.01, right=0.99, top=0.99)
+        self.wp.canvas.fig.subplots_adjust(
+            left=0.01, bottom=0.01, right=0.99, top=0.99)
 
         q1 = QTimer(self)
         q1.setSingleShot(False)
@@ -127,12 +133,42 @@ class _MainWindow(QMainWindow):
         self.help.setMaximumWidth(400)
         self.help.setMinimumHeight(540)
 
-        help_header = '<!DOCTYPE html><html lang="de" id="main"><head><meta charset="UTF-8"><title>Description of cpselect for Python</title><style>td,th{font-size:14px;}p{font-size: 14px;}</style></head>'
-        help_body = '<body><h1>Description of cpselect for Python&emsp;</h1><h2>Navigation Toolbar</h2><img src="{}" alt="navbuttons"><br/><table cellspacing="20px"><tr><th valign="middle" height="20px">Tool</th><th valign="middle" height="20px">how to use</th></tr><tr><td><img src="{}" alt="homebutton"></td><td valign="middle">For all Images, reset to the original view.</td></tr><tr><td><img src="{}" alt="backwardforwardbutton"></td><td valign="middle">Go back to the last or forward to the next view.</td></tr><tr><td><img src="{}" alt="panzoombutton"></td><td valign="middle">Activate the pan/zoom tool. Pan with left mouse button, zoom with right</td></tr><tr><td><img src="{}" alt="backwardforwardbutton"></td><td valign="middle">Zoom with drawing a rectangle</td></tr></table><h2>Pick Mode</h2><p>Change into pick mode to pick up your control points. You have to pick the control points in both images before you can start to pick the next point.</p><p>Press the red button below to start pick mode.</p><h2>Control Point list</h2><p>Below in the table, all your control points are listed. You can delete one ore more selected control points with the <b>delete</b> button.</p><h2>Return</h2><p>If you are finished, please press the <b>return</b> button below. You will come back to wherever you have been.</p></body></html>'
+        help_header = '<!DOCTYPE html><html lang="de" ' \
+                      'id="main"><head><meta charset="UTF-8"><title>' \
+                      'Description of cpselect for Python</title><style>td,' \
+                      'th{font-size:14px;}p{font-size: 14px;}</style></head>'
+        help_body = '<body><h1>Description of cpselect for Python&emsp;' \
+                    '</h1><h2>Navigation Toolbar</h2><img src="{}" ' \
+                    'alt="navbuttons"><br/><table cellspacing="20px"><tr>' \
+                    '<th valign="middle" height="20px">Tool</th><th valign=' \
+                    '"middle" height="20px">how to use</th></tr><tr><td>' \
+                    '<img src="{}" alt="homebutton"></td>' \
+                    '<td valign="middle">For all Images, reset ' \
+                    'to the original view.</td></tr><tr><td>' \
+                    '<img src="{}" alt="backwardforwardbutton">' \
+                    '</td><td valign="middle">Go back to the last ' \
+                    'or forward to the next view.</td></tr><tr><td>' \
+                    '<img src="{}" alt="panzoombutton"></td>' \
+                    '<td valign="middle">Activate the pan/zoom tool. ' \
+                    'Pan with left mouse button, zoom with right</td></tr>' \
+                    '<tr><td><img src="{}" alt="backwardforwardbutton">' \
+                    '</td><td valign="middle">Zoom with drawing a rectangle' \
+                    '</td></tr></table><h2>Pick Mode</h2><p>' \
+                    'Change into pick mode to pick up your control points. ' \
+                    'You have to pick the control points in both images ' \
+                    'before you can start to pick the next point.</p><p>' \
+                    'Press the red button below to start pick mode.</p><h2>' \
+                    'Control Point list</h2><p>Below in the table, all ' \
+                    'your control points are listed. You can delete one or ' \
+                    'more selected control points with the <b>delete</b> ' \
+                    'button.</p><h2>Return</h2><p>If you are finished, ' \
+                    'please press the <b>return</b> button below. You will' \
+                    ' come back to wherever you have been.</p></body></html>'
         help_html = help_header + help_body.format(
             os.path.join(os.path.dirname(__file__), "img/navbuttons.PNG"),
             os.path.join(os.path.dirname(__file__), "img/homebutton.png"),
-            os.path.join(os.path.dirname(__file__), "img/backforwardbutton.png"),
+            os.path.join(os.path.dirname(__file__),
+                         "img/backforwardbutton.png"),
             os.path.join(os.path.dirname(__file__), "img/panzoombutton.png"),
             os.path.join(os.path.dirname(__file__), "img/zoomboxbutton.png"),
         )
@@ -198,7 +234,8 @@ class _MainWindow(QMainWindow):
                 )
         else:
             self.statusBar().showMessage(
-                f"Please, first deactivate the selected navigation tool {self.wp.canvas.toolbar._active}",
+                f"Please, first deactivate the selected navigation tool"
+                f"{self.wp.canvas.toolbar._active}",
                 3000,
             )
 
@@ -247,7 +284,7 @@ class _MainWindow(QMainWindow):
         self.cpTable.clearSelection()
         self.cpTabelModel.clear()
         self.cpTabelModel.setHorizontalHeaderLabels(
-            ["Point Number", "x (Img 1)", "y (Img 1)", "x (Img 2)", "y (Img 2)"]
+        ["Point Number", "x (Img 1)", "y (Img 1)", "x (Img 2)", "y (Img 2)"]
         )
 
         for cp in self.wp.canvas.CPlist:
@@ -287,7 +324,8 @@ class _PlotCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
 
         self.setParent(parent)
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(
+            self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.plot()
         self.createConn()
@@ -306,8 +344,10 @@ class _PlotCanvas(FigureCanvas):
     def plot(self):
         gs0 = self.fig.add_gridspec(1, 2)
 
-        self.ax11 = self.fig.add_subplot(gs0[0], xticks=[], yticks=[], title="Image 1: Select Points")
-        self.ax12 = self.fig.add_subplot(gs0[1], xticks=[], yticks=[], title="Image 2: Select Points")
+        self.ax11 = self.fig.add_subplot(
+            gs0[0], xticks=[], yticks=[], title="Image 1: Select Points")
+        self.ax12 = self.fig.add_subplot(
+            gs0[1], xticks=[], yticks=[], title="Image 2: Select Points")
 
         self.ax11.imshow(img1)
         self.ax12.imshow(img2)
@@ -338,15 +378,19 @@ class _PlotCanvas(FigureCanvas):
             idp = str(cp.idp)
 
             if x1:
-                symb1 = plt.Circle((x1, y1), ax11_units * 8, fill=False, color="red")
-                symb2 = plt.Circle((x1, y1), ax11_units * 1, fill=True, color="red")
+                symb1 = plt.Circle(
+                    (x1, y1), ax11_units * 8, fill=False, color="red")
+                symb2 = plt.Circle(
+                    (x1, y1), ax11_units * 1, fill=True, color="red")
                 self.ax11.text(x1 + ax11_units * 5, y1 + ax11_units * 5, idp)
                 self.ax11.add_patch(symb1)
                 self.ax11.add_patch(symb2)
 
             if x2:
-                symb1 = plt.Circle((x2, y2), ax12_units * 8, fill=False, color="red")
-                symb2 = plt.Circle((x2, y2), ax12_units * 1, fill=True, color="red")
+                symb1 = plt.Circle(
+                    (x2, y2), ax12_units * 8, fill=False, color="red")
+                symb2 = plt.Circle(
+                    (x2, y2), ax12_units * 1, fill=True, color="red")
                 self.ax12.text(x2 + ax12_units * 5, y2 + ax12_units * 5, idp)
                 self.ax12.add_patch(symb1)
                 self.ax12.add_patch(symb2)
