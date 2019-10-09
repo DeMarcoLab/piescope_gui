@@ -22,7 +22,7 @@ from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 
 from piescope_gui import gui_interaction
-from piescope_gui.correlation._version import __version__
+from piescope_gui._version import __version__
 
 
 def open_correlation_window(main_gui, image_1, image_2, output_path):
@@ -670,7 +670,7 @@ def save_text(output_filename,
     output_text_filename = os.path.splitext(output_filename)[0] + '.txt'
     with open(output_text_filename, 'w') as f:
         f.write(_timestamp() + '\n')
-        f.write('correlateim version {}\n'.format(__version__))
+        f.write('PIEScope GUI version {}\n'.format(__version__))
         f.write('\nTRANSFORMATION MATRIX\n')
         f.write(str(transformation) + '\n')
         f.write('\nUSER SELECTED CONTROL POINTS\n')

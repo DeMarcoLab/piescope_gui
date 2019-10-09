@@ -245,8 +245,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                           input_filename_2, output_filename)
 
 
-if __name__ == '__main__':
+def main():
     app = QtWidgets.QApplication([])
     qt_app = GUIMainWindow()
     qt_app.show()
     app.exec_()
+
+
+if __name__ == '__main__':
+    main()

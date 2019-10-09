@@ -24,16 +24,13 @@ setup(
     package_data={'piescope_gui.images': ['*.png']},
     entry_points={
         'console_scripts': [
-            'Template=piescope_gui.main:main'
+            'piescope=piescope_gui.main:main'
         ]
     },
     install_requires=requirements,
     zip_safe=False,
-    keywords='piescope_gui',
     classifiers=[
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
     tests_require=test_requirements
