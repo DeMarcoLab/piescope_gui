@@ -1574,8 +1574,15 @@
      <addaction name="actionSave_FM_Image"/>
      <addaction name="actionSave_FIBSEM_Image"/>
     </widget>
+    <widget class="QMenu" name="menuHelp">
+     <property name="title">
+      <string>Help</string>
+     </property>
+     <addaction name="actionAbout"/>
+    </widget>
     <addaction name="menuOpen"/>
     <addaction name="menuSave"/>
+    <addaction name="menuHelp"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -1598,6 +1605,11 @@
   <action name="actionSave_FIBSEM_Image">
    <property name="text">
     <string>Save FIBSEM Image</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.3
+# Created by: PyQt5 UI code generator 5.13.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainGui(object):
     def setupUi(self, MainGui):
@@ -633,6 +635,8 @@ class Ui_MainGui(object):
         self.menuOpen.setObjectName("menuOpen")
         self.menuSave = QtWidgets.QMenu(self.menuFile)
         self.menuSave.setObjectName("menuSave")
+        self.menuHelp = QtWidgets.QMenu(self.menuFile)
+        self.menuHelp.setObjectName("menuHelp")
         MainGui.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainGui)
         self.statusbar.setObjectName("statusbar")
@@ -645,12 +649,16 @@ class Ui_MainGui(object):
         self.actionSave_FM_Image.setObjectName("actionSave_FM_Image")
         self.actionSave_FIBSEM_Image = QtWidgets.QAction(MainGui)
         self.actionSave_FIBSEM_Image.setObjectName("actionSave_FIBSEM_Image")
+        self.actionAbout = QtWidgets.QAction(MainGui)
+        self.actionAbout.setObjectName("actionAbout")
         self.menuOpen.addAction(self.actionOpen_FM_Image)
         self.menuOpen.addAction(self.actionOpen_FIBSEM_Image)
         self.menuSave.addAction(self.actionSave_FM_Image)
         self.menuSave.addAction(self.actionSave_FIBSEM_Image)
+        self.menuHelp.addAction(self.actionAbout)
         self.menuFile.addAction(self.menuOpen.menuAction())
         self.menuFile.addAction(self.menuSave.menuAction())
+        self.menuFile.addAction(self.menuHelp.menuAction())
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainGui)
@@ -715,10 +723,12 @@ class Ui_MainGui(object):
         self.menuFile.setTitle(_translate("MainGui", "File"))
         self.menuOpen.setTitle(_translate("MainGui", "Open"))
         self.menuSave.setTitle(_translate("MainGui", "Save"))
+        self.menuHelp.setTitle(_translate("MainGui", "Help"))
         self.actionOpen_FM_Image.setText(_translate("MainGui", "Open FM Image"))
         self.actionOpen_FIBSEM_Image.setText(_translate("MainGui", "Open FIBSEM Image"))
         self.actionSave_FM_Image.setText(_translate("MainGui", "Save FM Image"))
         self.actionSave_FIBSEM_Image.setText(_translate("MainGui", "Save FIBSEM Image"))
+        self.actionAbout.setText(_translate("MainGui", "About"))
 
 
 if __name__ == "__main__":
@@ -729,4 +739,3 @@ if __name__ == "__main__":
     ui.setupUi(MainGui)
     MainGui.show()
     sys.exit(app.exec_())
-

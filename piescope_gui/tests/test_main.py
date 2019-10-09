@@ -9,7 +9,7 @@ from piescope_gui import main
 @pytest.fixture
 def window(qtbot):
     """Pass the application to the test functions via a pytest fixture."""
-    new_window = main.Template()
+    new_window = main.GUIMainWindow()
     qtbot.add_widget(new_window)
     new_window.show()
     return new_window
@@ -17,7 +17,7 @@ def window(qtbot):
 
 def test_window_title(window):
     """Check that the window title shows as declared."""
-    assert window.windowTitle() == 'Template'
+    assert window.windowTitle() == 'PIEScope User Interface'
 
 
 def test_window_geometry(window):
@@ -25,10 +25,10 @@ def test_window_geometry(window):
     # PyQt5 with Python>=3.5 appears buggy, window resize is off
     # We assert a relatively wide range instead of a single number
     margin_of_error = 50  # pixels
-    assert window.width() > 1000 - margin_of_error
-    assert window.width() < 1000 + margin_of_error
-    assert window.height() > 750 - margin_of_error
-    assert window.height() < 750 + margin_of_error
+    assert window.width() > 1623 - margin_of_error
+    assert window.width() < 1623 + margin_of_error
+    assert window.height() > 739 - margin_of_error
+    assert window.height() < 739 + margin_of_error
 
 
 def test_open_file(window, qtbot, mocker):
@@ -37,10 +37,10 @@ def test_open_file(window, qtbot, mocker):
     Qtbot clicks on the file sub menu and then navigates to the Open File item.
     Mock creates an object to be passed to the QFileDialog.
     """
-    qtbot.mouseClick(window.file_sub_menu, Qt.LeftButton)
-    qtbot.keyClick(window.file_sub_menu, Qt.Key_Down)
+    qtbot.mouseClick(window.menuOpen, Qt.LeftButton)
+    qtbot.keyClick(window.menuOpen, Qt.Key_Down)
     mocker.patch.object(QFileDialog, 'getOpenFileName', return_value=('', ''))
-    qtbot.keyClick(window.file_sub_menu, Qt.Key_Enter)
+    qtbot.keyClick(window.menuOpen, Qt.Key_Enter)
 
 
 def test_about_dialog(window, qtbot, mocker):
@@ -49,7 +49,7 @@ def test_about_dialog(window, qtbot, mocker):
     Qtbot clicks on the help sub menu and then navigates to the About item.
     Mock creates a QDialog object to be used for the test.
     """
-    qtbot.mouseClick(window.help_sub_menu, Qt.LeftButton)
-    qtbot.keyClick(window.help_sub_menu, Qt.Key_Down)
+    qtbot.mouseClick(window.menuHelp, Qt.LeftButton)
+    qtbot.keyClick(window.menuHelp, Qt.Key_Down)
     mocker.patch.object(QDialog, 'exec_', return_value='accept')
-    qtbot.keyClick(window.help_sub_menu, Qt.Key_Enter)
+    qtbot.keyClick(window.menuHelp, Qt.Key_Enter)
