@@ -118,7 +118,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_last_image_FIB.clicked.connect(self.get_last_FIB_image)
 
-        self.button_last_image_SEM.clicked.connect(self.milling)#get_last_SEM_image)
+        self.button_last_image_SEM.clicked.connect(self.get_last_SEM_image)
+
+        self.pushButton_milling.clicked.connect(self.milling)
 
     def acquire_volume(self):
         exposure_time = self.lineEdit_exposure.text()

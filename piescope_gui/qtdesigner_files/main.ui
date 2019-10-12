@@ -553,9 +553,6 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_16">
-                <item row="2" column="0">
-                 <widget class="QLineEdit" name="correlation_output_path"/>
-                </item>
                 <item row="2" column="1">
                  <widget class="QToolButton" name="toolButton_correlation_output">
                   <property name="text">
@@ -567,6 +564,16 @@
                  <widget class="QPushButton" name="pushButton_correlation">
                   <property name="text">
                    <string>Correlation</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLineEdit" name="correlation_output_path"/>
+                </item>
+                <item row="3" column="0" colspan="2">
+                 <widget class="QPushButton" name="pushButton_milling">
+                  <property name="text">
+                   <string>Milling</string>
                   </property>
                  </widget>
                 </item>
