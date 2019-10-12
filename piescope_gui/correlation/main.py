@@ -3,6 +3,7 @@ import os.path as p
 import sys
 import time
 
+import matplotlib
 import numpy as np
 import scipy.ndimage as ndi
 import skimage
@@ -20,6 +21,7 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
+from matplotlib.patches import Rectangle
 
 from piescope_gui import gui_interaction
 from piescope_gui._version import __version__
@@ -690,6 +692,3 @@ def _timestamp():
     timestamp = time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
     return timestamp
 
-
-if __name__ == "__main__":
-    open_correlation_window()
