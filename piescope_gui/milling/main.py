@@ -1,29 +1,15 @@
-import os
-import os.path as p
-import sys
-import time
-
-import matplotlib
-import numpy as np
-import scipy.ndimage as ndi
 import skimage
 import skimage.color
 import skimage.io
 import skimage.transform
 
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import \
-    NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from skimage.transform import AffineTransform
 from matplotlib.patches import Rectangle
-
-from piescope_gui import gui_interaction
 
 
 def open_milling_window(main_gui, image):
@@ -45,6 +31,7 @@ class _MainWindow(QMainWindow):
         self.create_conn()
 
         self.show()
+        self.showMaximized()
         self.wp.canvas.fig.subplots_adjust(
             left=0.01, bottom=0.01, right=0.99, top=0.99)
 
@@ -59,21 +46,15 @@ class _MainWindow(QMainWindow):
 
         widget = QWidget(self)
 
-
-        hlay = QHBoxLayout(widget)
-        vlay = QVBoxLayout()
-        vlay2 = QVBoxLayout()
-        vlay2.setSpacing(20)
-        hlay_buttons_1 = QHBoxLayout()
-        hlay_buttons_2 = QHBoxLayout()
-
-        hlay.addLayout(vlay)
-        hlay.addLayout(vlay2)
+        vlay = QVBoxLayout(widget)
+        hlay = QHBoxLayout()
 
         self.wp = _WidgetPlot(self)
         vlay.addWidget(self.wp)
 
+
         self.exitButton = QPushButton("Return")
+        self.exitButton.setFixedWidth(150)
         self.exitButton.setFixedHeight(60)
         self.exitButton.setStyleSheet("font-size: 16px;")
 
@@ -82,6 +63,7 @@ class _MainWindow(QMainWindow):
         self.x0_label.setStyleSheet("font-size: 16px;")
 
         self.x0_label2 = QLabel("")
+        self.x0_label2.setFixedWidth(120)
         self.x0_label2.setFixedHeight(30)
         self.x0_label2.setStyleSheet("font-size: 16px;")
 
@@ -90,6 +72,7 @@ class _MainWindow(QMainWindow):
         self.y0_label.setStyleSheet("font-size: 16px;")
 
         self.y0_label2 = QLabel("")
+        self.y0_label2.setFixedWidth(120)
         self.y0_label2.setFixedHeight(30)
         self.y0_label2.setStyleSheet("font-size: 16px;")
 
@@ -98,6 +81,7 @@ class _MainWindow(QMainWindow):
         self.x1_label.setStyleSheet("font-size: 16px;")
 
         self.x1_label2 = QLabel("")
+        self.x1_label2.setFixedWidth(120)
         self.x1_label2.setFixedHeight(30)
         self.x1_label2.setStyleSheet("font-size: 16px;")
 
@@ -106,23 +90,27 @@ class _MainWindow(QMainWindow):
         self.y1_label.setStyleSheet("font-size: 16px;")
 
         self.y1_label2 = QLabel("")
+        self.y1_label2.setFixedWidth(120)
         self.y1_label2.setFixedHeight(30)
         self.y1_label2.setStyleSheet("font-size: 16px;")
 
-        hlay_buttons_1.addWidget(self.x0_label)
-        hlay_buttons_1.addWidget(self.x0_label2)
-        hlay_buttons_1.addWidget(self.y0_label)
-        hlay_buttons_1.addWidget(self.y0_label2)
-        hlay_buttons_2.addWidget(self.x1_label)
-        hlay_buttons_2.addWidget(self.x1_label2)
-        hlay_buttons_2.addWidget(self.y1_label)
-        hlay_buttons_2.addWidget(self.y1_label2)
-        vlay2.addLayout(hlay_buttons_1)
-        vlay2.addLayout(hlay_buttons_2)
-        vlay2.addWidget(self.exitButton)
+        spacerItem = QtWidgets.QSpacerItem(0, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+
+        hlay.addWidget(self.x0_label)
+        hlay.addWidget(self.x0_label2)
+        hlay.addWidget(self.x1_label)
+        hlay.addWidget(self.x1_label2)
+        hlay.addWidget(self.y0_label)
+        hlay.addWidget(self.y0_label2)
+        hlay.addWidget(self.y1_label)
+        hlay.addWidget(self.y1_label2)
+        hlay.addSpacerItem(spacerItem)
+        hlay.addWidget(self.exitButton)
+        vlay.addLayout(hlay)
+
 
         self.setCentralWidget(widget)
-        self.rect = Rectangle((0, 0), 0.2, 0.2, color='k', fill=None, alpha=1)
+        self.rect = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
         self.wp.canvas.ax11.add_patch(self.rect)
         self.rect.set_visible(False)
 
@@ -208,7 +196,7 @@ class _PlotCanvas(FigureCanvas):
         gs0 = self.fig.add_gridspec(1, 1)
 
         self.ax11 = self.fig.add_subplot(
-            gs0[0], xticks=[], yticks=[], title="Image")
+            gs0[0], xticks=[], yticks=[], title="")
         self.ax11.imshow(img)
 
     def updateCanvas(self, event=None):
