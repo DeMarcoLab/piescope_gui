@@ -681,32 +681,6 @@
              <property name="spacing">
               <number>4</number>
              </property>
-             <item row="3" column="2">
-              <widget class="QPushButton" name="button_live_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Live Basler View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QPushButton" name="button_get_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Get Basler Image</string>
-               </property>
-              </widget>
-             </item>
              <item row="3" column="0">
               <spacer name="horizontalSpacer_7">
                <property name="orientation">
@@ -738,6 +712,32 @@
                 </size>
                </property>
               </spacer>
+             </item>
+             <item row="3" column="1">
+              <widget class="QPushButton" name="button_get_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Get Basler Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2">
+              <widget class="QPushButton" name="button_live_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Live Basler View</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -866,6 +866,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>640</width>
+              <height>400</height>
+             </size>
+            </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -888,7 +894,7 @@
              <property name="spacing">
               <number>0</number>
              </property>
-             <item row="2" column="0">
+             <item row="2" column="1" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
               <widget class="QLabel" name="label_image_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -898,14 +904,14 @@
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>640</width>
-                 <height>400</height>
+                 <width>0</width>
+                 <height>0</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>640</width>
-                 <height>400</height>
+                 <width>650</width>
+                 <height>410</height>
                 </size>
                </property>
                <property name="text">
@@ -1248,6 +1254,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="minimumSize">
+             <size>
+              <width>640</width>
+              <height>400</height>
+             </size>
+            </property>
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -1270,19 +1282,13 @@
              <property name="spacing">
               <number>0</number>
              </property>
-             <item row="0" column="0">
+             <item row="0" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
               <widget class="QLabel" name="label_image_FIBSEM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>640</width>
-                 <height>400</height>
-                </size>
                </property>
                <property name="maximumSize">
                 <size>

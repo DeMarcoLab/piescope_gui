@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainGui(object):
     def setupUi(self, MainGui):
@@ -298,14 +296,10 @@ class Ui_MainGui(object):
         self.gridLayout_18.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_18.setSpacing(4)
         self.gridLayout_18.setObjectName("gridLayout_18")
-        self.button_live_image_FM = QtWidgets.QPushButton(self.frame_buttons_FM)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.button_live_image_FM.sizePolicy().hasHeightForWidth())
-        self.button_live_image_FM.setSizePolicy(sizePolicy)
-        self.button_live_image_FM.setObjectName("button_live_image_FM")
-        self.gridLayout_18.addWidget(self.button_live_image_FM, 3, 2, 1, 1)
+        spacerItem9 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_18.addItem(spacerItem9, 3, 0, 1, 1)
+        spacerItem10 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
+        self.gridLayout_18.addItem(spacerItem10, 3, 3, 1, 1)
         self.button_get_image_FM = QtWidgets.QPushButton(self.frame_buttons_FM)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
@@ -314,10 +308,14 @@ class Ui_MainGui(object):
         self.button_get_image_FM.setSizePolicy(sizePolicy)
         self.button_get_image_FM.setObjectName("button_get_image_FM")
         self.gridLayout_18.addWidget(self.button_get_image_FM, 3, 1, 1, 1)
-        spacerItem9 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_18.addItem(spacerItem9, 3, 0, 1, 1)
-        spacerItem10 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
-        self.gridLayout_18.addItem(spacerItem10, 3, 3, 1, 1)
+        self.button_live_image_FM = QtWidgets.QPushButton(self.frame_buttons_FM)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.button_live_image_FM.sizePolicy().hasHeightForWidth())
+        self.button_live_image_FM.setSizePolicy(sizePolicy)
+        self.button_live_image_FM.setObjectName("button_live_image_FM")
+        self.gridLayout_18.addWidget(self.button_live_image_FM, 3, 2, 1, 1)
         self.gridLayout_4.addWidget(self.frame_buttons_FM, 4, 0, 1, 1)
         self.frame_slider_FM = QtWidgets.QFrame(self.frame_fluorescence)
         self.frame_slider_FM.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -363,6 +361,7 @@ class Ui_MainGui(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_label_fluorescence.sizePolicy().hasHeightForWidth())
         self.frame_label_fluorescence.setSizePolicy(sizePolicy)
+        self.frame_label_fluorescence.setMinimumSize(QtCore.QSize(640, 400))
         self.frame_label_fluorescence.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_label_fluorescence.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_label_fluorescence.setObjectName("frame_label_fluorescence")
@@ -376,11 +375,11 @@ class Ui_MainGui(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_image_FM.sizePolicy().hasHeightForWidth())
         self.label_image_FM.setSizePolicy(sizePolicy)
-        self.label_image_FM.setMinimumSize(QtCore.QSize(640, 400))
-        self.label_image_FM.setMaximumSize(QtCore.QSize(640, 400))
+        self.label_image_FM.setMinimumSize(QtCore.QSize(0, 0))
+        self.label_image_FM.setMaximumSize(QtCore.QSize(650, 410))
         self.label_image_FM.setText("")
         self.label_image_FM.setObjectName("label_image_FM")
-        self.gridLayout_17.addWidget(self.label_image_FM, 2, 0, 1, 1)
+        self.gridLayout_17.addWidget(self.label_image_FM, 2, 1, 1, 1, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         self.gridLayout_4.addWidget(self.frame_label_fluorescence, 1, 0, 1, 1)
         self.frame_save_destination_FM = QtWidgets.QFrame(self.frame_fluorescence)
         self.frame_save_destination_FM.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -507,6 +506,7 @@ class Ui_MainGui(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.frame_label_FIBSEM.sizePolicy().hasHeightForWidth())
         self.frame_label_FIBSEM.setSizePolicy(sizePolicy)
+        self.frame_label_FIBSEM.setMinimumSize(QtCore.QSize(640, 400))
         self.frame_label_FIBSEM.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_label_FIBSEM.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_label_FIBSEM.setObjectName("frame_label_FIBSEM")
@@ -520,11 +520,10 @@ class Ui_MainGui(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_image_FIBSEM.sizePolicy().hasHeightForWidth())
         self.label_image_FIBSEM.setSizePolicy(sizePolicy)
-        self.label_image_FIBSEM.setMinimumSize(QtCore.QSize(640, 400))
         self.label_image_FIBSEM.setMaximumSize(QtCore.QSize(640, 400))
         self.label_image_FIBSEM.setText("")
         self.label_image_FIBSEM.setObjectName("label_image_FIBSEM")
-        self.gridLayout_14.addWidget(self.label_image_FIBSEM, 0, 0, 1, 1)
+        self.gridLayout_14.addWidget(self.label_image_FIBSEM, 0, 0, 1, 1, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
         self.gridLayout.addWidget(self.frame_label_FIBSEM, 2, 0, 1, 2)
         self.frame_save_destination_FIBSEM = QtWidgets.QFrame(self.frame_FIBSEM)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
@@ -706,8 +705,8 @@ class Ui_MainGui(object):
         self.toolButton_correlation_output.setText(_translate("MainGui", "..."))
         self.pushButton_correlation.setText(_translate("MainGui", "Correlation"))
         self.pushButton_milling.setText(_translate("MainGui", "Milling"))
-        self.button_live_image_FM.setText(_translate("MainGui", "Live Basler View"))
         self.button_get_image_FM.setText(_translate("MainGui", "Get Basler Image"))
+        self.button_live_image_FM.setText(_translate("MainGui", "Live Basler View"))
         self.label_slider_FM.setText(_translate("MainGui", "Stack Slider"))
         self.label_save_destination_FM.setText(_translate("MainGui", "Save Destination"))
         self.checkBox_save_destination_FM.setText(_translate("MainGui", "Lock Save Destination"))
@@ -743,3 +742,4 @@ if __name__ == "__main__":
     ui.setupUi(MainGui)
     MainGui.show()
     sys.exit(app.exec_())
+
