@@ -115,7 +115,7 @@ def update_display(self, modality):
 
         self.current_pixmap_FM = QtGui.QPixmap.fromImage(self.current_image_FM)
         self.current_pixmap_FM = self.current_pixmap_FM.scaled(
-            960, 600, QtCore.Qt.KeepAspectRatio)
+            640, 400, QtCore.Qt.KeepAspectRatio)
         self.label_image_FM.setPixmap(self.current_pixmap_FM)
 
         self.fill_save_information("FM")
@@ -140,7 +140,7 @@ def update_display(self, modality):
 
         self.current_pixmap_FIBSEM = QtGui.QPixmap.fromImage(self.current_image_FIBSEM)
         self.current_pixmap_FIBSEM = self.current_pixmap_FIBSEM.scaled(
-            960, 600, QtCore.Qt.KeepAspectRatio)
+            640, 400, QtCore.Qt.KeepAspectRatio)
         self.label_image_FIBSEM.setPixmap(self.current_pixmap_FIBSEM)
 
         self.fill_save_information("FIBSEM")

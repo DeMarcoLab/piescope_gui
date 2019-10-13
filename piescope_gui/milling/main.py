@@ -109,7 +109,6 @@ class _MainWindow(QMainWindow):
         hlay.addWidget(self.exitButton)
         vlay.addLayout(hlay)
 
-
         self.setCentralWidget(widget)
         self.rect = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
         self.wp.canvas.ax11.add_patch(self.rect)

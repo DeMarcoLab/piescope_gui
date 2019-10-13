@@ -250,9 +250,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def milling(self):
         [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
         'Open Milling Image', filter="Images (*.bmp *.tif *.tiff *.jpg)")
-        image = inout.create_array_list(image, "MILLING")
+        if image:
+            image = inout.create_array_list(image, "MILLING")
+        else:
+            print("No image selected")
+            return
         mill.open_milling_window(self, image)
-
 
 
 def main():
