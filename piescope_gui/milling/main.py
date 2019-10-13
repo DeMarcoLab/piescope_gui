@@ -10,6 +10,7 @@ from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
+from piescope_gui import gui_interaction
 
 
 def open_milling_window(main_gui, image):
@@ -161,7 +162,10 @@ class _MainWindow(QMainWindow):
     def on_release(self, event):
         if event.button == 1 and self.dragged:
             print(self.dragged)
-            self.x1_label2.setText("%.1f" % self.x1)
+            try:
+                self.x1_label2.setText("%.1f" % self.x1)
+            except:
+                gui_interaction.error_msg(gui, "Mouse released outside image.  Please try again")
             self.x0_label2.setText("%.1f" % self.xclick)
             self.y0_label2.setText("%.1f" % self.yclick)
             self.y1_label2.setText("%.1f" % self.y1)
