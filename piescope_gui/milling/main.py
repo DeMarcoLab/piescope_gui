@@ -118,7 +118,6 @@ class _MainWindow(QMainWindow):
         self.wp.canvas.mpl_connect('motion_notify_event', self.on_motion)
         self.wp.canvas.mpl_connect('button_release_event', self.on_release)
 
-
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
 
@@ -153,10 +152,6 @@ class _MainWindow(QMainWindow):
                     print("x1 %s", str(self.x1))
                     print("y1 %s", str(self.y1))
                     self.wp.canvas.draw()
-                # else:
-                #     gui_interaction.error_msg(gui, "Make sure to drag inside"
-                #                                    "the image")
-                #     return
 
     def on_release(self, event):
         if event.button == 1 and self.dragged:

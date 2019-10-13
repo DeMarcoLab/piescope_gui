@@ -1,9 +1,7 @@
 import os
 import os.path as p
-import sys
 import time
 
-import matplotlib
 import numpy as np
 import scipy.ndimage as ndi
 import skimage
@@ -14,6 +12,7 @@ import skimage.transform
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
+
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas
@@ -21,9 +20,8 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
-from matplotlib.patches import Rectangle
-from piescope_gui.milling import main as mill
 
+from piescope_gui.milling import main as mill
 from piescope_gui import gui_interaction
 from piescope_gui._version import __version__
 
@@ -65,8 +63,6 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
 
     img1 = image_1
     img2 = image_2
-
-    # print(p.isdir(output_path))
     output = output_path
     if p.isdir(output):
         print(output)
@@ -244,7 +240,6 @@ class _MainWindow(QMainWindow):
             )
 
     def delCP(self):
-
         rows = self.cpTable.selectionModel().selectedRows()
         for row in rows:
             try:
@@ -261,7 +256,6 @@ class _MainWindow(QMainWindow):
         self.wp.canvas.cpChanged = True
 
     def updateGUI(self):
-
         if self.wp.canvas.toolbar._active not in ["", None]:
             self.wp.canvas.pickmode = False
             self.wp.canvas.pickMode_changed = True
@@ -693,4 +687,3 @@ def _timestamp():
     """
     timestamp = time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
     return timestamp
-

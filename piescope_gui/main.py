@@ -156,39 +156,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_last_FIB_image(self, microscope):
         inout.get_last_FIB_image(self, microscope)
 
-
-    # Return to this if there is time
-    # def SEM_live_image(self):
-    #     try:
-    #         inout.SEM_live_imaging(self)
-    #     except:
-    #         print('Live imaging failed')
-    #         return
-    #
-    # def FIB_live_image(self):
-    #     try:
-    #         inout.FIB_live_imaging(self)
-    #     except:
-    #         print('Live imaging failed')
-    #         return
-    #
-    #
-    # def live_imaging_event_listener_FIB(self, stop_event):
-    #     state = True
-    #     while state and not stop_event.isSet():
-    #         try:
-    #             self.get_FIB_image(self.microscope)
-    #         except:
-    #             print("Failling")
-    #
-    # def live_imaging_event_listener_SEM(self, stop_event):
-    #     state = True
-    #     while state and not stop_event.isSet():
-    #         try:
-    #             self.get_SEM_image(self.microscope)
-    #         except:
-    #             print("Failling")
-
     def get_basler_image(self):
         try:
             inout.get_basler_image(self)

@@ -191,6 +191,7 @@ def get_FIB_image(self, microscope):
         print("Not connected to microscope")
         gui_interaction.error_msg(self, message="Not connected to microscope")
 
+
 def get_last_FIB_image(self, microscope):
     if self.microscope:
         try:
@@ -203,21 +204,6 @@ def get_last_FIB_image(self, microscope):
     else:
         print("Not connected to microscope")
         gui_interaction.error_msg(self, message="Not connected to microscope")
-
-
-# Come back to if enough time
-# def FIB_live_imaging(self):
-#     if self.liveCheck is True:
-#         self.stop_event = threading.Event()
-#         self.c_thread = threading.Thread(
-#             target=self.live_imaging_event_listener_FIB, args=(self.stop_event,))
-#         self.c_thread.start()
-#         self.liveCheck = False
-#         self.button_live_image_FIB.setDown(True)
-#     else:
-#         self.stop_event.set()
-#         self.liveCheck = True
-#         self.button_live_image_FIB.setDown(False)
 
 
 def get_SEM_image(self, microscope):
@@ -246,17 +232,3 @@ def get_last_SEM_image(self, microscope):
     else:
         print("Not connected to microscope")
         gui_interaction.error_msg(self, message="Not connected to microscope")
-
-# Come back to if enough time
-# def SEM_live_imaging(self):
-#     if self.liveCheck is True:
-#         self.stop_event = threading.Event()
-#         self.c_thread = threading.Thread(
-#             target=self.live_imaging_event_listener_SEM, args=(self.stop_event,))
-#         self.c_thread.start()
-#         self.liveCheck = False
-#         self.button_live_image_SEM.setDown(True)
-#     else:
-#         self.stop_event.set()
-#         self.liveCheck = True
-#         self.button_live_image_SEM.setDown(False)
