@@ -22,6 +22,7 @@ from matplotlib.backends.backend_qt5agg import \
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 from matplotlib.patches import Rectangle
+from piescope_gui.milling import main as mill
 
 from piescope_gui import gui_interaction
 from piescope_gui._version import __version__
@@ -89,9 +90,10 @@ def correlate_images(image_1, image_2, output, matched_points_dict):
     image_1_aligned = apply_transform(image_1, transformation)
     result = overlay_images(image_1_aligned, image_2)
     save_text(output, transformation, matched_points_dict)
+    output = output + "\\correlated_image.tiff"
     plt.imsave(output, result)
-    plt.imshow(result)
-    plt.show()
+    print(output)
+    mill.open_milling_window(gui, result)
     return result
 
 
