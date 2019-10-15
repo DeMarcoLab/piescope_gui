@@ -646,8 +646,7 @@ def overlay_images(image_1, image_2, transparency=0.5):
     return blended
 
 
-def save_text(output_filename,
-              transformation, matched_points_dict):
+def save_text(output_filename, transformation, matched_points_dict):
     """Save text summary of transformation matrix and image control points.
 
     Parameters
