@@ -37,6 +37,13 @@ Pytest is used for this project. To run the tests:
    pytest
 
 
+To generate new test image baselines with the pytest-mpl plugin, run:
+
+.. code-block::
+
+   pytest --mpl-generate-path=piescope_gui/tests/baseline
+
+
 Features
 --------
 
