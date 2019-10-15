@@ -1,9 +1,9 @@
 import pytest
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QFileDialog
-
+from PyQt5.QtWidgets import QDialog
 from piescope_gui import main
+from unittest import mock
 
 
 @pytest.fixture
@@ -31,16 +31,29 @@ def test_window_geometry(window):
     assert window.height() < 739 + margin_of_error
 
 
-def test_open_file(window, qtbot, mocker):
-    """Test the Open File item of the File submenu.
+def test_open_images_FM(window, qtbot):
+    """Check that when opening a FM image from the drop down menu,
+    calls the correct function with correct input parameter 'FM'"""
+    with mock.patch('piescope_gui.gui_interaction.open_images') as mock_open:
+        qtbot.mouseClick(window.menuOpen, Qt.LeftButton)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Down)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Right)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Enter)
+        mock_open.assert_called_once()
+        mock_open.assert_called_with(window, 'FM')
 
-    Qtbot clicks on the file sub menu and then navigates to the Open File item.
-    Mock creates an object to be passed to the QFileDialog.
-    """
-    qtbot.mouseClick(window.menuOpen, Qt.LeftButton)
-    qtbot.keyClick(window.menuOpen, Qt.Key_Down)
-    mocker.patch.object(QFileDialog, 'getOpenFileName', return_value=('', ''))
-    qtbot.keyClick(window.menuOpen, Qt.Key_Enter)
+
+def test_open_images_FIBSEM(window, qtbot):
+    """Check that when opening a FIBSEM image from the drop down menu,
+    calls the correct function with correct input parameter 'FIBSEM'"""
+    with mock.patch('piescope_gui.gui_interaction.open_images') as mock_open:
+        qtbot.mouseClick(window.menuOpen, Qt.LeftButton)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Down)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Right)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Down)
+        qtbot.keyClick(window.menuOpen, Qt.Key_Enter)
+        mock_open.assert_called_once()
+        mock_open.assert_called_with(window, 'FIBSEM')
 
 
 def test_about_dialog(window, qtbot, mocker):
@@ -53,3 +66,4 @@ def test_about_dialog(window, qtbot, mocker):
     qtbot.keyClick(window.menuHelp, Qt.Key_Down)
     mocker.patch.object(QDialog, 'exec_', return_value='accept')
     qtbot.keyClick(window.menuHelp, Qt.Key_Enter)
+
