@@ -95,14 +95,16 @@ def basler_live_imaging(self):
 def initialise_stage():
     try:
         stage = objective.StageController()
-    except:
+    except Exception as e:
+        print(e)
         print('Could not connect to stage')
         return
 
     try:
         stage.initialise_system_parameters()
         print("Stage initialised")
-    except:
+    except Exception as e:
+        print(e)
         print('Could not initialise stage parameters')
         return
 
@@ -110,13 +112,15 @@ def initialise_stage():
 def move_absolute(distance):
     try:
         stage = objective.StageController()
-    except:
+    except Exception as e:
+        print(e)
         print('Could not connect to stage')
         return
 
     try:
         stage.move_absolute(distance)
-    except:
+    except Exception as e:
+        print(e)
         print('Could not move the stage by %s' % distance)
         return
 
@@ -124,13 +128,15 @@ def move_absolute(distance):
 def move_relative(distance):
     try:
         stage = objective.StageController()
-    except:
+    except Exception as e:
+        print(e)
         print('Could not connect to stage')
         return
 
     try:
         stage.move_relative(distance)
-    except:
+    except Exception as e:
+        print(e)
         print('Could not move the stage by %s' % distance)
         return
 
@@ -144,7 +150,8 @@ def current_position():
 def connect_to_microscope(self):
     try:
         self.microscope = fibsem.initialize()
-    except:
+    except Exception as e:
+        print(e)
         print("Failed to connect to microscope")
         gui_interaction.error_msg(self, message="Could not connect to microscope")
         return
@@ -154,7 +161,8 @@ def move_to_light_microscope(self, microscope, x, y):
     if self.microscope is not None:
         try:
             fibsem.move_to_light_microscope(microscope, x, y)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not move to light microscope")
             gui_interaction.error_msg(self,
                                       message="Could not move to light microscope")
@@ -168,7 +176,8 @@ def move_to_electron_microscope(self, microscope, x, y):
     if self.microscope:
         try:
             fibsem.move_to_electron_microscope(microscope, x, y)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not move to electron microscope")
             gui_interaction.error_msg(self,
                                       message="Could not move to electron microscope")
@@ -182,7 +191,8 @@ def get_FIB_image(self, microscope):
     if self.microscope:
         try:
             fibsem.new_ion_image(microscope)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not take ion beam image")
             gui_interaction.error_msg(self,
                                       message="Could not take ion beam image")
@@ -196,7 +206,8 @@ def get_last_FIB_image(self, microscope):
     if self.microscope:
         try:
             fibsem.last_ion_image(microscope)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not take ion beam image")
             gui_interaction.error_msg(self,
                                       message="Could not get last ion beam image")
@@ -210,7 +221,8 @@ def get_SEM_image(self, microscope):
     if self.microscope:
         try:
             fibsem.new_electron_image(microscope)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not take electron beam image")
             gui_interaction.error_msg(self,
                                       message="Could not take electron beam image")
@@ -224,7 +236,8 @@ def get_last_SEM_image(self, microscope):
     if self.microscope:
         try:
             fibsem.last_electron_image(microscope)
-        except:
+        except Exception as e:
+            print(e)
             print("Could not take ion beam image")
             gui_interaction.error_msg(self,
                                       message="Could not get last electron beam image")

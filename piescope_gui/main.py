@@ -159,14 +159,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_basler_image(self):
         try:
             inout.get_basler_image(self)
-        except:
+        except Exception as e:
+            print(e)
             print('Could not grab basler image')
             return
 
     def basler_live_image(self):
         try:
             inout.basler_live_imaging(self)
-        except:
+        except Exception as e:
+            print(e)
             print('Live imaging failed')
             return
 
@@ -176,7 +178,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def save_image(self, modality):
         try:
             interface.save_image(self, modality)
-        except:
+        except Exception as e:
+            print(e)
             print('Could not save image')
             interface.error_msg(self, "Could not save image.  Check to make"
                                       "sure save path is valid and you have "
