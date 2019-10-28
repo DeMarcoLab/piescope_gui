@@ -178,6 +178,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             interface.save_image(self, modality)
         except:
             print('Could not save image')
+            interface.error_msg(self, "Could not save image.  Check to make"
+                                      "sure save path is valid and you have "
+                                      "permissions to save there.")
             return
 
     def update_display(self, modality):
@@ -186,8 +189,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def fill_save_information(self, modality):
         interface.fill_save_information(self, modality)
 
-    def fill_destination(self):
-        interface.fill_destination(self)
+    def fill_destination(self, modality):
+        interface.fill_destination(self, modality)
 
     def update_laser_dict(self, laser):
         inout.update_laser_dict(self, laser)

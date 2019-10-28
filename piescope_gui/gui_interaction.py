@@ -40,9 +40,9 @@ def save_image(self, modality):
                 display_image = self.array_list_FM
                 print(display_image)
             else:
-                display_image = self.array_list_FM[self.slider_stack.value() - 1]
+                display_image = self.array_list_FM[self.slider_stack_FM.value() - 1]
                 print(display_image)
-            [save_base, ext] = p.splitext(self.lineEdit_save_filename.text())
+            [save_base, ext] = p.splitext(self.lineEdit_save_filename_FM.text())
             dest = self.lineEdit_save_destination_FM.text() + self.delim \
                    + save_base + ".tiff"
             dir_exists = p.isdir(self.lineEdit_save_destination_FM.text())
@@ -64,15 +64,15 @@ def save_image(self, modality):
                     inout.save_image(display_image, dest)
 
     elif modality == "FIBSEM":
-        if self.current_image:
-            max_value = len(self.string_list)
+        if self.current_image_FIBSEM:
+            max_value = len(self.string_list_FIBSEM)
             if max_value == 1:
                 display_image = self.array_list_FIBSEM
                 print(display_image)
             else:
-                display_image = self.array_list_FIBSEM[self.slider_stack.value() - 1]
+                display_image = self.array_list_FIBSEM[self.slider_stack_FIBSEM.value() - 1]
                 print(display_image)
-            [save_base, ext] = p.splitext(self.lineEdit_save_filename.text())
+            [save_base, ext] = p.splitext(self.lineEdit_save_filename_FIBSEM.text())
             dest = self.lineEdit_save_destination_FIBSEM.text() + self.delim \
                    + save_base + ".tiff"
             dir_exists = p.isdir(self.lineEdit_save_destination_FIBSEM.text())
@@ -154,10 +154,9 @@ def fill_save_information(self, modality):
         [destination, self.save_name] = p.split(self.current_path_FM)
 
         if not self.checkBox_save_destination_FM.isChecked():
-
             destination = destination + self.delim
             self.save_destination_FM = destination
-            self.lineEdit_save_destination_FM.setText(self.save_destination)
+            self.lineEdit_save_destination_FM.setText(self.save_destination_FM)
 
         self.lineEdit_save_filename_FM.setText(self.save_name)
 
@@ -167,7 +166,7 @@ def fill_save_information(self, modality):
         if not self.checkBox_save_destination_FIBSEM.isChecked():
             destination = destination + self.delim
             self.save_destination_FIBSEM = destination
-            self.lineEdit_save_destination_FIBSEM.setText(self.save_destination)
+            self.lineEdit_save_destination_FIBSEM.setText(self.save_destination_FIBSEM)
 
         self.lineEdit_save_filename_FIBSEM.setText(self.save_name)
 
