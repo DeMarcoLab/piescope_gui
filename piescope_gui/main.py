@@ -127,8 +127,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         laser_dict = self.laser_dict
         no_z_slices = self.lineEdit_slice_number.text()
         z_slice_distance = self.lineEdit_slice_distance.text()
-        volume.volume_acquisition(self, exposure_time, laser_dict,
+        try:
+            volume.volume_acquisition(self, exposure_time, laser_dict,
                                   no_z_slices, z_slice_distance)
+        except Exception as e:
+            print(e)
 
     def connect_to_microscope(self):
         inout.connect_to_microscope(self)
