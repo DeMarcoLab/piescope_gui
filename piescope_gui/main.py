@@ -53,47 +53,77 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.save_destination_FIBSEM = ""
 
     def setup_connections(self):
-        self.actionOpen_FM_Image.triggered.connect(lambda: self.open_images("FM"))
-        self.actionOpen_FIBSEM_Image.triggered.connect(lambda: self.open_images("FIBSEM"))
+        self.actionOpen_FM_Image.triggered.connect(
+            lambda: self.open_images("FM"))
+        self.actionOpen_FIBSEM_Image.triggered.connect(
+            lambda: self.open_images("FIBSEM"))
 
-        self.actionSave_FM_Image.triggered.connect(lambda: self.save_image("FM"))
-        self.actionSave_FIBSEM_Image.triggered.connect(lambda: self.save_image("FIBSEM"))
+        self.actionSave_FM_Image.triggered.connect(
+            lambda: self.save_image("FM"))
+        self.actionSave_FIBSEM_Image.triggered.connect(
+            lambda: self.save_image("FIBSEM"))
 
-        self.slider_stack_FM.valueChanged.connect(lambda: self.update_display("FM"))
-        self.slider_stack_FIBSEM.valueChanged.connect(lambda: self.update_display("FIBSEM"))
+        self.slider_stack_FM.valueChanged.connect(
+            lambda: self.update_display("FM"))
+        self.slider_stack_FIBSEM.valueChanged.connect(
+            lambda: self.update_display("FIBSEM"))
 
-        self.button_save_destination_FM.clicked.connect(lambda: self.fill_destination("FM"))
-        self.button_save_destination_FIBSEM.clicked.connect(lambda: self.fill_destination("FIBSEM"))
+        self.button_save_destination_FM.clicked.connect(
+            lambda: self.fill_destination("FM"))
+        self.button_save_destination_FIBSEM.clicked.connect(
+            lambda: self.fill_destination("FIBSEM"))
 
-        self.checkBox_laser1.clicked.connect(lambda: piescope_hardware.update_laser_dict(self, "laser640"))
-        self.checkBox_laser2.clicked.connect(lambda: piescope_hardware.update_laser_dict(self, "laser561"))
-        self.checkBox_laser3.clicked.connect(lambda: piescope_hardware.update_laser_dict(self, "laser488"))
-        self.checkBox_laser4.clicked.connect(lambda: piescope_hardware.update_laser_dict(self, "laser405"))
+        self.checkBox_laser1.clicked.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser640"))
+        self.checkBox_laser2.clicked.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser561"))
+        self.checkBox_laser3.clicked.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser488"))
+        self.checkBox_laser4.clicked.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser405"))
 
-        self.slider_laser1.valueChanged.connect(lambda: piescope_hardware.update_laser_dict(self, "laser640"))
-        self.slider_laser2.valueChanged.connect(lambda: piescope_hardware.update_laser_dict(self, "laser561"))
-        self.slider_laser3.valueChanged.connect(lambda: piescope_hardware.update_laser_dict(self, "laser488"))
-        self.slider_laser4.valueChanged.connect(lambda: piescope_hardware.update_laser_dict(self, "laser405"))
+        self.slider_laser1.valueChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser640"))
+        self.slider_laser2.valueChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser561"))
+        self.slider_laser3.valueChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser488"))
+        self.slider_laser4.valueChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser405"))
 
-        self.button_get_image_FIB.clicked.connect(lambda: piescope_hardware.get_FIB_image(self, self.microscope))
-        self.button_get_image_SEM.clicked.connect(lambda: piescope_hardware.get_SEM_image(self, self.microscope))
-        self.button_last_image_FIB.clicked.connect(lambda: piescope_hardware.get_last_FIB_image(self, self.microscope))
-        self.button_last_image_SEM.clicked.connect(lambda: piescope_hardware.get_last_SEM_image(self, self.microscope))
+        self.button_get_image_FIB.clicked.connect(
+            lambda: piescope_hardware.get_FIB_image(self, self.microscope))
+        self.button_get_image_SEM.clicked.connect(
+            lambda: piescope_hardware.get_SEM_image(self, self.microscope))
+        self.button_last_image_FIB.clicked.connect(
+            lambda: piescope_hardware.get_last_FIB_image(self,
+                                                         self.microscope))
+        self.button_last_image_SEM.clicked.connect(
+            lambda: piescope_hardware.get_last_SEM_image(self,
+                                                         self.microscope))
 
-        self.button_get_image_FM.clicked.connect(lambda: piescope_hardware.get_basler_image(self))
-        self.button_live_image_FM.clicked.connect(lambda: piescope_hardware.basler_live_imaging(self))
+        self.button_get_image_FM.clicked.connect(
+            lambda: piescope_hardware.get_basler_image(self))
+        self.button_live_image_FM.clicked.connect(
+            lambda: piescope_hardware.basler_live_imaging(self))
 
-        self.pushButton_initialise_stage.clicked.connect(piescope_hardware.initialise_stage)
+        self.pushButton_initialise_stage.clicked.connect(
+            piescope_hardware.initialise_stage)
         self.pushButton_move_absolute.clicked.connect(
-            lambda: piescope_hardware.move_absolute(int(self.lineEdit_move_absolute.text())))
+            lambda: piescope_hardware.move_absolute(
+                int(self.lineEdit_move_absolute.text())))
         self.pushButton_move_relative.clicked.connect(
-            lambda: piescope_hardware.move_relative(int(self.lineEdit_move_relative.text())))
+            lambda: piescope_hardware.move_relative(
+                int(self.lineEdit_move_relative.text())))
 
-        self.connect_microscope.clicked.connect(piescope_hardware.connect_to_microscope)
+        self.connect_microscope.clicked.connect(
+            piescope_hardware.connect_to_microscope)
         self.to_light_microscope.clicked.connect(
-            lambda: piescope_hardware.move_to_light_microscope(self, self.microscope, 50.0e-3, 0.0))
+            lambda: piescope_hardware.move_to_light_microscope(
+                self, self.microscope, 50.0e-3, 0.0))
         self.to_electron_microscope.clicked.connect(
-            lambda: piescope_hardware.move_to_electron_microscope(self, self.microscope, -50.0e-3, 0.0))
+            lambda: piescope_hardware.move_to_electron_microscope(
+                self, self.microscope, -50.0e-3, 0.0))
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
         self.pushButton_correlation.clicked.connect(self.correlateim)
@@ -103,24 +133,32 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         """Open image files and display the first"""
         try:
             if modality == "FM":
-                [self.string_list_FM, ext] = QtWidgets.QFileDialog.getOpenFileNames(
-                    self, 'Open File', filter="Images (*.bmp *.tif *.tiff *.jpg)")
+                [self.string_list_FM,
+                 ext] = QtWidgets.QFileDialog.getOpenFileNames(
+                    self, 'Open File',
+                    filter="Images (*.bmp *.tif *.tiff *.jpg)")
 
                 if self.string_list_FM:
-                    self.array_list_FM = piescope_hardware.create_array_list(self.string_list_FM, "FM")
+                    self.array_list_FM = piescope_hardware.create_array_list(
+                        self.string_list_FM, "FM")
                     self.slider_stack_FM.setMaximum(len(self.string_list_FM))
                     self.spinbox_slider_FM.setMaximum(len(self.string_list_FM))
                     self.slider_stack_FM.setValue(1)
                     self.update_display("FM")
 
             elif modality == "FIBSEM":
-                [self.string_list_FIBSEM, ext] = QtWidgets.QFileDialog.getOpenFileNames(
-                    self, 'Open File', filter="Images (*.bmp *.tif *.tiff *.jpg)")
+                [self.string_list_FIBSEM,
+                 ext] = QtWidgets.QFileDialog.getOpenFileNames(
+                    self, 'Open File',
+                    filter="Images (*.bmp *.tif *.tiff *.jpg)")
 
                 if self.string_list_FIBSEM:
-                    self.array_list_FIBSEM = piescope_hardware.create_array_list(self.string_list_FIBSEM, "FIBSEM")
-                    self.slider_stack_FIBSEM.setMaximum(len(self.string_list_FIBSEM))
-                    self.spinbox_slider_FIBSEM.setMaximum(len(self.string_list_FIBSEM))
+                    self.array_list_FIBSEM = piescope_hardware.\
+                        create_array_list(self.string_list_FIBSEM, "FIBSEM")
+                    self.slider_stack_FIBSEM.setMaximum(
+                        len(self.string_list_FIBSEM))
+                    self.spinbox_slider_FIBSEM.setMaximum(
+                        len(self.string_list_FIBSEM))
                     self.slider_stack_FIBSEM.setValue(1)
                     self.update_display("FIBSEM")
         except Exception as e:
@@ -137,12 +175,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_image = self.array_list_FM
                         print(display_image)
                     else:
-                        display_image = self.array_list_FM[self.slider_stack_FM.value() - 1]
+                        display_image = self.array_list_FM[
+                            self.slider_stack_FM.value() - 1]
                         print(display_image)
-                    [save_base, ext] = p.splitext(self.lineEdit_save_filename_FM.text())
+                    [save_base, ext] = p.splitext(
+                        self.lineEdit_save_filename_FM.text())
                     dest = self.lineEdit_save_destination_FM.text() + self.delim \
                            + save_base + ".tiff"
-                    dir_exists = p.isdir(self.lineEdit_save_destination_FM.text())
+                    dir_exists = p.isdir(
+                        self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
                         os.makedirs(self.lineEdit_save_destination_FM.text())
                         piescope_hardware.save_image(display_image, dest)
@@ -154,11 +195,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                             count = 1
                             while exists:
                                 dest = self.lineEdit_save_destination_FM.text() + \
-                                       self.delim + save_base + "(" + str(count) + \
+                                       self.delim + save_base + "(" + str(
+                                    count) + \
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                piescope_hardware.save_image(display_image, dest)
+                                piescope_hardware.save_image(display_image,
+                                                             dest)
                 else:
                     logger.error("No image to save")
                     self.error_msg("No image to save")
@@ -170,14 +213,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_image = self.array_list_FIBSEM
                         print(display_image)
                     else:
-                        display_image = self.array_list_FIBSEM[self.slider_stack_FIBSEM.value() - 1]
+                        display_image = self.array_list_FIBSEM[
+                            self.slider_stack_FIBSEM.value() - 1]
                         print(display_image)
-                    [save_base, ext] = p.splitext(self.lineEdit_save_filename_FIBSEM.text())
-                    dest = self.lineEdit_save_destination_FIBSEM.text() + self.delim \
-                           + save_base + ".tiff"
-                    dir_exists = p.isdir(self.lineEdit_save_destination_FIBSEM.text())
+                    [save_base, ext] = p.splitext(
+                        self.lineEdit_save_filename_FIBSEM.text())
+                    dest = self.lineEdit_save_destination_FIBSEM.text() + \
+                           self.delim + save_base + ".tiff"
+                    dir_exists = p.isdir(
+                        self.lineEdit_save_destination_FIBSEM.text())
                     if not dir_exists:
-                        os.makedirs(self.lineEdit_save_destination_FIBSEM.text())
+                        os.makedirs(
+                            self.lineEdit_save_destination_FIBSEM.text())
                         piescope_hardware.save_image(display_image, dest)
                     else:
                         exists = p.isfile(dest)
@@ -187,11 +234,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                             count = 1
                             while exists:
                                 dest = self.lineEdit_save_destination_FIBSEM.text() + \
-                                       self.delim + save_base + "(" + str(count) + \
+                                       self.delim + save_base + "(" + str(
+                                    count) + \
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                piescope_hardware.save_image(display_image, dest)
+                                piescope_hardware.save_image(display_image,
+                                                             dest)
                 else:
                     logger.error("No image to save")
                     self.error_msg("No image to save")
@@ -218,9 +267,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 print(self.current_image_FM)
                 self.current_path_FM = p.normpath(image_string)
 
-                self.status.setText("Image " + slider_value + " of " + max_value)
+                self.status.setText(
+                    "Image " + slider_value + " of " + max_value)
 
-                self.current_pixmap_FM = QtGui.QPixmap.fromImage(self.current_image_FM)
+                self.current_pixmap_FM = QtGui.QPixmap.fromImage(
+                    self.current_image_FM)
                 self.current_pixmap_FM = self.current_pixmap_FM.scaled(
                     640, 400, QtCore.Qt.KeepAspectRatio)
                 self.label_image_FM.setPixmap(self.current_pixmap_FM)
@@ -243,9 +294,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 print(self.current_image_FIBSEM)
                 self.current_path_FIBSEM = p.normpath(image_string)
 
-                self.status.setText("Image " + slider_value + " of " + max_value)
+                self.status.setText(
+                    "Image " + slider_value + " of " + max_value)
 
-                self.current_pixmap_FIBSEM = QtGui.QPixmap.fromImage(self.current_image_FIBSEM)
+                self.current_pixmap_FIBSEM = QtGui.QPixmap.fromImage(
+                    self.current_image_FIBSEM)
                 self.current_pixmap_FIBSEM = self.current_pixmap_FIBSEM.scaled(
                     640, 400, QtCore.Qt.KeepAspectRatio)
                 self.label_image_FIBSEM.setPixmap(self.current_pixmap_FIBSEM)
@@ -266,17 +319,20 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 if not self.checkBox_save_destination_FM.isChecked():
                     destination = destination + self.delim
                     self.save_destination_FM = destination
-                    self.lineEdit_save_destination_FM.setText(self.save_destination_FM)
+                    self.lineEdit_save_destination_FM.setText(
+                        self.save_destination_FM)
 
                 self.lineEdit_save_filename_FM.setText(self.save_name)
 
             elif modality == "FIBSEM":
-                [destination, self.save_name] = p.split(self.current_path_FIBSEM)
+                [destination, self.save_name] = p.split(
+                    self.current_path_FIBSEM)
 
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
                     destination = destination + self.delim
                     self.save_destination_FIBSEM = destination
-                    self.lineEdit_save_destination_FIBSEM.setText(self.save_destination_FIBSEM)
+                    self.lineEdit_save_destination_FIBSEM.setText(
+                        self.save_destination_FIBSEM)
 
                 self.lineEdit_save_filename_FIBSEM.setText(self.save_name)
         except Exception as e:
@@ -298,21 +354,38 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.save_destination_FIBSEM = p.normpath(
                         QtWidgets.QFileDialog.getExistingDirectory(
                             self, 'File Destination'))
-                    destination_text = self.save_destination_FIBSEM + self.delim
-                    self.lineEdit_save_destination_FIBSEM.setText(destination_text)
+                    destination_text = \
+                        self.save_destination_FIBSEM + self.delim
+                    self.lineEdit_save_destination_FIBSEM.setText(
+                        destination_text)
         except Exception as e:
             logger.exception(e)
             self.error_msg(str(e))
 
     def acquire_volume(self):
-        exposure_time = self.lineEdit_exposure.text()
-        laser_dict = self.laser_dict
-        no_z_slices = self.lineEdit_slice_number.text()
-        z_slice_distance = self.lineEdit_slice_distance.text()
+
         try:
+            exposure_time = int(self.lineEdit_exposure.text())
+            if exposure_time < 0:
+                raise ValueError("Exposure Time must be a positive integer")
+
+            laser_dict = self.laser_dict
+            if laser_dict == {}:
+                raise ValueError("No lasers selected")
+
+            no_z_slices = int(self.lineEdit_slice_number.text())
+            if no_z_slices < 0:
+                raise ValueError("Number of slices must be a positive integer")
+
+            z_slice_distance = int(self.lineEdit_slice_distance.text())
+            if z_slice_distance < 0:
+                raise ValueError("Slice distance must be a positive integer")
+
             volume_function.volume_acquisition(self, exposure_time, laser_dict,
-                                  no_z_slices, z_slice_distance)
+                                               no_z_slices, z_slice_distance)
+
         except Exception as e:
+            self.error_msg(str(e))
             print(e)
 
     def correlateim(self):
@@ -320,11 +393,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         input_filename_2 = self.array_list_FIBSEM
         output_filename = self.correlation_output_path.text()
         corelation_function.open_correlation_window(self, input_filename_1,
-                                          input_filename_2, output_filename)
+                                                    input_filename_2,
+                                                    output_filename)
 
     def milling(self):
         [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
-        'Open Milling Image', filter="Images (*.bmp *.tif *.tiff *.jpg)")
+            'Open Milling Image', filter="Images (*.bmp *.tif *.tiff *.jpg)")
         if image:
             image = piescope_hardware.create_array_list(image, "MILLING")
         else:
