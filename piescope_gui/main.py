@@ -413,15 +413,20 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             print(e)
 
     def milling(self):
-        [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
-            'Open Milling Image', filter="Images (*.bmp *.tif *.tiff *.jpg)")
-        if image:
-            image = piescope_hardware.create_array_list(image, "MILLING")
-        else:
-            print("No image selected")
-            return
-        milling_function.open_milling_window(self, image)
+        try:
+            [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
+                'Open Milling Image',
+                filter="Images (*.bmp *.tif *.tiff *.jpg)")
+            if image:
+                image = piescope_hardware.create_array_list(image, "MILLING")
+            else:
+                raise ValueError("No image selected")
+            milling_function.open_milling_window(self, image)
 
+        except Exception as e:
+            self.error_msg(str(e))
+            print(e)
+            
     def live_imaging_event_listener_FM(self, stop_event):
         state = True
         while state and not stop_event.isSet():
