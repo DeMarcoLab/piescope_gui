@@ -411,14 +411,20 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             while p.isfile(output_filename + image_ext + "_" + str(copy_count) + ".tiff"):
                 copy_count = copy_count + 1
 
+            tempfile = output_filename + image_ext + "_" + str(copy_count) + "temp_.tiff"
+            open(tempfile, "w+")
+
             output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
-            open(output_filename, "w+")
 
             correlation_function.open_correlation_window(self, input_filename_1,
                                                         input_filename_2,
                                                         output_filename)
+            if p.isfile(tempfile):
+                os.remove(tempfile)
 
         except Exception as e:
+            if p.isfile(tempfile):
+                os.remove(tempfile)
             self.error_msg(str(e))
             print(e)
 
