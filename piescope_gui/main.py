@@ -389,12 +389,28 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             print(e)
 
     def correlateim(self):
-        input_filename_1 = self.array_list_FM
-        input_filename_2 = self.array_list_FIBSEM
-        output_filename = self.correlation_output_path.text()
-        corelation_function.open_correlation_window(self, input_filename_1,
-                                                    input_filename_2,
-                                                    output_filename)
+        try:
+            input_filename_1 = self.array_list_FM
+            print(type(input_filename_1))
+
+            if input_filename_1 == [] or input_filename_1 == "":
+                raise ValueError("No first image selected")
+            input_filename_2 = self.array_list_FIBSEM
+            if input_filename_2 == [] or input_filename_2 == "":
+                raise ValueError("No second image selected")
+
+            output_filename = self.correlation_output_path.text()
+            if output_filename == "":
+                raise ValueError("No path selected")
+            if not os.access(output_filename, os.R_OK):
+                raise PermissionError("Cannot write to this directory")
+
+            corelation_function.open_correlation_window(self, input_filename_1,
+                                                        input_filename_2,
+                                                        output_filename)
+        except Exception as e:
+            self.error_msg(str(e))
+            print(e)
 
     def milling(self):
         [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
