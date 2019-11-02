@@ -3,7 +3,7 @@ import os
 
 import piescope.lm.volume as volume_function
 import piescope_gui.milling.main as milling_function
-import piescope_gui.correlation.main as corelation_function
+import piescope_gui.correlation.main as correlation_function
 import piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
 
@@ -402,12 +402,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             output_filename = self.correlation_output_path.text()
             if output_filename == "":
                 raise ValueError("No path selected")
-            if not os.access(output_filename, os.R_OK):
-                raise PermissionError("Cannot write to this directory")
+            if not p.isdir(output_filename):
+                raise ValueError("Please select a valid directory")
 
-            corelation_function.open_correlation_window(self, input_filename_1,
+            image_ext = "\\correlated_image_" + correlation_function._timestamp()
+            copy_count = 1
+
+            while p.isfile(output_filename + image_ext + "_" + str(copy_count) + ".tiff"):
+                copy_count = copy_count + 1
+
+            output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
+            open(output_filename, "w+")
+
+            correlation_function.open_correlation_window(self, input_filename_1,
                                                         input_filename_2,
                                                         output_filename)
+
         except Exception as e:
             self.error_msg(str(e))
             print(e)
@@ -426,7 +436,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             self.error_msg(str(e))
             print(e)
-            
+
     def live_imaging_event_listener_FM(self, stop_event):
         state = True
         while state and not stop_event.isSet():
