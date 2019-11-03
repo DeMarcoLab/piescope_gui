@@ -22,7 +22,6 @@ from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 
 from piescope_gui.milling import main as mill
-from piescope_gui import gui_interaction
 from piescope_gui._version import __version__
 
 
@@ -35,41 +34,26 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
     global output
 
     gui = main_gui
-    try:
-        if type(image_1) == str:
-            print("Image 1 given as path")
-            image_1 = skimage.color.gray2rgb(plt.imread(image_1))
-        else:
-            print("Image 1 given as array")
-            image_1 = skimage.color.gray2rgb(image_1)
-    except:
-        gui_interaction.error_msg(gui, "Could not load image 1, make sure"
-                                       " there is an image displayed.")
-        return
 
-    try:
-        if type(image_2) == str:
-            print("Image 2 given as path")
-            image_2 = skimage.color.gray2rgb(plt.imread(image_2))
-        else:
-            print("Image 2 given as array")
-            image_2 = skimage.color.gray2rgb(image_2)
-    except:
-        gui_interaction.error_msg(gui, "Could not load image 2, make sure"
-                                       " there is an image displayed.")
-        return
+    if type(image_1) == str:
+        print("Image 1 given as path")
+        image_1 = skimage.color.gray2rgb(plt.imread(image_1))
+    else:
+        print("Image 1 given as array")
+        image_1 = skimage.color.gray2rgb(image_1)
+
+    if type(image_2) == str:
+        print("Image 2 given as path")
+        image_2 = skimage.color.gray2rgb(plt.imread(image_2))
+    else:
+        print("Image 2 given as array")
+        image_2 = skimage.color.gray2rgb(image_2)
 
     image_1 = skimage.transform.resize(image_1, image_2.shape)
 
     img1 = image_1
     img2 = image_2
     output = output_path
-    if p.isdir(output):
-        print(output)
-    else:
-        gui_interaction.error_msg(
-            gui, "Error in defining an output path for correlated image")
-        return
 
     window = _MainWindow()
     window.show()
@@ -86,10 +70,10 @@ def correlate_images(image_1, image_2, output, matched_points_dict):
     image_1_aligned = apply_transform(image_1, transformation)
     result = overlay_images(image_1_aligned, image_2)
     save_text(output, transformation, matched_points_dict)
-    output = output + "\\correlated_image.tiff"
     plt.imsave(output, result)
     print(output)
     mill.open_milling_window(gui, result)
+
     return result
 
 
