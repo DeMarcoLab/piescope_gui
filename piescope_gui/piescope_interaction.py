@@ -3,9 +3,9 @@ import skimage.io as io
 import threading
 from piescope.lm import detector
 from piescope import fibsem
-from piescope_gui import gui_interaction
 from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
+import piescope_gui.main as main
 
 
 def save_image(image, dest):
@@ -153,7 +153,7 @@ def connect_to_microscope(self):
     except Exception as e:
         print(e)
         print("Failed to connect to microscope")
-        gui_interaction.error_msg(self, message="Could not connect to microscope")
+        self.error_msg(message="Could not connect to microscope")
         return
 
 
@@ -164,12 +164,9 @@ def move_to_light_microscope(self, microscope, x, y):
         except Exception as e:
             print(e)
             print("Could not move to light microscope")
-            gui_interaction.error_msg(self,
-                                      message="Could not move to light microscope")
             return
     else:
         print("Not connected to microscope")
-        gui_interaction.error_msg(self, message="Not connected to microscope")
 
 
 def move_to_electron_microscope(self, microscope, x, y):
@@ -179,69 +176,56 @@ def move_to_electron_microscope(self, microscope, x, y):
         except Exception as e:
             print(e)
             print("Could not move to electron microscope")
-            gui_interaction.error_msg(self,
-                                      message="Could not move to electron microscope")
-            return
+            # return
     else:
         print("Not connected to microscope")
-        gui_interaction.error_msg(self, message="Not connected to microscope")
 
 
-def get_FIB_image(self, microscope):
-    if self.microscope:
+def get_FIB_image(gui, microscope):
+    if gui.microscope:
         try:
             fibsem.new_ion_image(microscope)
         except Exception as e:
             print(e)
             print("Could not take ion beam image")
-            gui_interaction.error_msg(self,
-                                      message="Could not take ion beam image")
             return
     else:
         print("Not connected to microscope")
-        gui_interaction.error_msg(self, message="Not connected to microscope")
 
 
-def get_last_FIB_image(self, microscope):
-    if self.microscope:
+def get_last_FIB_image(gui, microscope):
+    if gui.microscope:
         try:
             fibsem.last_ion_image(microscope)
         except Exception as e:
             print(e)
             print("Could not take ion beam image")
-            gui_interaction.error_msg(self,
-                                      message="Could not get last ion beam image")
             return
     else:
         print("Not connected to microscope")
-        gui_interaction.error_msg(self, message="Not connected to microscope")
 
 
-def get_SEM_image(self, microscope):
-    if self.microscope:
+def get_SEM_image(gui, microscope):
+    if gui.microscope:
         try:
             fibsem.new_electron_image(microscope)
         except Exception as e:
             print(e)
             print("Could not take electron beam image")
-            gui_interaction.error_msg(self,
-                                      message="Could not take electron beam image")
+
             return
     else:
         print("Not connected to microscope")
-        gui_interaction.error_msg(self, message="Not connected to microscope")
 
 
-def get_last_SEM_image(self, microscope):
-    if self.microscope:
+def get_last_SEM_image(gui, microscope):
+    if gui.microscope:
         try:
             fibsem.last_electron_image(microscope)
         except Exception as e:
             print(e)
             print("Could not take ion beam image")
-            gui_interaction.error_msg(self,
-                                      message="Could not get last electron beam image")
             return
     else:
         print("Not connected to microscope")
-        gui_interaction.error_msg(self, message="Not connected to microscope")
+
