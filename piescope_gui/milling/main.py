@@ -10,7 +10,6 @@ from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
-from piescope_gui import gui_interaction
 
 
 def open_milling_window(main_gui, image):
