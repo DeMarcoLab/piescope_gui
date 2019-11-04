@@ -2,6 +2,7 @@
 import skimage.io as io
 import threading
 from piescope.lm import detector
+from piescope.lm import laser
 from piescope import fibsem
 from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
@@ -72,9 +73,33 @@ def update_laser_dict(self, laser):
         self.error_msg(str(e))
 
 
-def get_basler_image(self):
+def get_basler_image(self, wavelength, exposure):
     try:
         basler = detector.Basler()
+        lasers = laser.initialize_lasers()
+        if wavelength == "640nm":
+            lasers["laser640"].enable()
+            lasers["laser561"].disable()
+            lasers["laser488"].disable()
+            lasers["laser405"].disable()
+        elif wavelength == "561nm":
+            lasers["laser640"].disable()
+            lasers["laser561"].enable()
+            lasers["laser488"].disable()
+            lasers["laser405"].disable()
+        elif wavelength == "488nm":
+            lasers["laser640"].disable()
+            lasers["laser561"].disable()
+            lasers["laser488"].enable()
+            lasers["laser405"].disable()
+        elif wavelength == "405nm":
+            lasers["laser640"].disable()
+            lasers["laser561"].disable()
+            lasers["laser488"].disable()
+            lasers["laser405"].enable()
+
+        basler.camera.ExposureTime.SetValue(int(exposure))
+
         self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
         self.array_list_FM = basler.camera_grab()
         print(self.array_list_FM)
