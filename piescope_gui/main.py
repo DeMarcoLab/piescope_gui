@@ -51,6 +51,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.current_pixmap_FIBSEM = []
         self.save_destination_FM = ""
         self.save_destination_FIBSEM = ""
+        self.save_destination_correlation = ""
 
     def setup_connections(self):
         self.actionOpen_FM_Image.triggered.connect(
@@ -72,6 +73,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.fill_destination("FM"))
         self.button_save_destination_FIBSEM.clicked.connect(
             lambda: self.fill_destination("FIBSEM"))
+        self.toolButton_correlation_output.clicked.connect(
+            self.fill_correlation_destination)
 
         self.checkBox_laser1.clicked.connect(
             lambda: piescope_hardware.update_laser_dict(self, "laser640"))
@@ -370,6 +373,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             logger.exception(e)
             self.error_msg(str(e))
+
+    def fill_correlation_destination(self):
+        self.save_destination_correlation = p.normpath(
+            QtWidgets.QFileDialog.getExistingDirectory(
+                self, 'File Destination'))
+        destination_text = self.save_destination_correlation + self.delim
+        self.correlation_output_path.setText(destination_text)
 
     def acquire_volume(self):
         try:
