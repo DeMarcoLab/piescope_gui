@@ -6,6 +6,7 @@ import piescope_gui.milling.main as milling_function
 import piescope_gui.correlation.main as correlation_function
 import piescope_gui.piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
+import piescope.utils as util
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 import qimage2ndarray as q
@@ -198,11 +199,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
                         os.makedirs(self.lineEdit_save_destination_FM.text())
-                        piescope_hardware.save_image(display_image, dest)
+                        util.save_image(display_image, dest)
                     else:
                         exists = p.isfile(dest)
                         if not exists:
-                            piescope_hardware.save_image(display_image, dest)
+                            util.save_image(display_image, dest)
                         else:
                             count = 1
                             while exists:
@@ -212,7 +213,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                piescope_hardware.save_image(display_image,
+                                util.save_image(display_image,
                                                              dest)
                 else:
                     logger.error("No image to save")
@@ -237,11 +238,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     if not dir_exists:
                         os.makedirs(
                             self.lineEdit_save_destination_FIBSEM.text())
-                        piescope_hardware.save_image(display_image, dest)
+                        util.save_image(display_image, dest)
                     else:
                         exists = p.isfile(dest)
                         if not exists:
-                            piescope_hardware.save_image(display_image, dest)
+                            util.save_image(display_image, dest)
                         else:
                             count = 1
                             while exists:
@@ -251,7 +252,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                piescope_hardware.save_image(display_image,
+                                util.save_image(display_image,
                                                              dest)
                 else:
                     logger.error("No image to save")
