@@ -5,7 +5,6 @@ from piescope.lm import detector
 from piescope import fibsem
 from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
-import piescope_gui.main as main
 
 
 def save_image(image, dest):
@@ -39,134 +38,118 @@ def create_array_list(input_list, modality):
 
 
 def update_laser_dict(self, laser):
-    if laser == "laser640":
-        laser_box = self.spinBox_laser1
-        laser_check = self.checkBox_laser1
-        laser_slider = self.slider_laser1
-    elif laser == "laser561":
-        laser_box = self.spinBox_laser2
-        laser_check = self.checkBox_laser2
-        laser_slider = self.slider_laser2
-    elif laser == "laser488":
-        laser_box = self.spinBox_laser3
-        laser_check = self.checkBox_laser3
-        laser_slider = self.slider_laser3
-    elif laser == "laser405":
-        laser_slider = self.slider_laser4
-        laser_check = self.checkBox_laser4
-        laser_box = self.spinBox_laser4
-    else:
-        ValueError()
+    try:
+        if laser == "laser640":
+            laser_box = self.spinBox_laser1
+            laser_check = self.checkBox_laser1
+            laser_slider = self.slider_laser1
+        elif laser == "laser561":
+            laser_box = self.spinBox_laser2
+            laser_check = self.checkBox_laser2
+            laser_slider = self.slider_laser2
+        elif laser == "laser488":
+            laser_box = self.spinBox_laser3
+            laser_check = self.checkBox_laser3
+            laser_slider = self.slider_laser3
+        elif laser == "laser405":
+            laser_slider = self.slider_laser4
+            laser_check = self.checkBox_laser4
+            laser_box = self.spinBox_laser4
 
-    if laser_check.isChecked():
-        self.laser_dict[laser] = laser_box.text()
-        laser_slider.setEnabled(1)
-        laser_box.setEnabled(1)
-        print(self.laser_dict)
-    else:
-        self.laser_dict.pop(laser)
-        laser_slider.setEnabled(0)
-        laser_box.setEnabled(0)
+        if laser_check.isChecked():
+            self.laser_dict[laser] = laser_box.text()
+            laser_slider.setEnabled(1)
+            laser_box.setEnabled(1)
+            print(self.laser_dict)
+        else:
+            self.laser_dict.pop(laser)
+            laser_slider.setEnabled(0)
+            laser_box.setEnabled(0)
+    except Exception as e:
+        self.error_msg(str(e))
 
 
 def get_basler_image(self):
-    basler = detector.Basler()
-    self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
-    self.array_list_FM = basler.camera_grab()
-    print(self.array_list_FM)
-    self.slider_stack_FM.setValue(1)
-    self.update_display("FM")
+    try:
+        basler = detector.Basler()
+        self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
+        self.array_list_FM = basler.camera_grab()
+        print(self.array_list_FM)
+        self.slider_stack_FM.setValue(1)
+        self.update_display("FM")
+    except Exception as e:
+        self.error_msg(str(e))
 
 
 def basler_live_imaging(self):
-    if self.liveCheck is True:
-        self.stop_event = threading.Event()
-        self.c_thread = threading.Thread(
-            target=self.live_imaging_event_listener_FM, args=(self.stop_event,))
-        self.c_thread.start()
-        self.liveCheck = False
-        self.button_live_image_FM.setDown(True)
-    else:
-        self.stop_event.set()
-        self.liveCheck = True
-        self.button_live_image_FM.setDown(False)
+    try:
+        if self.liveCheck is True:
+            self.stop_event = threading.Event()
+            self.c_thread = threading.Thread(
+                target=self.live_imaging_event_listener_FM, args=(self.stop_event,))
+            self.c_thread.start()
+            self.liveCheck = False
+            self.button_live_image_FM.setDown(True)
+        else:
+            self.stop_event.set()
+            self.liveCheck = True
+            self.button_live_image_FM.setDown(False)
+    except Exception as e:
+        self.error_msg(str(e))
 
 
-def initialise_stage():
+def initialise_stage(self):
     try:
         stage = objective.StageController()
-    except Exception as e:
-        print(e)
-        print('Could not connect to stage')
-        return
-
-    try:
         stage.initialise_system_parameters()
         print("Stage initialised")
     except Exception as e:
-        print(e)
-        print('Could not initialise stage parameters')
-        return
+        self.error_msg(str(e))
 
 
-def move_absolute(distance):
+def move_absolute(self, distance):
     try:
+        distance = int(distance)
         stage = objective.StageController()
-    except Exception as e:
-        print(e)
-        print('Could not connect to stage')
-        return
-
-    try:
         stage.move_absolute(distance)
     except Exception as e:
-        print(e)
-        print('Could not move the stage by %s' % distance)
-        return
+        self.error_msg(str(e))
 
 
-def move_relative(distance):
+def move_relative(self, distance):
     try:
+        distance = int(distance)
         stage = objective.StageController()
-    except Exception as e:
-        print(e)
-        print('Could not connect to stage')
-        return
-
-    try:
         stage.move_relative(distance)
     except Exception as e:
-        print(e)
-        print('Could not move the stage by %s' % distance)
-        return
+        self.error_msg(str(e))
 
 
-def current_position():
-    stage = objective.StageController()
-    pos = stage.current_position()
-    return pos
+def current_position(self):
+    try:
+        stage = objective.StageController()
+        pos = stage.current_position()
+        return pos
+    except Exception as e:
+        self.error_msg(str(e))
 
 
 def connect_to_microscope(self):
     try:
         self.microscope = fibsem.initialize()
     except Exception as e:
-        print(e)
-        print("Failed to connect to microscope")
-        self.error_msg(message="Could not connect to microscope")
-        return
+        self.error_msg(str(e))
 
 
 def move_to_light_microscope(self, microscope, x, y):
-    if self.microscope is not None:
+    if self.microscope:
         try:
             fibsem.move_to_light_microscope(microscope, x, y)
         except Exception as e:
-            print(e)
-            print("Could not move to light microscope")
-            return
+            self.error_msg(str(e))
     else:
         print("Not connected to microscope")
+        self.error_msg("Not connected to microscope")
 
 
 def move_to_electron_microscope(self, microscope, x, y):
@@ -174,11 +157,10 @@ def move_to_electron_microscope(self, microscope, x, y):
         try:
             fibsem.move_to_electron_microscope(microscope, x, y)
         except Exception as e:
-            print(e)
-            print("Could not move to electron microscope")
-            # return
+            self.error_msg(str(e))
     else:
         print("Not connected to microscope")
+        self.error_msg("Not connected to microscope")
 
 
 def get_FIB_image(gui, microscope):
