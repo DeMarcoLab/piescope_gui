@@ -168,11 +168,10 @@ def get_FIB_image(gui, microscope):
         try:
             fibsem.new_ion_image(microscope)
         except Exception as e:
-            print(e)
-            print("Could not take ion beam image")
-            return
+            gui.error_msg(str(e))
     else:
         print("Not connected to microscope")
+        gui.error_msg("Not connected to microscope")
 
 
 def get_last_FIB_image(gui, microscope):
@@ -180,11 +179,10 @@ def get_last_FIB_image(gui, microscope):
         try:
             fibsem.last_ion_image(microscope)
         except Exception as e:
-            print(e)
-            print("Could not take ion beam image")
-            return
+            gui.error_msg(str(e))
     else:
         print("Not connected to microscope")
+        gui.error_msg("Not connected to microscope")
 
 
 def get_SEM_image(gui, microscope):
@@ -192,12 +190,10 @@ def get_SEM_image(gui, microscope):
         try:
             fibsem.new_electron_image(microscope)
         except Exception as e:
-            print(e)
-            print("Could not take electron beam image")
-
-            return
+            gui.error_msg(str(e))
     else:
         print("Not connected to microscope")
+        gui.error_msg("Not connected to microscope")
 
 
 def get_last_SEM_image(gui, microscope):
@@ -205,9 +201,7 @@ def get_last_SEM_image(gui, microscope):
         try:
             fibsem.last_electron_image(microscope)
         except Exception as e:
-            print(e)
-            print("Could not take ion beam image")
-            return
+            gui.error_msg(str(e))
     else:
         print("Not connected to microscope")
-
+        gui.error_msg("Not connected to microscope")
