@@ -402,43 +402,21 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             volume = volume_function.volume_acquisition(
                 laser_dict, no_z_slices, z_slice_distance)
+            max_intensity = mip.max_intensity_projection(volume)
+            channel = 0
 
-            for channel in range(0, np.shape(volume)[-1]):
+            for las in laser_dict:
+                destination = self.lineEdit_save_destination_FM.text() + \
+                              "\\volume_stack_wavelength_" + str(las) + "_" + \
+                              correlation_function._timestamp()
+                os.makedirs(destination)
+                channel_max = max_intensity[:, :, channel]
+                util.save_image(image=channel_max, dest=destination + "\\Maximum_intensity_projection.tiff")
+
                 for z_slice in range(0, np.shape(volume)[0]):
-                    self.array_list_FM = volume[z_slice,:,:,channel]
-                    self.string_list_FM = ["test"]
-                    self.slider_stack_FM.setMaximum(len(self.string_list_FM))
-                    self.spinbox_slider_FM.setMaximum(len(self.string_list_FM))
-                    self.slider_stack_FM.setValue(1)
-                    self.update_display("FM")
-                    self.save_image("FM")
-                    # print(np.shape(volume[z_slice,:,:,channel]))
-                    # print(type(volume[z_slice,:,:,channel]))
-                    # util.save_image(image=volume[z_slice,:,:,channel], dest="C:\\Users\\TaleeshaDesktop\\Pictures\\" + str(z_slice) + "__"+ str(channel) + ".tiff")
-            volume2 = mip.max_intensity_projection(volume)
+                    util.save_image(image=volume[z_slice, :, :, channel], dest=destination + "\\slice__" + str(z_slice) + ".tiff")
 
-            # print(volume2)
-            # print(np.shape(volume))
-            # print(np.shape(volume2))
-            # vol3 = volume2[:,:,0]
-            # print(vol3)
-            # vol4 = volume2[:,:,1]
-            # print(vol4)
-            # vol5 = volume2[:,:,2]
-            # print(vol5)
-            # vol6 = volume2[:,:,3]
-            # print(vol6)
-            # vol_list = [vol3, vol4, vol5, vol6]
-            # print(type(vol_list))
-            # self.array_list_FM = vol_list
-            # self.string_list_FM = ["test1", "test2", "tes1", "test3"]
-            # self.array_list_FM = volume
-            # self.slider_stack_FM.setValue(1)
-            # self.string_list_FM = ["test", "test2", "test4"]
-            # self.slider_stack_FM.setMaximum(len(self.string_list_FM))
-            # self.spinbox_slider_FM.setMaximum(len(self.string_list_FM))
-            # self.slider_stack_FM.setValue(1)
-            # self.update_display("FM")
+                channel = channel + 1
 
         except Exception as e:
             self.error_msg(str(e))
