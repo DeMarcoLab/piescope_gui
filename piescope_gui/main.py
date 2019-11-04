@@ -395,7 +395,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if z_slice_distance < 0:
                 raise ValueError("Slice distance must be a positive integer")
 
-            volume_function.volume_acquisition(self, laser_dict, no_z_slices,
+            volume_function.volume_acquisition(laser_dict, no_z_slices,
                                                z_slice_distance)
 
         except Exception as e:
