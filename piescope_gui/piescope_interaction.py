@@ -43,28 +43,35 @@ def update_laser_dict(self, laser):
             laser_box = self.spinBox_laser1
             laser_check = self.checkBox_laser1
             laser_slider = self.slider_laser1
+            laser_exposure = self.lineEdit_exposure_1
         elif laser == "laser561":
             laser_box = self.spinBox_laser2
             laser_check = self.checkBox_laser2
             laser_slider = self.slider_laser2
+            laser_exposure = self.lineEdit_exposure_2
         elif laser == "laser488":
             laser_box = self.spinBox_laser3
             laser_check = self.checkBox_laser3
             laser_slider = self.slider_laser3
+            laser_exposure = self.lineEdit_exposure_3
         elif laser == "laser405":
             laser_slider = self.slider_laser4
             laser_check = self.checkBox_laser4
             laser_box = self.spinBox_laser4
+            laser_exposure = self.lineEdit_exposure_4
 
         if laser_check.isChecked():
-            self.laser_dict[laser] = laser_box.text()
+            self.laser_dict[laser] = [laser_box.text(), laser_exposure.text()]
             laser_slider.setEnabled(1)
+            laser_exposure.setEnabled(1)
             laser_box.setEnabled(1)
             print(self.laser_dict)
         else:
             self.laser_dict.pop(laser)
             laser_slider.setEnabled(0)
+            laser_exposure.setEnabled(0)
             laser_box.setEnabled(0)
+
     except Exception as e:
         self.error_msg(str(e))
 
