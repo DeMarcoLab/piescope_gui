@@ -91,6 +91,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.slider_laser4.valueChanged.connect(
             lambda: piescope_hardware.update_laser_dict(self, "laser405"))
 
+        self.lineEdit_exposure_1.textChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser640"))
+        self.lineEdit_exposure_2.textChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser561"))
+        self.lineEdit_exposure_3.textChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser488"))
+        self.lineEdit_exposure_4.textChanged.connect(
+            lambda: piescope_hardware.update_laser_dict(self, "laser405"))
+
         self.button_get_image_FIB.clicked.connect(
             lambda: piescope_hardware.get_FIB_image(self, self.microscope))
         self.button_get_image_SEM.clicked.connect(
@@ -364,10 +373,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def acquire_volume(self):
         try:
-            exposure_time = int(self.lineEdit_exposure.text())
-            if exposure_time < 0:
-                raise ValueError("Exposure Time must be a positive integer")
-
             laser_dict = self.laser_dict
             if laser_dict == {}:
                 raise ValueError("No lasers selected")
@@ -380,8 +385,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if z_slice_distance < 0:
                 raise ValueError("Slice distance must be a positive integer")
 
-            volume_function.volume_acquisition(self, exposure_time, laser_dict,
-                                               no_z_slices, z_slice_distance)
+            volume_function.volume_acquisition(self, laser_dict, no_z_slices,
+                                               z_slice_distance)
 
         except Exception as e:
             self.error_msg(str(e))
