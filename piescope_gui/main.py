@@ -4,7 +4,7 @@ import os
 import piescope.lm.volume as volume_function
 import piescope_gui.milling.main as milling_function
 import piescope_gui.correlation.main as correlation_function
-import piescope_interaction as piescope_hardware
+import piescope_gui.piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -108,16 +108,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: piescope_hardware.basler_live_imaging(self))
 
         self.pushButton_initialise_stage.clicked.connect(
-            piescope_hardware.initialise_stage)
+            lambda: piescope_hardware.initialise_stage(self))
         self.pushButton_move_absolute.clicked.connect(
             lambda: piescope_hardware.move_absolute(
-                int(self.lineEdit_move_absolute.text())))
+                self, self.lineEdit_move_absolute.text()))
         self.pushButton_move_relative.clicked.connect(
             lambda: piescope_hardware.move_relative(
-                int(self.lineEdit_move_relative.text())))
+                self, self.lineEdit_move_relative.text()))
 
         self.connect_microscope.clicked.connect(
-            piescope_hardware.connect_to_microscope)
+            lambda: piescope_hardware.connect_to_microscope(self))
         self.to_light_microscope.clicked.connect(
             lambda: piescope_hardware.move_to_light_microscope(
                 self, self.microscope, 50.0e-3, 0.0))
@@ -363,7 +363,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.error_msg(str(e))
 
     def acquire_volume(self):
-
         try:
             exposure_time = int(self.lineEdit_exposure.text())
             if exposure_time < 0:
@@ -389,6 +388,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             print(e)
 
     def correlateim(self):
+        tempfile = "C:"
         try:
             input_filename_1 = self.array_list_FM
             print(type(input_filename_1))
