@@ -7,10 +7,6 @@ from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
 
 
-def save_image(image, dest):
-    io.imsave(dest, image)
-
-
 def create_array_list(input_list, modality):
     if modality == "FM":
         if len(input_list) > 1:
