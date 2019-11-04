@@ -7,10 +7,12 @@ import piescope_gui.correlation.main as correlation_function
 import piescope_gui.piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
 import piescope.utils as util
+import piescope.maximum_intensity_projection as mip
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 import qimage2ndarray as q
 import logging
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +118,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                                          self.microscope))
 
         self.button_get_image_FM.clicked.connect(
-            lambda: piescope_hardware.get_basler_image(self))
+            lambda: piescope_hardware.get_basler_image(self,
+                self.comboBox_laser_basler.currentText(),
+                self.lineEdit_exposure_basler.text()))
         self.button_live_image_FM.clicked.connect(
             lambda: piescope_hardware.basler_live_imaging(self))
 
@@ -396,8 +400,45 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if z_slice_distance < 0:
                 raise ValueError("Slice distance must be a positive integer")
 
-            volume_function.volume_acquisition(laser_dict, no_z_slices,
-                                               z_slice_distance)
+            volume = volume_function.volume_acquisition(
+                laser_dict, no_z_slices, z_slice_distance)
+
+            for channel in range(0, np.shape(volume)[-1]):
+                for z_slice in range(0, np.shape(volume)[0]):
+                    self.array_list_FM = volume[z_slice,:,:,channel]
+                    self.string_list_FM = ["test"]
+                    self.slider_stack_FM.setMaximum(len(self.string_list_FM))
+                    self.spinbox_slider_FM.setMaximum(len(self.string_list_FM))
+                    self.slider_stack_FM.setValue(1)
+                    self.update_display("FM")
+                    self.save_image("FM")
+                    # print(np.shape(volume[z_slice,:,:,channel]))
+                    # print(type(volume[z_slice,:,:,channel]))
+                    # util.save_image(image=volume[z_slice,:,:,channel], dest="C:\\Users\\TaleeshaDesktop\\Pictures\\" + str(z_slice) + "__"+ str(channel) + ".tiff")
+            volume2 = mip.max_intensity_projection(volume)
+
+            # print(volume2)
+            # print(np.shape(volume))
+            # print(np.shape(volume2))
+            # vol3 = volume2[:,:,0]
+            # print(vol3)
+            # vol4 = volume2[:,:,1]
+            # print(vol4)
+            # vol5 = volume2[:,:,2]
+            # print(vol5)
+            # vol6 = volume2[:,:,3]
+            # print(vol6)
+            # vol_list = [vol3, vol4, vol5, vol6]
+            # print(type(vol_list))
+            # self.array_list_FM = vol_list
+            # self.string_list_FM = ["test1", "test2", "tes1", "test3"]
+            # self.array_list_FM = volume
+            # self.slider_stack_FM.setValue(1)
+            # self.string_list_FM = ["test", "test2", "test4"]
+            # self.slider_stack_FM.setMaximum(len(self.string_list_FM))
+            # self.spinbox_slider_FM.setMaximum(len(self.string_list_FM))
+            # self.slider_stack_FM.setValue(1)
+            # self.update_display("FM")
 
         except Exception as e:
             self.error_msg(str(e))
