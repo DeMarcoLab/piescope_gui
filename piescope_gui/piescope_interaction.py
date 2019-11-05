@@ -136,6 +136,7 @@ def initialise_stage(self):
     try:
         stage = objective.StageController()
         stage.initialise_system_parameters()
+        # stage.initialise_system_parameters(0, 0, 0, 0)
         print("Stage initialised")
     except Exception as e:
         self.error_msg(str(e))
@@ -143,18 +144,20 @@ def initialise_stage(self):
 
 def move_absolute(self, distance):
     try:
-        distance = int(distance)
+        distance2 = int(float(distance)*1000)
+        # print("Distance: {}nm".format(distance2))
         stage = objective.StageController()
-        stage.move_absolute(distance)
+        ans = stage.move_absolute(distance2)
     except Exception as e:
         self.error_msg(str(e))
 
 
 def move_relative(self, distance):
     try:
-        distance = int(distance)
+        distance2 = int(float(distance) * 1000)
+        # print("Distance: {}nm".format(distance2))
         stage = objective.StageController()
-        stage.move_relative(distance)
+        ans = stage.move_relative(distance2)
     except Exception as e:
         self.error_msg(str(e))
 
