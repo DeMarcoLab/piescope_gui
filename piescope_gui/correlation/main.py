@@ -2,6 +2,7 @@ import os
 import os.path as p
 import time
 
+import skimage.util
 import numpy as np
 import scipy.ndimage as ndi
 import skimage
@@ -20,12 +21,13 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
+from autoscript_sdb_microscope_client.structures import *
 
 from piescope_gui.milling import main as mill
 from piescope_gui._version import __version__
 
 
-def open_correlation_window(main_gui, image_1, image_2, output_path):
+def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_path):
     global img1
     global img2
     global img1_path
@@ -34,25 +36,27 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
     global output
 
     gui = main_gui
+    gui.FIBSEM_adorned_image = fibsem_image
+    fibsem_image = fibsem_image.data
 
-    if type(image_1) == str:
+    if type(fluorescence_image) == str:
         print("Image 1 given as path")
-        image_1 = skimage.color.gray2rgb(plt.imread(image_1))
+        fluorescence_image = skimage.color.gray2rgb(plt.imread(fluorescence_image))
     else:
         print("Image 1 given as array")
-        image_1 = skimage.color.gray2rgb(image_1)
+        fluorescence_image = skimage.color.gray2rgb(fluorescence_image)
 
-    if type(image_2) == str:
+    if type(fibsem_image) == str:
         print("Image 2 given as path")
-        image_2 = skimage.color.gray2rgb(plt.imread(image_2))
+        fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
     else:
         print("Image 2 given as array")
-        image_2 = skimage.color.gray2rgb(image_2)
+        fibsem_image = skimage.color.gray2rgb(fibsem_image)
 
-    image_1 = skimage.transform.resize(image_1, image_2.shape)
+    fluorescence_image = skimage.transform.resize(fluorescence_image, fibsem_image.shape)
 
-    img1 = image_1
-    img2 = image_2
+    img1 = fluorescence_image
+    img2 = fibsem_image
     output = output_path
 
     window = _MainWindow()
@@ -60,19 +64,23 @@ def open_correlation_window(main_gui, image_1, image_2, output_path):
     return
 
 
-def correlate_images(image_1, image_2, output, matched_points_dict):
+def correlate_images(fluorescence_image, fibsem_image, output, matched_points_dict):
     if matched_points_dict == []:
         print('No control points selected, exiting.')
         return
 
     src, dst = point_coords(matched_points_dict)
     transformation = calculate_transform(src, dst)
-    image_1_aligned = apply_transform(image_1, transformation)
-    result = overlay_images(image_1_aligned, image_2)
+    fluorescence_image_aligned = apply_transform(fluorescence_image, transformation)
+    result = overlay_images(fluorescence_image_aligned, fibsem_image)
+    result = skimage.util.img_as_ubyte(result)
+
+    overlay_adorned_image = AdornedImage(result)
+    overlay_adorned_image.metadata = gui.FIBSEM_adorned_image.metadata
     save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
     print(output)
-    mill.open_milling_window(gui, result)
+    mill.open_milling_window(gui, result, gui.FIBSEM_adorned_image)
 
     return result
 
@@ -604,14 +612,14 @@ def apply_transform(image, transformation, inverse=True, multichannel=True):
     return warped_img
 
 
-def overlay_images(image_1, image_2, transparency=0.5):
+def overlay_images(fluorescence_image, fibsem_image, transparency=0.5):
     """Blend two RGB images together.
 
     Parameters
     ----------
-    image_1 : ndarray
+    fluorescence_image : ndarray
         2D RGB image.
-    image_2 : ndarray
+    fibsem_image : ndarray
         2D RGB image.
     transparency : float, optional
         Transparency alpha parameter between 0 - 1, by default 0.5
@@ -622,9 +630,9 @@ def overlay_images(image_1, image_2, transparency=0.5):
         Blended 2D RGB image.
     """
 
-    image_1 = skimage.img_as_float(image_1)
-    image_2 = skimage.img_as_float(image_2)
-    blended = transparency * image_1 + (1 - transparency) * image_2
+    fluorescence_image = skimage.img_as_float(fluorescence_image)
+    fibsem_image = skimage.img_as_float(fibsem_image)
+    blended = transparency * fluorescence_image + (1 - transparency) * fibsem_image
     blended = np.clip(blended, 0, 1)
 
     return blended
