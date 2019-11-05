@@ -10,9 +10,17 @@ from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
+from piescope import fibsem
 
 
-def open_milling_window(main_gui, image):
+def open_milling_window(main_gui, image, adorned_metadata):
+    """
+
+    :param main_gui:
+    :param image: numpy array
+    :param adorned_metadata: adorned_image.metadata
+    :return:
+    """
     global gui
     global img
     gui = main_gui
@@ -54,9 +62,29 @@ class _MainWindow(QMainWindow):
 
 
         self.exitButton = QPushButton("Return")
-        self.exitButton.setFixedWidth(150)
+        self.exitButton.setFixedWidth(250)
         self.exitButton.setFixedHeight(60)
         self.exitButton.setStyleSheet("font-size: 16px;")
+
+        self.pattern_creation_button = QPushButton("Create milling pattern")
+        self.pattern_creation_button.setFixedWidth(250)
+        self.pattern_creation_button.setFixedHeight(60)
+        self.pattern_creation_button.setStyleSheet("font-size: 16px;")
+
+        self.pattern_start_button = QPushButton("Start milling pattern")
+        self.pattern_start_button.setFixedWidth(250)
+        self.pattern_start_button.setFixedHeight(60)
+        self.pattern_start_button.setStyleSheet("font-size: 16px;")
+
+        self.pattern_pause_button = QPushButton("Pause milling pattern")
+        self.pattern_pause_button.setFixedWidth(250)
+        self.pattern_pause_button.setFixedHeight(60)
+        self.pattern_pause_button.setStyleSheet("font-size: 16px;")
+
+        self.pattern_stop_button = QPushButton("Stop milling pattern")
+        self.pattern_stop_button.setFixedWidth(250)
+        self.pattern_stop_button.setFixedHeight(60)
+        self.pattern_stop_button.setStyleSheet("font-size: 16px;")
 
         self.x0_label = QLabel("X0:")
         self.x0_label.setFixedHeight(30)
@@ -105,6 +133,10 @@ class _MainWindow(QMainWindow):
         hlay.addWidget(self.y1_label)
         hlay.addWidget(self.y1_label2)
         hlay.addSpacerItem(spacerItem)
+        hlay.addWidget(self.pattern_creation_button)
+        hlay.addWidget(self.pattern_start_button)
+        hlay.addWidget(self.pattern_pause_button)
+        hlay.addWidget(self.pattern_stop_button)
         hlay.addWidget(self.exitButton)
         vlay.addLayout(hlay)
 
@@ -119,8 +151,9 @@ class _MainWindow(QMainWindow):
 
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
-
-    def menu_quit(self):
+        self.pattern_creation_button.clicked.connect(
+            lambda: fibsem.create_rectangular_pattern(gui.microscope, gui.FIBSEM_adorned_image, self.xclick,
+                                                      self.x1, self.yclick, self.y1, depth=1e-6))
         self.close()
 
     def on_click(self, event):
