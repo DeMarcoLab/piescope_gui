@@ -77,6 +77,9 @@ def get_basler_image(self, wavelength, exposure):
     try:
         basler = detector.Basler()
         lasers = laser.initialize_lasers()
+        print("wavelength: {}".format(wavelength))
+        print("exposure: {}".format(exposure))
+        print("exposure type: {}".format(float(exposure)))
         if wavelength == "640nm":
             lasers["laser640"].enable()
             lasers["laser561"].disable()
@@ -97,8 +100,8 @@ def get_basler_image(self, wavelength, exposure):
             lasers["laser561"].disable()
             lasers["laser488"].disable()
             lasers["laser405"].enable()
-
-        basler.camera.ExposureTime.SetValue(int(exposure))
+        basler.camera.Open()
+        basler.camera.ExposureTime.SetValue(int(exposure)*1000)
 
         self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
         self.array_list_FM = basler.camera_grab()
