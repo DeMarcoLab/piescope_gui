@@ -1,35 +1,38 @@
 """Functions to interact with or get information from the piescope setup"""
-import skimage.io as io
+import skimage.io
 import threading
 from piescope.lm import detector
 from piescope.lm import laser
 from piescope import fibsem
 from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
+import skimage.util
 
 
 def create_array_list(input_list, modality):
     if modality == "FM":
         if len(input_list) > 1:
-            array_list_FM = io.imread_collection(input_list)
+            array_list_FM = skimage.io.imread_collection(input_list, conserve_memory=True)
+
         else:
-            array_list_FM = io.imread(input_list[0])
+            array_list_FM = skimage.io.imread(input_list[0])
+            print("ARRAY LIST IS:", array_list_FM)
 
         return array_list_FM
 
     elif modality == "FIBSEM":
         if len(input_list) > 1:
-            array_list_FIBSEM = io.imread_collection(input_list)
+            array_list_FIBSEM = skimage.io.imread_collection(input_list)
         else:
-            array_list_FIBSEM = io.imread(input_list[0])
+            array_list_FIBSEM = skimage.io.imread(input_list[0])
 
         return array_list_FIBSEM
 
     elif modality == "MILLING":
         if len(input_list) > 1:
-            array_list_MILLING = io.imread_collection(input_list)
+            array_list_MILLING = skimage.io.imread_collection(input_list)
         else:
-            array_list_MILLING = io.imread(input_list[0])
+            array_list_MILLING = skimage.io.imread(input_list[0])
 
         return array_list_MILLING
 
@@ -205,7 +208,8 @@ def get_FIB_image(gui, microscope):
         try:
             gui.fibsem_image = fibsem.new_ion_image(microscope)
             gui.array_list_FIBSEM = gui.fibsem_image.data
-            gui.string_list_FIBSEM = gui.DEFAULT_PATH + "FIB_Image_" + corr._timestamp()
+            print(gui.array_list_FIBSEM.dtype)
+            gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "FIB_Image_" + corr._timestamp()]
             print(gui.array_list_FIBSEM)
             gui.update_display("FIBSEM")
         except Exception as e:
@@ -220,8 +224,10 @@ def get_last_FIB_image(gui, microscope):
         try:
             gui.fibsem_image = fibsem.last_ion_image(microscope)
             gui.array_list_FIBSEM = gui.fibsem_image.data
+            gui.array_list_FIBSEM = skimage.util.img_as_ubyte(gui.array_list_FIBSEM)
+            print(gui.array_list_FIBSEM.dtype)
             print(gui.array_list_FIBSEM)
-            gui.string_list_FIBSEM = gui.DEFAULT_PATH + "Last_FIB_Image_" + corr._timestamp()
+            gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "Last_FIB_Image_" + corr._timestamp()]
             print(gui.array_list_FIBSEM)
             gui.update_display("FIBSEM")
         except Exception as e:
@@ -236,7 +242,8 @@ def get_SEM_image(gui, microscope):
         try:
             gui.fibsem_image = fibsem.new_electron_image(microscope)
             gui.array_list_FIBSEM = gui.fibsem_image.data
-            gui.string_list_FIBSEM = gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()
+            print(gui.array_list_FIBSEM.dtype)
+            gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()]
             print(gui.array_list_FIBSEM)
             gui.update_display("FIBSEM")
         except Exception as e:
@@ -251,7 +258,8 @@ def get_last_SEM_image(gui, microscope):
         try:
             gui.fibsem_image = fibsem.last_electron_image(microscope)
             gui.array_list_FIBSEM = gui.fibsem_image.data
-            gui.string_list_FIBSEM = gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()
+            gui.array_list_FIBSEM = skimage.util.img_as_ubyte(gui.array_list_FIBSEM)
+            gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()]
             print(gui.array_list_FIBSEM)
             gui.update_display("FIBSEM")
         except Exception as e:
