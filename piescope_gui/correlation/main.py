@@ -37,13 +37,18 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
 
     gui = main_gui
     gui.FIBSEM_adorned_image = fibsem_image
-    fibsem_image = fibsem_image.data
+    fibsem_data = numpy.copy(fibsem_image.data)
 
+    # fibsem_image_copy = np.copy(fibsem_image)
+    # fibsem_image_data = fibsem_image_copy.data
+    fluorescence_image = numpy.copy(fluorescence_image)
+    #
     if type(fluorescence_image) == str:
         print("Image 1 given as path")
         fluorescence_image = skimage.color.gray2rgb(plt.imread(fluorescence_image))
     else:
         print("Image 1 given as array")
+        # fluorescence_image_copy = np.copy(fluorescence_image)
         fluorescence_image = skimage.color.gray2rgb(fluorescence_image)
 
     if type(fibsem_image) == str:
@@ -76,11 +81,11 @@ def correlate_images(fluorescence_image, fibsem_image, output, matched_points_di
     result = skimage.util.img_as_ubyte(result)
 
     overlay_adorned_image = AdornedImage(result)
-    overlay_adorned_image.metadata = gui.FIBSEM_adorned_image.metadata
+    overlay_adorned_image.metadata = gui.fibsem_image.metadata
     save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
     print(output)
-    mill.open_milling_window(gui, result, gui.FIBSEM_adorned_image)
+    mill.open_milling_window(gui, result, adorned_metadata=gui.fibsem_image.metadata)
 
     return result
 
