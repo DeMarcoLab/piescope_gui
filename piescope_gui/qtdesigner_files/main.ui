@@ -871,7 +871,7 @@
               </widget>
              </item>
              <item row="4" column="3">
-              <widget class="QLineEdit" name="lineEdit_exposure_basler_2">
+              <widget class="QLineEdit" name="lineEdit_power_basler_2">
                <property name="text">
                 <string>0</string>
                </property>

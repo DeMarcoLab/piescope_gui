@@ -118,9 +118,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                                          self.microscope))
 
         self.button_get_image_FM.clicked.connect(
-            lambda: piescope_hardware.get_basler_image(self,
-                self.comboBox_laser_basler.currentText(),
-                self.lineEdit_exposure_basler.text()))
+            lambda: piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
+                self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text()))
         self.button_live_image_FM.clicked.connect(
             lambda: piescope_hardware.basler_live_imaging(self))
 

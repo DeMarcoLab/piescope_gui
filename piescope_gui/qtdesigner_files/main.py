@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'main.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.1
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainGui(object):
     def setupUi(self, MainGui):
@@ -369,9 +367,9 @@ class Ui_MainGui(object):
         self.comboBox_laser_basler.addItem("")
         self.comboBox_laser_basler.addItem("")
         self.gridLayout_18.addWidget(self.comboBox_laser_basler, 4, 1, 1, 1)
-        self.lineEdit_exposure_basler_2 = QtWidgets.QLineEdit(self.frame_buttons_FM)
-        self.lineEdit_exposure_basler_2.setObjectName("lineEdit_exposure_basler_2")
-        self.gridLayout_18.addWidget(self.lineEdit_exposure_basler_2, 4, 3, 1, 1)
+        self.lineEdit_power_basler_2 = QtWidgets.QLineEdit(self.frame_buttons_FM)
+        self.lineEdit_power_basler_2.setObjectName("lineEdit_power_basler_2")
+        self.gridLayout_18.addWidget(self.lineEdit_power_basler_2, 4, 3, 1, 1)
         self.label_2 = QtWidgets.QLabel(self.frame_buttons_FM)
         self.label_2.setObjectName("label_2")
         self.gridLayout_18.addWidget(self.label_2, 4, 2, 1, 1)
@@ -725,7 +723,7 @@ class Ui_MainGui(object):
         self.comboBox_laser_basler.setItemText(1, _translate("MainGui", "561nm"))
         self.comboBox_laser_basler.setItemText(2, _translate("MainGui", "488nm"))
         self.comboBox_laser_basler.setItemText(3, _translate("MainGui", "405nm"))
-        self.lineEdit_exposure_basler_2.setText(_translate("MainGui", "0"))
+        self.lineEdit_power_basler_2.setText(_translate("MainGui", "0"))
         self.label_2.setText(_translate("MainGui", "Power level:"))
         self.lineEdit_exposure_basler.setText(_translate("MainGui", "1000"))
         self.label.setText(_translate("MainGui", "Exposure (ms): "))
@@ -761,3 +759,4 @@ if __name__ == "__main__":
     ui.setupUi(MainGui)
     MainGui.show()
     sys.exit(app.exec_())
+

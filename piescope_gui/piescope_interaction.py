@@ -73,33 +73,36 @@ def update_laser_dict(self, laser):
         self.error_msg(str(e))
 
 
-def get_basler_image(self, wavelength, exposure):
+def get_basler_image(self, wavelength, exposure, power):
     try:
         basler = detector.Basler()
         lasers = laser.initialize_lasers()
-        print("wavelength: {}".format(wavelength))
-        print("exposure: {}".format(exposure))
-        print("exposure type: {}".format(float(exposure)))
+
         if wavelength == "640nm":
             lasers["laser640"].enable()
+            lasers["laser640"].laser_power = int(power)
             lasers["laser561"].disable()
             lasers["laser488"].disable()
             lasers["laser405"].disable()
         elif wavelength == "561nm":
             lasers["laser640"].disable()
             lasers["laser561"].enable()
+            lasers["laser562"].laser_power = int(power)
             lasers["laser488"].disable()
             lasers["laser405"].disable()
         elif wavelength == "488nm":
             lasers["laser640"].disable()
             lasers["laser561"].disable()
             lasers["laser488"].enable()
+            lasers["laser488"].laser_power = int(power)
             lasers["laser405"].disable()
         elif wavelength == "405nm":
             lasers["laser640"].disable()
             lasers["laser561"].disable()
             lasers["laser488"].disable()
             lasers["laser405"].enable()
+            lasers["laser405"].laser_power = int(power)
+
         basler.camera.Open()
         basler.camera.ExposureTime.SetValue(int(exposure)*1000)
 
