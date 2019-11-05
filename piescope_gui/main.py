@@ -6,7 +6,7 @@ import piescope_gui.milling.main as milling_function
 import piescope_gui.correlation.main as correlation_function
 import piescope_gui.piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
-import piescope.utils as util
+import piescope.utils as utility
 import piescope.maximum_intensity_projection as mip
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -136,10 +136,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: piescope_hardware.connect_to_microscope(self))
         self.to_light_microscope.clicked.connect(
             lambda: piescope_hardware.move_to_light_microscope(
-                self, self.microscope, 50.0e-3, 0.0))
+                self, self.microscope, 50.0024e-3, -0.1612e-3))
         self.to_electron_microscope.clicked.connect(
             lambda: piescope_hardware.move_to_electron_microscope(
-                self, self.microscope, -50.0e-3, 0.0))
+                self, self.microscope, -50.0024e-3, 0.1612e-3))
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
         self.pushButton_correlation.clicked.connect(self.correlateim)
@@ -202,11 +202,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
                         os.makedirs(self.lineEdit_save_destination_FM.text())
-                        util.save_image(display_image, dest)
+                        utility.save_image(display_image, dest)
                     else:
                         exists = p.isfile(dest)
                         if not exists:
-                            util.save_image(display_image, dest)
+                            utility.save_image(display_image, dest)
                         else:
                             count = 1
                             while exists:
@@ -216,7 +216,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                util.save_image(display_image,
+                                utility.save_image(display_image,
                                                              dest)
                 else:
                     logger.error("No image to save")
@@ -241,11 +241,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     if not dir_exists:
                         os.makedirs(
                             self.lineEdit_save_destination_FIBSEM.text())
-                        util.save_image(display_image, dest)
+                        utility.save_image(display_image, dest)
                     else:
                         exists = p.isfile(dest)
                         if not exists:
-                            util.save_image(display_image, dest)
+                            utility.save_image(display_image, dest)
                         else:
                             count = 1
                             while exists:
@@ -255,7 +255,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                util.save_image(display_image,
+                                utility.save_image(display_image,
                                                              dest)
                 else:
                     logger.error("No image to save")
@@ -278,10 +278,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     image_array = self.array_list_FM[int(slider_value) - 1]
                 else:
                     image_array = self.array_list_FM
+                print("Image array: ------------------------------------ ", image_array)
+                print("Image shape: ------------------------------------ ", image_array.shape)
 
                 self.current_image_FM = q.array2qimage(image_array)
                 print(self.current_image_FM)
-                self.current_path_FM = p.normpath(image_string)
+                # from PIL import Image
+                # self.current_image_FM = Image.fromarray(image_array)
+                # imagetoarray = np.array(self.current_image_FM)
+                # print(self.current_image_FM)
+                # print(imagetoarray)
+                # self.current_path_FM = p.normpath(image_string)
 
                 self.status.setText(
                     "Image " + slider_value + " of " + max_value)
@@ -299,10 +306,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 slider_value = str(self.slider_stack_FIBSEM.value())
                 max_value = str(len(self.string_list_FIBSEM))
 
-                image_string = self.string_list_FIBSEM[int(slider_value) - 1]
+                image_string = self.string_list_FIBSEM[0]
 
                 if int(max_value) > 1:
-                    image_array = self.array_list_FIBSEM[int(slider_value) - 1]
+                    image_array = self.array_list_FIBSEM[1]
                 else:
                     image_array = self.array_list_FIBSEM
 
@@ -399,10 +406,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if z_slice_distance < 0:
                 raise ValueError("Slice distance must be a positive integer")
 
+            destination_for_continual_saving = self.lineEdit_save_destination_FM.text()
             volume = volume_function.volume_acquisition(
-                laser_dict, no_z_slices, z_slice_distance)
+                laser_dict, no_z_slices, z_slice_distance, destination_for_continual_saving)
             max_intensity = mip.max_intensity_projection(volume)
             channel = 0
+
+            rgb = np.zeros(shape=max_intensity.shape,dtype=np.uint8)
+            rgb[:, :, 0] = max_intensity[:, :, 0]
+            rgb[:, :, 1] = max_intensity[:, :, 1]
+            rgb[:, :, 2] = max_intensity[:, :, 2]
+
+            self.string_list_FM = ["RGB image"]
+            self.array_list_FM = rgb
+            self.update_display("FM")
+            # from PIL import Image
+            # r = Image.fromarray(rgb)
+            # r.save("C:\\Users\\Admin\\Pictures\\Basler\\test.bmp")
+
+            # import matplotlib.pyplot as plt
+            # plt.imshow(rgb)
+            # plt.show()
 
             for las in laser_dict:
                 destination = self.lineEdit_save_destination_FM.text() + \
@@ -410,10 +434,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                               correlation_function._timestamp()
                 os.makedirs(destination)
                 channel_max = max_intensity[:, :, channel]
-                util.save_image(image=channel_max, dest=destination + "\\Maximum_intensity_projection.tiff")
+                utility.save_image(image=channel_max, dest=destination + "\\Maximum_intensity_projection.tif")
 
                 for z_slice in range(0, np.shape(volume)[0]):
-                    util.save_image(image=volume[z_slice, :, :, channel], dest=destination + "\\slice__" + str(z_slice) + ".tiff")
+                    utility.save_image(image=volume[z_slice, :, :, channel], dest=destination + "\\slice__" + str(z_slice) + ".tif")
 
                 channel = channel + 1
 
