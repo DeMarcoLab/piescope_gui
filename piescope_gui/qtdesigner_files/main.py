@@ -690,7 +690,7 @@ class Ui_MainGui(object):
         MainGui.setWindowTitle(_translate("MainGui", "MainWindow"))
         self.label_volume_title.setText(_translate("MainGui", "Volume Acquisition"))
         self.label_slice_number.setText(_translate("MainGui", "Number of Slices"))
-        self.label_slice_distance.setText(_translate("MainGui", "Slice Distance"))
+        self.label_slice_distance.setText(_translate("MainGui", "Slice Distance (nm)"))
         self.lineEdit_exposure_3.setText(_translate("MainGui", "1000"))
         self.checkBox_laser3.setText(_translate("MainGui", "488nm"))
         self.label_exposure_4.setText(_translate("MainGui", "Exposure (ms)"))
