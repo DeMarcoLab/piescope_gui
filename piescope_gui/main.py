@@ -493,9 +493,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 filter="Images (*.bmp *.tif *.tiff *.jpg)")
             if image:
                 image = piescope_hardware.create_array_list(image, "MILLING")
+
             else:
                 raise ValueError("No image selected")
-            milling_function.open_milling_window(self, image)
+            milling_function.open_milling_window(self, image, image.metadata)
 
         except Exception as e:
             self.error_msg(str(e))
