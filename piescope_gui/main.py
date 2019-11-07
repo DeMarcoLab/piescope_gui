@@ -8,6 +8,7 @@ import piescope_gui.piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
 import piescope.utils as utility
 import piescope.maximum_intensity_projection as mip
+from autoscript_sdb_microscope_client.structures import *
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 import qimage2ndarray as q
@@ -58,6 +59,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.save_destination_correlation = ""
 
     def setup_connections(self):
+        self.pushButton_autocontrast.clicked.connect(
+            lambda: piescope_hardware.autocontrast_ion_beam(self, self.microscope))
+
         self.actionOpen_FM_Image.triggered.connect(
             lambda: self.open_images("FM"))
         self.actionOpen_FIBSEM_Image.triggered.connect(
@@ -494,8 +498,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 raise ValueError("No image selected")
 
             print(image.ndim)
-
-            from autoscript_sdb_microscope_client.structures import *
 
             milling_adorned_image = AdornedImage(image)
             milling_adorned_image.metadata = self.fibsem_image.metadata
