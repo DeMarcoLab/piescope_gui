@@ -42,6 +42,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.save_name = ""
         self.laser_dict = {}
+        self.fibsem_image = []
         self.array_list_FM = []
         self.array_list_FIBSEM = []
         self.string_list_FM = []
@@ -397,6 +398,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             laser_dict = self.laser_dict
             if laser_dict == {}:
                 raise ValueError("No lasers selected")
+            if len(laser_dict) > 3:
+                raise ValueError("Select max 3 lasers")
 
             no_z_slices = int(self.lineEdit_slice_number.text())
             if no_z_slices < 0:
@@ -420,13 +423,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.string_list_FM = ["RGB image"]
             self.array_list_FM = rgb
             self.update_display("FM")
-            # from PIL import Image
-            # r = Image.fromarray(rgb)
-            # r.save("C:\\Users\\Admin\\Pictures\\Basler\\test.bmp")
-
-            # import matplotlib.pyplot as plt
-            # plt.imshow(rgb)
-            # plt.show()
 
             for las in laser_dict:
                 destination = self.lineEdit_save_destination_FM.text() + \
@@ -489,14 +485,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def milling(self):
         try:
             [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
-                'Open Milling Image',
-                filter="Images (*.bmp *.tif *.tiff *.jpg)")
+                        'Open Milling Image',
+                        filter="Images (*.bmp *.tif *.tiff *.jpg)")
+            print(type(image))
             if image:
                 image = piescope_hardware.create_array_list(image, "MILLING")
-
             else:
                 raise ValueError("No image selected")
-            milling_function.open_milling_window(self, image, image.metadata)
+
+            print(image.ndim)
+
+            from autoscript_sdb_microscope_client.structures import *
+
+            milling_adorned_image = AdornedImage(image)
+            milling_adorned_image.metadata = self.fibsem_image.metadata
+
+            milling_function.open_milling_window(self, image,
+                                                 milling_adorned_image.metadata)
 
         except Exception as e:
             self.error_msg(str(e))

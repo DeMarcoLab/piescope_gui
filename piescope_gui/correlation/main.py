@@ -21,7 +21,7 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
-# from autoscript_sdb_microscope_client.structures import *
+from autoscript_sdb_microscope_client.structures import *
 
 from piescope_gui.milling import main as mill
 from piescope_gui._version import __version__
