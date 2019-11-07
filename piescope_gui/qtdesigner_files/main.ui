@@ -1457,23 +1457,8 @@
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
-            <layout class="QGridLayout" name="gridLayout_15">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <item row="2" column="2">
+            <layout class="QGridLayout" name="gridLayout_13">
+             <item row="2" column="1" rowspan="2">
               <widget class="QPushButton" name="button_last_image_SEM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -1486,8 +1471,8 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="button_get_image_SEM">
+             <item row="0" column="0" rowspan="2">
+              <widget class="QPushButton" name="button_get_image_FIB">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -1495,11 +1480,11 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Get SEM Image</string>
+                <string>Get FIB Image</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
+             <item row="2" column="0" rowspan="2">
               <widget class="QPushButton" name="button_last_image_FIB">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -1512,34 +1497,8 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="3">
-              <spacer name="horizontalSpacer_14">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="0">
-              <spacer name="horizontalSpacer_13">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="1" column="1">
-              <widget class="QPushButton" name="button_get_image_FIB">
+             <item row="0" column="1" rowspan="2">
+              <widget class="QPushButton" name="button_get_image_SEM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -1547,7 +1506,61 @@
                 </sizepolicy>
                </property>
                <property name="text">
-                <string>Get FIB Image</string>
+                <string>Get SEM Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="3">
+              <widget class="QLineEdit" name="lineEdit_dwell_time"/>
+             </item>
+             <item row="1" column="3">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Dwell Time (us)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Resolution</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QComboBox" name="comboBox_resolution">
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <item>
+                <property name="text">
+                 <string>768 x 512</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>1536 x 1024</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>3072 x2048</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>6144 x 4096</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item row="3" column="2" colspan="3">
+              <widget class="QPushButton" name="pushButton_autocontrast">
+               <property name="text">
+                <string>Autocontrast</string>
                </property>
               </widget>
              </item>
