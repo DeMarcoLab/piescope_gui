@@ -25,7 +25,7 @@ def open_milling_window(main_gui, image, adorned_metadata):
     global img
     gui = main_gui
     img = image
-    img = skimage.color.gray2rgb(image)
+    # img = skimage.color.gray2rgb(image)
 
     window = _MainWindow()
     window.show()
@@ -152,8 +152,10 @@ class _MainWindow(QMainWindow):
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
         self.pattern_creation_button.clicked.connect(
-            lambda: fibsem.create_rectangular_pattern(gui.microscope, gui.FIBSEM_adorned_image, self.xclick,
+            lambda: fibsem.create_rectangular_pattern(gui.microscope, gui.fibsem_image, self.xclick,
                                                       self.x1, self.yclick, self.y1, depth=1e-6))
+
+    def menu_quit(self):
         self.close()
 
     def on_click(self, event):
@@ -191,7 +193,7 @@ class _MainWindow(QMainWindow):
             try:
                 self.x1_label2.setText("%.1f" % self.x1)
             except:
-                gui_interaction.error_msg(gui, "Mouse released outside image.  Please try again")
+                gui.error_msg(gui, "Mouse released outside image.  Please try again")
             self.x0_label2.setText("%.1f" % self.xclick)
             self.y0_label2.setText("%.1f" % self.yclick)
             self.y1_label2.setText("%.1f" % self.y1)
