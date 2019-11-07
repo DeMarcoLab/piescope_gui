@@ -21,13 +21,22 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
-from autoscript_sdb_microscope_client.structures import *
+# from autoscript_sdb_microscope_client.structures import *
 
 from piescope_gui.milling import main as mill
 from piescope_gui._version import __version__
 
 
 def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_path):
+    """
+
+    :param main_gui: Parent window
+    :param fluorescence_image: numpy.array with shape: (rows, columns) or path
+                               to numpy.array with shape: (rows, columns)
+    :param fibsem_image: expecting Adorned Image or path to Adorned image
+    :param output_path: path to save location
+    :return:
+    """
     global img1
     global img2
     global img1_path
@@ -36,27 +45,24 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     global output
 
     gui = main_gui
-    gui.FIBSEM_adorned_image = fibsem_image
-    fibsem_data = numpy.copy(fibsem_image.data)
 
-    # fibsem_image_copy = np.copy(fibsem_image)
-    # fibsem_image_data = fibsem_image_copy.data
-    fluorescence_image = numpy.copy(fluorescence_image)
-    #
     if type(fluorescence_image) == str:
         print("Image 1 given as path")
         fluorescence_image = skimage.color.gray2rgb(plt.imread(fluorescence_image))
     else:
         print("Image 1 given as array")
-        # fluorescence_image_copy = np.copy(fluorescence_image)
+        fluorescence_image = np.copy(fluorescence_image)
         fluorescence_image = skimage.color.gray2rgb(fluorescence_image)
 
     if type(fibsem_image) == str:
         print("Image 2 given as path")
         fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
+        # gui.fibsem_image = fibsem_image
+        # get metadata from obtained sem image in this case
     else:
+        fibsem_data = np.copy(fibsem_image.data)
         print("Image 2 given as array")
-        fibsem_image = skimage.color.gray2rgb(fibsem_image)
+        fibsem_image = skimage.color.gray2rgb(fibsem_data)
 
     fluorescence_image = skimage.transform.resize(fluorescence_image, fibsem_image.shape)
 
@@ -85,7 +91,7 @@ def correlate_images(fluorescence_image, fibsem_image, output, matched_points_di
     save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
     print(output)
-    mill.open_milling_window(gui, result, adorned_metadata=gui.fibsem_image.metadata)
+    mill.open_milling_window(gui, result, adorned_metadata=overlay_adorned_image.metadata)
 
     return result
 
