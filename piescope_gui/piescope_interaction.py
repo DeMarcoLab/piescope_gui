@@ -267,3 +267,21 @@ def get_last_SEM_image(gui, microscope):
     else:
         print("Not connected to microscope")
         gui.error_msg("Not connected to microscope")
+
+
+def autocontrast_ion_beam(gui, microscope):
+    if gui.microscope:
+        try:
+            fibsem.autocontrast(microscope)
+            gui.fibsem_image = fibsem.new_ion_image(microscope)
+            gui.array_list_FIBSEM = gui.fibsem_image.data
+            gui.array_list_FIBSEM = skimage.util.img_as_ubyte(gui.array_list_FIBSEM)
+            gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()]
+            print(gui.array_list_FIBSEM)
+            gui.update_display("FIBSEM")
+
+        except Exception as e:
+            gui.error_msg(str(e))
+    else:
+        print("Not connected to microscope")
+        gui.error_msg("Not connected to microscope")
