@@ -1,5 +1,6 @@
 import os.path as p
 import os
+import traceback
 
 import piescope.lm.volume as volume_function
 import piescope_gui.milling.main as milling_function
@@ -58,9 +59,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.save_destination_FIBSEM = ""
         self.save_destination_correlation = ""
 
+        piescope_hardware.connect_to_microscope(self)
+
     def setup_connections(self):
         self.pushButton_autocontrast.clicked.connect(
-            lambda: piescope_hardware.autocontrast_ion_beam(self, self.microscope))
+            lambda: piescope_hardware.autocontrast_ion_beam(self, self.microscope, self.camera_settings))
+        self.comboBox_resolution.currentTextChanged.connect(
+            lambda: piescope_hardware.update_fibsem_settings(self))
+        self.lineEdit_dwell_time.textChanged.connect(
+            lambda: piescope_hardware.update_fibsem_settings(self))
 
         self.actionOpen_FM_Image.triggered.connect(
             lambda: self.open_images("FM"))
@@ -112,9 +119,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: piescope_hardware.update_laser_dict(self, "laser405"))
 
         self.button_get_image_FIB.clicked.connect(
-            lambda: piescope_hardware.get_FIB_image(self, self.microscope))
+            lambda: piescope_hardware.get_FIB_image(self, self.microscope, self.camera_settings))
         self.button_get_image_SEM.clicked.connect(
-            lambda: piescope_hardware.get_SEM_image(self, self.microscope))
+            lambda: piescope_hardware.get_SEM_image(self, self.microscope,  self.camera_settings))
         self.button_last_image_FIB.clicked.connect(
             lambda: piescope_hardware.get_last_FIB_image(self,
                                                          self.microscope))
@@ -124,7 +131,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_get_image_FM.clicked.connect(
             lambda: piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
-                self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text()))
+                                                       self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text()))
         self.button_live_image_FM.clicked.connect(
             lambda: piescope_hardware.basler_live_imaging(self))
 
@@ -174,7 +181,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     filter="Images (*.bmp *.tif *.tiff *.jpg)")
 
                 if self.string_list_FIBSEM:
-                    self.array_list_FIBSEM = piescope_hardware.\
+                    self.array_list_FIBSEM = piescope_hardware. \
                         create_array_list(self.string_list_FIBSEM, "FIBSEM")
                     self.slider_stack_FIBSEM.setMaximum(
                         len(self.string_list_FIBSEM))
@@ -222,21 +229,26 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                 exists = p.isfile(dest)
                                 count = count + 1
                                 utility.save_image(display_image,
-                                                             dest)
+                                                   dest)
                 else:
                     logger.error("No image to save")
                     self.error_msg("No image to save")
 
             elif modality == "FIBSEM":
+
                 if self.current_image_FIBSEM:
-                    max_value = len(self.string_list_FIBSEM)
-                    if max_value == 1:
-                        display_image = self.array_list_FIBSEM
-                        print(display_image)
-                    else:
-                        display_image = self.array_list_FIBSEM[
-                            self.slider_stack_FIBSEM.value() - 1]
-                        print(display_image)
+                    # if self.array_list_FIBSEM.all == self.fibsem_image.data.all:
+                    #     display_image = self.fibsem_image
+                    # else:
+                    #     max_value = len(self.string_list_FIBSEM)
+                    #     if max_value == 1:
+                    #         display_image = self.array_list_FIBSEM
+                    #         print(display_image)
+                    #     else:
+                    #         display_image = self.array_list_FIBSEM[
+                    #             self.slider_stack_FIBSEM.value() - 1]
+                    #         print(display_image)
+                    display_image = self.fibsem_image
                     [save_base, ext] = p.splitext(
                         self.lineEdit_save_filename_FIBSEM.text())
                     dest = self.lineEdit_save_destination_FIBSEM.text() + \
@@ -260,8 +272,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        ").tiff"
                                 exists = p.isfile(dest)
                                 count = count + 1
-                                utility.save_image(display_image,
-                                                             dest)
+                                utility.save_image(display_image, dest)
+
                 else:
                     logger.error("No image to save")
                     self.error_msg("No image to save")
@@ -288,12 +300,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
                 self.current_image_FM = q.array2qimage(image_array)
                 print(self.current_image_FM)
-                # from PIL import Image
-                # self.current_image_FM = Image.fromarray(image_array)
-                # imagetoarray = np.array(self.current_image_FM)
-                # print(self.current_image_FM)
-                # print(imagetoarray)
-                # self.current_path_FM = p.normpath(image_string)
 
                 self.status.setText(
                     "Image " + slider_value + " of " + max_value)
@@ -475,8 +481,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
 
             correlation_function.open_correlation_window(self, input_filename_1,
-                                                        input_filename_2,
-                                                        output_filename)
+                                                         input_filename_2,
+                                                         output_filename)
             if p.isfile(tempfile):
                 os.remove(tempfile)
 
@@ -489,21 +495,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def milling(self):
         try:
             [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
-                        'Open Milling Image',
-                        filter="Images (*.bmp *.tif *.tiff *.jpg)")
-            print(type(image))
+                                                                  'Open Milling Image',
+                                                                  filter="Images (*.bmp *.tif *.tiff *.jpg)")
+
+            from autoscript_sdb_microscope_client.structures import AdornedImage
+            adorned_image = AdornedImage()
+            adorned_image = adorned_image.load(image[0])
             if image:
                 image = piescope_hardware.create_array_list(image, "MILLING")
             else:
                 raise ValueError("No image selected")
 
-            print(image.ndim)
-
-            milling_adorned_image = AdornedImage(image)
-            milling_adorned_image.metadata = self.fibsem_image.metadata
-
-            milling_function.open_milling_window(self, image,
-                                                 milling_adorned_image.metadata)
+            milling_function.open_milling_window(self, image, adorned_image)
 
         except Exception as e:
             self.error_msg(str(e))
@@ -512,7 +515,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def live_imaging_event_listener_FM(self, stop_event):
         state = True
         while state and not stop_event.isSet():
-            piescope_hardware.get_basler_image(self)
+            piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
+                                            self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text())
 
     def error_msg(self, message):
         error_dialog = QtWidgets.QErrorMessage()

@@ -83,15 +83,16 @@ def correlate_images(fluorescence_image, fibsem_image, output, matched_points_di
     src, dst = point_coords(matched_points_dict)
     transformation = calculate_transform(src, dst)
     fluorescence_image_aligned = apply_transform(fluorescence_image, transformation)
-    result = overlay_images(fluorescence_image_aligned, fibsem_image)
+    result = overlay_images(fluorescence_image_aligned, fibsem_image.data)
     result = skimage.util.img_as_ubyte(result)
 
     overlay_adorned_image = AdornedImage(result)
     overlay_adorned_image.metadata = gui.fibsem_image.metadata
     save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
+    overlay_adorned_image.save(output)
     print(output)
-    mill.open_milling_window(gui, result, adorned_metadata=overlay_adorned_image.metadata)
+    mill.open_milling_window(gui, result, overlay_adorned_image, fluorescence_image_aligned)
 
     return result
 

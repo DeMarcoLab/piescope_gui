@@ -11,9 +11,10 @@ from matplotlib.backends.backend_qt5agg import \
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
 from piescope import fibsem
+import piescope_gui.correlation.main as corr
 
 
-def open_milling_window(main_gui, image, adorned_image):
+def open_milling_window(main_gui, image, adorned_image, fluorescence_image=[]):
     """
 
     :param main_gui:
@@ -24,9 +25,13 @@ def open_milling_window(main_gui, image, adorned_image):
     global gui
     global img
     global adorned
-    adorned = adorned_image
+    global fluorescence
+    global transform
+
     gui = main_gui
     img = image
+    adorned = adorned_image
+    fluorescence = fluorescence_image
 
     window = _MainWindow()
     window.show()
@@ -175,13 +180,22 @@ class _MainWindow(QMainWindow):
             lambda: fibsem.create_rectangular_pattern(gui.microscope, adorned, self.xclick,
                                                       self.x1, self.yclick, self.y1, depth=1e-6))
 
-
         self.pattern_start_button.clicked.connect(self.start_patterning)
         self.pattern_pause_button.clicked.connect(self.pause_patterning)
         self.pattern_stop_button.clicked.connect(self.stop_patterning)
 
+        self.reoverlay_button.clicked.connect(self.overlay)
+
     def menu_quit(self):
         self.close()
+
+    def overlay(self):
+        new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
+        new_ion_image_data = skimage.color.gray2rgb(new_ion_image.data)
+        result = corr.overlay_images(fluorescence, new_ion_image_data)
+        result = skimage.util.img_as_ubyte(result)
+        img = result
+        self.wp.canvas.ax11.imshow(img)
 
     def start_patterning(self):
         state = gui.microscope.patterning.state
