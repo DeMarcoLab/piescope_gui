@@ -13,19 +13,20 @@ from matplotlib.patches import Rectangle
 from piescope import fibsem
 
 
-def open_milling_window(main_gui, image, adorned_metadata):
+def open_milling_window(main_gui, image, adorned_image):
     """
 
     :param main_gui:
     :param image: numpy array
-    :param adorned_metadata: adorned_image.metadata
-    :return:
+    :param adorned_image: adorned_image
+        :return:
     """
     global gui
     global img
+    global adorned
+    adorned = adorned_image
     gui = main_gui
     img = image
-    # img = skimage.color.gray2rgb(image)
 
     window = _MainWindow()
     window.show()
@@ -44,6 +45,9 @@ class _MainWindow(QMainWindow):
             left=0.01, bottom=0.01, right=0.99, top=0.99)
 
         self.x1 = None
+        self.y1 = None
+        self.xclick = None
+        self.yclick = None
 
         q1 = QTimer(self)
         q1.setSingleShot(False)
@@ -60,38 +64,51 @@ class _MainWindow(QMainWindow):
         self.wp = _WidgetPlot(self)
         vlay.addWidget(self.wp)
 
+        button_width = 230
+        button_height = 60
+        label_width = 60
 
         self.exitButton = QPushButton("Return")
-        self.exitButton.setFixedWidth(250)
-        self.exitButton.setFixedHeight(60)
+        self.exitButton.setFixedWidth(button_width)
+        self.exitButton.setFixedHeight(button_height)
         self.exitButton.setStyleSheet("font-size: 16px;")
 
         self.pattern_creation_button = QPushButton("Create milling pattern")
-        self.pattern_creation_button.setFixedWidth(250)
-        self.pattern_creation_button.setFixedHeight(60)
+        self.pattern_creation_button.setFixedWidth(button_width)
+        self.pattern_creation_button.setFixedHeight(button_height)
         self.pattern_creation_button.setStyleSheet("font-size: 16px;")
 
         self.pattern_start_button = QPushButton("Start milling pattern")
-        self.pattern_start_button.setFixedWidth(250)
-        self.pattern_start_button.setFixedHeight(60)
+        self.pattern_start_button.setFixedWidth(button_width)
+        self.pattern_start_button.setFixedHeight(button_height)
         self.pattern_start_button.setStyleSheet("font-size: 16px;")
 
         self.pattern_pause_button = QPushButton("Pause milling pattern")
-        self.pattern_pause_button.setFixedWidth(250)
-        self.pattern_pause_button.setFixedHeight(60)
+        self.pattern_pause_button.setFixedWidth(button_width)
+        self.pattern_pause_button.setFixedHeight(button_height)
         self.pattern_pause_button.setStyleSheet("font-size: 16px;")
 
         self.pattern_stop_button = QPushButton("Stop milling pattern")
-        self.pattern_stop_button.setFixedWidth(250)
-        self.pattern_stop_button.setFixedHeight(60)
+        self.pattern_stop_button.setFixedWidth(button_width)
+        self.pattern_stop_button.setFixedHeight(button_height)
         self.pattern_stop_button.setStyleSheet("font-size: 16px;")
+
+        self.reoverlay_button = QPushButton("New FIB image + Overlay")
+        self.reoverlay_button.setFixedWidth(button_width)
+        self.reoverlay_button.setFixedHeight(button_height)
+        self.reoverlay_button.setStyleSheet("font-size: 16px;")
+
+        self.recorrelate_button = QPushButton("Recorrelate image")
+        self.recorrelate_button.setFixedWidth(button_width)
+        self.recorrelate_button.setFixedHeight(button_height)
+        self.recorrelate_button.setStyleSheet("font-size: 16px;")
 
         self.x0_label = QLabel("X0:")
         self.x0_label.setFixedHeight(30)
         self.x0_label.setStyleSheet("font-size: 16px;")
 
         self.x0_label2 = QLabel("")
-        self.x0_label2.setFixedWidth(120)
+        self.x0_label2.setFixedWidth(label_width)
         self.x0_label2.setFixedHeight(30)
         self.x0_label2.setStyleSheet("font-size: 16px;")
 
@@ -100,7 +117,7 @@ class _MainWindow(QMainWindow):
         self.y0_label.setStyleSheet("font-size: 16px;")
 
         self.y0_label2 = QLabel("")
-        self.y0_label2.setFixedWidth(120)
+        self.y0_label2.setFixedWidth(label_width)
         self.y0_label2.setFixedHeight(30)
         self.y0_label2.setStyleSheet("font-size: 16px;")
 
@@ -109,7 +126,7 @@ class _MainWindow(QMainWindow):
         self.x1_label.setStyleSheet("font-size: 16px;")
 
         self.x1_label2 = QLabel("")
-        self.x1_label2.setFixedWidth(120)
+        self.x1_label2.setFixedWidth(label_width)
         self.x1_label2.setFixedHeight(30)
         self.x1_label2.setStyleSheet("font-size: 16px;")
 
@@ -118,7 +135,7 @@ class _MainWindow(QMainWindow):
         self.y1_label.setStyleSheet("font-size: 16px;")
 
         self.y1_label2 = QLabel("")
-        self.y1_label2.setFixedWidth(120)
+        self.y1_label2.setFixedWidth(label_width)
         self.y1_label2.setFixedHeight(30)
         self.y1_label2.setStyleSheet("font-size: 16px;")
 
@@ -132,11 +149,13 @@ class _MainWindow(QMainWindow):
         hlay.addWidget(self.y0_label2)
         hlay.addWidget(self.y1_label)
         hlay.addWidget(self.y1_label2)
-        hlay.addSpacerItem(spacerItem)
+        # hlay.addSpacerItem(spacerItem)
         hlay.addWidget(self.pattern_creation_button)
         hlay.addWidget(self.pattern_start_button)
         hlay.addWidget(self.pattern_pause_button)
         hlay.addWidget(self.pattern_stop_button)
+        hlay.addWidget(self.reoverlay_button)
+        hlay.addWidget(self.recorrelate_button)
         hlay.addWidget(self.exitButton)
         vlay.addLayout(hlay)
 
@@ -151,12 +170,39 @@ class _MainWindow(QMainWindow):
 
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
+
         self.pattern_creation_button.clicked.connect(
-            lambda: fibsem.create_rectangular_pattern(gui.microscope, gui.fibsem_image, self.xclick,
+            lambda: fibsem.create_rectangular_pattern(gui.microscope, adorned, self.xclick,
                                                       self.x1, self.yclick, self.y1, depth=1e-6))
+
+
+        self.pattern_start_button.clicked.connect(self.start_patterning)
+        self.pattern_pause_button.clicked.connect(self.pause_patterning)
+        self.pattern_stop_button.clicked.connect(self.stop_patterning)
 
     def menu_quit(self):
         self.close()
+
+    def start_patterning(self):
+        state = gui.microscope.patterning.state
+        if state == "Running":
+            gui.error_msg('Patterning already running')
+        else:
+            gui.microscope.patterning.start()
+
+    def pause_patterning(self):
+        state = gui.microscope.patterning.state
+        if state == "Idle" or state == "Paused":
+            gui.error_msg('Patterning already paused or idle')
+        else:
+            gui.microscope.patterning.pause()
+
+    def stop_patterning(self):
+        state = gui.microscope.patterning.state
+        if state == "Idle" or state == "Paused":
+            gui.error_msg('Patterning already paused or idle')
+        else:
+            gui.microscope.patterning.stop()
 
     def on_click(self, event):
         if event.button == 1 or event.button == 3:
