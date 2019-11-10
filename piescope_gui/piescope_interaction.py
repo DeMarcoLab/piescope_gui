@@ -207,7 +207,7 @@ def move_to_electron_microscope(gui, microscope, x, y):
 def get_FIB_image(gui, microscope, camera_settings):
     if gui.microscope:
         try:
-            if gui.checkBox_Autocontrast.isChecked:
+            if gui.checkBox_Autocontrast.isChecked():
                 autocontrast_ion_beam(gui, microscope, camera_settings)
             gui.fibsem_image = fibsem.new_ion_image(microscope, camera_settings)
             gui.array_list_FIBSEM = gui.fibsem_image.data
@@ -243,7 +243,7 @@ def get_last_FIB_image(gui, microscope):
 def get_SEM_image(gui, microscope, camera_settings):
     if gui.microscope:
         try:
-            if gui.checkBox_Autocontrast.isChecked:
+            if gui.checkBox_Autocontrast.isChecked():
                 autocontrast_ion_beam(gui, microscope, camera_settings)
             gui.fibsem_image = fibsem.new_electron_image(microscope, camera_settings)
             gui.array_list_FIBSEM = gui.fibsem_image.data
