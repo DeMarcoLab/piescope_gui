@@ -43,16 +43,18 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     global img2_path
     global gui
     global output
+    global fluorescence_original
 
     gui = main_gui
+    fluorescence_original = fluorescence_image
 
     if type(fluorescence_image) == str:
         print("Image 1 given as path")
-        fluorescence_image = skimage.color.gray2rgb(plt.imread(fluorescence_image))
+        fluorescence_image_rgb = skimage.color.gray2rgb(plt.imread(fluorescence_image))
     else:
         print("Image 1 given as array")
-        fluorescence_image = np.copy(fluorescence_image)
-        fluorescence_image = skimage.color.gray2rgb(fluorescence_image)
+        fluorescence_image_rgb = np.copy(fluorescence_image)
+        fluorescence_image_rgb = skimage.color.gray2rgb(fluorescence_image_rgb)
 
     if type(fibsem_image) == str:
         print("Image 2 given as path")
@@ -64,9 +66,9 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
         print("Image 2 given as array")
         fibsem_image = skimage.color.gray2rgb(fibsem_data)
 
-    fluorescence_image = skimage.transform.resize(fluorescence_image, fibsem_image.shape)
+        fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
 
-    img1 = fluorescence_image
+    img1 = fluorescence_image_rgb
     img2 = fibsem_image
     output = output_path
 
@@ -75,14 +77,14 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     return
 
 
-def correlate_images(fluorescence_image, fibsem_image, output, matched_points_dict):
+def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_points_dict):
     if matched_points_dict == []:
         print('No control points selected, exiting.')
         return
 
     src, dst = point_coords(matched_points_dict)
     transformation = calculate_transform(src, dst)
-    fluorescence_image_aligned = apply_transform(fluorescence_image, transformation)
+    fluorescence_image_aligned = apply_transform(fluorescence_image_rgb, transformation)
     result = overlay_images(fluorescence_image_aligned, fibsem_image.data)
     result = skimage.util.img_as_ubyte(result)
 
@@ -91,8 +93,10 @@ def correlate_images(fluorescence_image, fibsem_image, output, matched_points_di
     save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
     overlay_adorned_image.save(output)
-    print(output)
-    mill.open_milling_window(gui, result, overlay_adorned_image, fluorescence_image_aligned)
+    # print(output)
+    mill.open_milling_window(gui, result, overlay_adorned_image,
+                             fluorescence_image_rgb, fluorescence_original,
+                             output, matched_points_dict)
 
     return result
 
