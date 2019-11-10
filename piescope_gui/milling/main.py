@@ -14,24 +14,34 @@ from piescope import fibsem
 import piescope_gui.correlation.main as corr
 
 
-def open_milling_window(main_gui, image, adorned_image, fluorescence_image=[]):
+def open_milling_window(main_gui, image, adorned_image, fluorescence_image_rgb,
+                        fluorescence_original, output, matched_points_dict):
     """
 
-    :param main_gui:
-    :param image: numpy array
-    :param adorned_image: adorned_image
-        :return:
+    :param main_gui: main gui window
+    :param image: overlaid image
+    :param adorned_image: adorned overlaid image
+    :param fluorescence_image_rgb: rgb version of original fluorescence image
+    :param fluorescence_original: original fluorescence image
+    :return:
     """
     global gui
     global img
     global adorned
-    global fluorescence
-    global transform
+
+    global rgb
+    global original
+    global out
+    global matched
+
+    rgb = fluorescence_image_rgb
+    original = fluorescence_original
+    out = output
+    matched = matched_points_dict
 
     gui = main_gui
     img = image
     adorned = adorned_image
-    fluorescence = fluorescence_image
 
     window = _MainWindow()
     window.show()
@@ -184,18 +194,26 @@ class _MainWindow(QMainWindow):
         self.pattern_pause_button.clicked.connect(self.pause_patterning)
         self.pattern_stop_button.clicked.connect(self.stop_patterning)
 
+        self.recorrelate_button.clicked.connect(self.correlate)
         self.reoverlay_button.clicked.connect(self.overlay)
 
     def menu_quit(self):
         self.close()
 
+    def correlate(self):
+        new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
+        corr.open_correlation_window(gui, original, new_ion_image, out)
+        self.close()
+
     def overlay(self):
         new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
         new_ion_image_data = skimage.color.gray2rgb(new_ion_image.data)
-        result = corr.overlay_images(fluorescence, new_ion_image_data)
-        result = skimage.util.img_as_ubyte(result)
-        img = result
-        self.wp.canvas.ax11.imshow(img)
+        corr.correlate_images(rgb, new_ion_image_data, out, matched)
+        self.close()
+        # result = corr.overlay_images(fluorescence, new_ion_image_data)
+        # result = skimage.util.img_as_ubyte(result)
+        # img = result
+        # self.wp.canvas.ax11.imshow(img)
 
     def start_patterning(self):
         state = gui.microscope.patterning.state
