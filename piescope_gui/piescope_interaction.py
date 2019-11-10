@@ -298,6 +298,7 @@ def update_fibsem_settings(gui):
             dwell_time = float(gui.lineEdit_dwell_time.text())*1.e-6
             resolution = gui.comboBox_resolution.currentText()
             fibsem_settings = fibsem.update_camera_settings(dwell_time, resolution)
+            gui.camera_settings = fibsem_settings
             return fibsem_settings
 
         except Exception as e:
