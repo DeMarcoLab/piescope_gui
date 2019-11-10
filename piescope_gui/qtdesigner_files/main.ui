@@ -393,6 +393,13 @@
                </property>
               </spacer>
              </item>
+             <item row="10" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_initialise_stage">
+               <property name="text">
+                <string>Initialise Stage</string>
+               </property>
+              </widget>
+             </item>
              <item row="6" column="1">
               <widget class="QPushButton" name="to_electron_microscope">
                <property name="text">
@@ -400,7 +407,7 @@
                </property>
               </widget>
              </item>
-             <item row="7" column="0" colspan="2">
+             <item row="8" column="0" colspan="2">
               <spacer name="verticalSpacer_6">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -413,60 +420,10 @@
                </property>
               </spacer>
              </item>
-             <item row="9" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_initialise_stage">
-               <property name="text">
-                <string>Initialise Stage</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QPushButton" name="connect_microscope">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Connect to microscope</string>
-               </property>
-              </widget>
-             </item>
-             <item row="11" column="0">
+             <item row="12" column="0">
               <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
                 <string>Move Relative (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="11" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_relative"/>
-             </item>
-             <item row="10" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
-             </item>
-             <item row="10" column="0">
-              <widget class="QPushButton" name="pushButton_move_absolute">
-               <property name="text">
-                <string>Move Absolute (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_volume">
-               <property name="text">
-                <string>Acquire Volume</string>
-               </property>
-               <property name="flat">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QPushButton" name="to_light_microscope">
-               <property name="text">
-                <string>To Light Microscope</string>
                </property>
               </widget>
              </item>
@@ -482,6 +439,36 @@
                 </size>
                </property>
               </spacer>
+             </item>
+             <item row="11" column="0">
+              <widget class="QPushButton" name="pushButton_move_absolute">
+               <property name="text">
+                <string>Move Absolute (um)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="11" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
+             </item>
+             <item row="6" column="0">
+              <widget class="QPushButton" name="to_light_microscope">
+               <property name="text">
+                <string>To Light Microscope</string>
+               </property>
+              </widget>
+             </item>
+             <item row="12" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_relative"/>
+             </item>
+             <item row="0" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_volume">
+               <property name="text">
+                <string>Acquire Volume</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+              </widget>
              </item>
              <item row="2" column="0" colspan="2">
               <widget class="QFrame" name="frame">
@@ -523,6 +510,19 @@
                  </widget>
                 </item>
                </layout>
+              </widget>
+             </item>
+             <item row="7" column="0" colspan="2">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Connect to microscope</string>
+               </property>
               </widget>
              </item>
             </layout>
@@ -1457,115 +1457,175 @@
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
-            <layout class="QGridLayout" name="gridLayout_13">
-             <item row="2" column="1" rowspan="2">
-              <widget class="QPushButton" name="button_last_image_SEM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
+            <layout class="QGridLayout" name="gridLayout_20">
+             <item row="0" column="0">
+              <widget class="QFrame" name="frame_2">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
-               <property name="text">
-                <string>Grab Last SEM</string>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
+               <layout class="QGridLayout" name="gridLayout_13">
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QPushButton" name="button_get_image_FIB">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Get FIB Image</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QPushButton" name="button_get_image_SEM">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Get SEM Image</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="button_last_image_FIB">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Grab Last FIB</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QPushButton" name="button_last_image_SEM">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Grab Last SEM</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
-             <item row="0" column="0" rowspan="2">
-              <widget class="QPushButton" name="button_get_image_FIB">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Get FIB Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0" rowspan="2">
-              <widget class="QPushButton" name="button_last_image_FIB">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Grab Last FIB</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1" rowspan="2">
-              <widget class="QPushButton" name="button_get_image_SEM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Get SEM Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="3">
-              <widget class="QLineEdit" name="lineEdit_dwell_time">
-               <property name="text">
-                <string>1</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="3">
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Dwell Time (us)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Resolution</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <widget class="QComboBox" name="comboBox_resolution">
-               <property name="minimumSize">
+             <item row="0" column="1">
+              <widget class="QFrame" name="frame_3">
+               <property name="maximumSize">
                 <size>
-                 <width>80</width>
-                 <height>0</height>
+                 <width>245</width>
+                 <height>16777215</height>
                 </size>
                </property>
-               <item>
-                <property name="text">
-                 <string>768x512</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>1536x1024</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>3072x2048</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>6144x4096</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="3" column="2" colspan="3">
-              <widget class="QPushButton" name="pushButton_autocontrast">
-               <property name="text">
-                <string>Autocontrast</string>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QGridLayout" name="gridLayout_15">
+                <item row="1" column="1">
+                 <widget class="QComboBox" name="comboBox_resolution">
+                  <property name="minimumSize">
+                   <size>
+                    <width>80</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>100</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>768x512</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>1536x1024</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>3072x2048</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>6144x4096</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>Dwell Time (us)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLineEdit" name="lineEdit_dwell_time">
+                  <property name="maximumSize">
+                   <size>
+                    <width>65</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <widget class="QCheckBox" name="checkBox_Autocontrast">
+                  <property name="minimumSize">
+                   <size>
+                    <width>90</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string>Autocontrast</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_4">
+                  <property name="text">
+                   <string>Resolution</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
