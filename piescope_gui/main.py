@@ -62,8 +62,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         piescope_hardware.connect_to_microscope(self)
 
     def setup_connections(self):
-        self.pushButton_autocontrast.clicked.connect(
-            lambda: piescope_hardware.autocontrast_ion_beam(self, self.microscope, self.camera_settings))
         self.comboBox_resolution.currentTextChanged.connect(
             lambda: piescope_hardware.update_fibsem_settings(self))
         self.lineEdit_dwell_time.textChanged.connect(
@@ -121,7 +119,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.button_get_image_FIB.clicked.connect(
             lambda: piescope_hardware.get_FIB_image(self, self.microscope, self.camera_settings))
         self.button_get_image_SEM.clicked.connect(
-            lambda: piescope_hardware.get_SEM_image(self, self.microscope,  self.camera_settings))
+            lambda: piescope_hardware.get_SEM_image(self, self.microscope, self.camera_settings))
         self.button_last_image_FIB.clicked.connect(
             lambda: piescope_hardware.get_last_FIB_image(self,
                                                          self.microscope))
@@ -454,13 +452,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def correlateim(self):
         tempfile = "C:"
         try:
-            input_filename_1 = self.array_list_FM
-            print(type(input_filename_1))
+            fluorescence_image = self.array_list_FM
+            print(type(fluorescence_image))
 
-            if input_filename_1 == [] or input_filename_1 == "":
+            if fluorescence_image == [] or fluorescence_image == "":
                 raise ValueError("No first image selected")
-            input_filename_2 = self.array_list_FIBSEM
-            if input_filename_2 == [] or input_filename_2 == "":
+            fibsem_image = self.array_list_FIBSEM
+            if fibsem_image == [] or fibsem_image == "":
                 raise ValueError("No second image selected")
 
             output_filename = self.correlation_output_path.text()
@@ -480,8 +478,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
 
-            correlation_function.open_correlation_window(self, input_filename_1,
-                                                         input_filename_2,
+            correlation_function.open_correlation_window(self, fluorescence_image,
+                                                         fibsem_image,
                                                          output_filename)
             if p.isfile(tempfile):
                 os.remove(tempfile)
