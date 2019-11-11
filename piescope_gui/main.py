@@ -2,6 +2,7 @@ import os.path as p
 import os
 import traceback
 
+import piescope.lm.laser
 import piescope.lm.volume as volume_function
 import piescope_gui.milling.main as milling_function
 import piescope_gui.correlation.main as correlation_function
@@ -37,7 +38,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.checkBox_save_destination_FIBSEM.setChecked(1)
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
-
         self.delim = p.normpath("/")
         self.liveCheck = True
         self.microscope = None
@@ -62,6 +62,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         piescope_hardware.connect_to_microscope(self)
 
     def setup_connections(self):
+
+        self.lasers = piescope.lm.laser.initialize_lasers()
+        self.basler = piescope.lm.detector.Basler()
+
         self.comboBox_resolution.currentTextChanged.connect(
             lambda: piescope_hardware.update_fibsem_settings(self))
         self.lineEdit_dwell_time.textChanged.connect(
@@ -129,9 +133,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_get_image_FM.clicked.connect(
             lambda: piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
-                                                       self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text()))
+                                                       self.lineEdit_exposure_basler.text(),
+                                                       self.lineEdit_power_basler_2.text(), self.lasers, self.basler, "single"))
         self.button_live_image_FM.clicked.connect(
-            lambda: piescope_hardware.basler_live_imaging(self))
+            lambda: piescope_hardware.basler_live_imaging(self, self.comboBox_laser_basler.currentText(),
+                                                       self.lineEdit_exposure_basler.text(),
+                                                       self.lineEdit_power_basler_2.text(), self.lasers, self.basler))
 
         self.pushButton_initialise_stage.clicked.connect(
             lambda: piescope_hardware.initialise_stage(self))
@@ -146,10 +153,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: piescope_hardware.connect_to_microscope(self))
         self.to_light_microscope.clicked.connect(
             lambda: piescope_hardware.move_to_light_microscope(
-                self, self.microscope, 50.0024e-3, -0.1612e-3))
+                self, self.microscope, 49.952e-3, -0.1911e-3))
         self.to_electron_microscope.clicked.connect(
             lambda: piescope_hardware.move_to_electron_microscope(
-                self, self.microscope, -50.0024e-3, 0.1612e-3))
+                self, self.microscope, -49.952e-3, 0.1911e-3))
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
         self.pushButton_correlation.clicked.connect(self.correlateim)
@@ -288,22 +295,32 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 max_value = str(len(self.string_list_FM))
 
                 image_string = self.string_list_FM[int(slider_value) - 1]
+                self.current_path_FM = p.normpath(image_string)
 
                 if int(max_value) > 1:
                     image_array = self.array_list_FM[int(slider_value) - 1]
                 else:
                     image_array = self.array_list_FM
-                print("Image array: ------------------------------------ ", image_array)
-                print("Image shape: ------------------------------------ ", image_array.shape)
+                image_array = np.flipud(image_array)
+                image_array_crosshair = np.copy(image_array)
+                xshape = image_array_crosshair.shape[0]
+                yshape = image_array_crosshair.shape[1]
+                midx = int(xshape/2)
+                midy = int(yshape/2)
+                thresh = 2
+                mult = 25
+                image_array_crosshair[midx-(thresh*mult):midx+(thresh*mult), midy-thresh:midy+thresh] = 255
+                image_array_crosshair[midx - thresh:midx + thresh, midy - (thresh * mult):midy + (thresh * mult)] = 255
 
                 self.current_image_FM = q.array2qimage(image_array)
+                self.current_image_FM_crosshair = q.array2qimage(image_array_crosshair)
                 print(self.current_image_FM)
 
                 self.status.setText(
                     "Image " + slider_value + " of " + max_value)
 
                 self.current_pixmap_FM = QtGui.QPixmap.fromImage(
-                    self.current_image_FM)
+                    self.current_image_FM_crosshair)
                 self.current_pixmap_FM = self.current_pixmap_FM.scaled(
                     640, 400, QtCore.Qt.KeepAspectRatio)
                 self.label_image_FM.setPixmap(self.current_pixmap_FM)
@@ -423,10 +440,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             max_intensity = mip.max_intensity_projection(volume)
             channel = 0
 
-            rgb = np.zeros(shape=max_intensity.shape,dtype=np.uint8)
-            rgb[:, :, 0] = max_intensity[:, :, 0]
-            rgb[:, :, 1] = max_intensity[:, :, 1]
-            rgb[:, :, 2] = max_intensity[:, :, 2]
+            # print(max_intensity.shape)
+            # print(max_intensity.shape[])
+            rgb = self.create_rgb(max_intensity)
 
             self.string_list_FM = ["RGB image"]
             self.array_list_FM = rgb
@@ -448,6 +464,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             self.error_msg(str(e))
             print(e)
+
+    def create_rgb(self, max_intensity):
+        """
+
+        :param max_intensity: np.ndarray with shape (col, row, channels).  Expecting at most 3 channels.
+        :return: rgb image
+        """
+        col = max_intensity.shape[0]
+        row = max_intensity.shape[1]
+        rgb = np.zeros(shape=(col, row, 3), dtype=np.uint8)
+        if max_intensity.shape[2] > 3:
+            raise ValueError("Too many channels")
+        elif max_intensity.shape[2] == 3:
+            rgb = max_intensity
+        elif max_intensity.shape[2] == 2:
+            rgb[:, :, 0] = max_intensity[:, :, 0]
+            rgb[:, :, 1] = max_intensity[:, :, 1]
+        else:
+            rgb[:, :, 0] = max_intensity[:, :, 0]
+
+        return rgb
 
     def correlateim(self):
         tempfile = "C:"
@@ -512,9 +549,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def live_imaging_event_listener_FM(self, stop_event):
         state = True
+
         while state and not stop_event.isSet():
             piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
-                                            self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text())
+                                            self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text(),
+                                               self.lasers, self.basler, "live")
 
     def error_msg(self, message):
         error_dialog = QtWidgets.QErrorMessage()
