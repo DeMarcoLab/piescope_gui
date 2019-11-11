@@ -4,9 +4,11 @@ import threading
 from piescope.lm import detector
 from piescope.lm import laser
 from piescope import fibsem
-from piescope_gui.correlation import main as corr
+import piescope_gui.correlation.main as corr
+# from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
 import skimage.util
+import scipy.ndimage as ndi
 
 
 def create_array_list(input_list, modality):
@@ -76,51 +78,63 @@ def update_laser_dict(gui, laser):
         gui.error_msg(str(e))
 
 
-def get_basler_image(gui, wavelength, exposure, power):
+def get_basler_image(gui, wavelength, exposure, power, lasers, basler, mode):
     try:
-        basler = detector.Basler()
-        lasers = laser.initialize_lasers()
-
         if wavelength == "640nm":
-            lasers["laser640"].enable()
-            lasers["laser640"].laser_power = int(power)
-            lasers["laser561"].disable()
-            lasers["laser488"].disable()
-            lasers["laser405"].disable()
+            las = "laser640"
         elif wavelength == "561nm":
-            lasers["laser640"].disable()
-            lasers["laser561"].enable()
-            lasers["laser562"].laser_power = int(power)
-            lasers["laser488"].disable()
-            lasers["laser405"].disable()
+            las = "laser561"
         elif wavelength == "488nm":
-            lasers["laser640"].disable()
-            lasers["laser561"].disable()
-            lasers["laser488"].enable()
-            lasers["laser488"].laser_power = int(power)
-            lasers["laser405"].disable()
+            las = "laser488"
         elif wavelength == "405nm":
-            lasers["laser640"].disable()
-            lasers["laser561"].disable()
-            lasers["laser488"].disable()
-            lasers["laser405"].enable()
-            lasers["laser405"].laser_power = int(power)
+            las = "laser405"
 
-        basler.camera.Open()
-        basler.camera.ExposureTime.SetValue(int(exposure)*1000)
+        if mode == "single":
 
-        gui.string_list_FM = [gui.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
-        gui.array_list_FM = basler.camera_grab()
-        print(gui.array_list_FM)
-        gui.slider_stack_FM.setValue(1)
-        gui.update_display("FM")
+            lasers[las].laser_power = int(power)
+            lasers[las].emission_on()
+
+            basler.camera.Open()
+            basler.camera.ExposureTime.SetValue(int(exposure)*1000)
+            gui.string_list_FM = [gui.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
+            gui.array_list_FM = basler.camera_grab()
+
+            lasers[las].emission_off()
+
+            print(gui.array_list_FM)
+            gui.slider_stack_FM.setValue(1)
+            gui.update_display("FM")
+
+        elif mode == "live":
+            basler.camera.Open()
+            basler.camera.ExposureTime.SetValue(int(exposure) * 1000)
+            lasers[las].laser_power = int(power)
+            gui.string_list_FM = [gui.DEFAULT_PATH + "_Basler_Image_" + corr._timestamp()]
+            gui.array_list_FM = basler.camera_grab()
+            print(gui.array_list_FM)
+            gui.slider_stack_FM.setValue(1)
+            gui.update_display("FM")
+
     except Exception as e:
         gui.error_msg(str(e))
 
 
-def basler_live_imaging(gui):
+def basler_live_imaging(gui, wavelength, exposure, power, lasers, basler):
     try:
+        if wavelength == "640nm":
+            las = "laser640"
+        elif wavelength == "561nm":
+            las = "laser561"
+        elif wavelength == "488nm":
+            las = "laser488"
+        elif wavelength == "405nm":
+            las = "laser405"
+        print(las)
         if gui.liveCheck is True:
+            basler.camera.Open()
+            basler.camera.ExposureTime.SetValue(int(exposure) * 1000)
+            lasers[las].laser_power = int(power)
+            lasers[las].emission_on()
             gui.stop_event = threading.Event()
             gui.c_thread = threading.Thread(
                 target=gui.live_imaging_event_listener_FM, args=(gui.stop_event,))
@@ -128,6 +142,7 @@ def basler_live_imaging(gui):
             gui.liveCheck = False
             gui.button_live_image_FM.setDown(True)
         else:
+            # lasers[las].emission_off()
             gui.stop_event.set()
             gui.liveCheck = True
             gui.button_live_image_FM.setDown(False)
@@ -243,13 +258,14 @@ def get_last_FIB_image(gui, microscope):
 def get_SEM_image(gui, microscope, camera_settings):
     if gui.microscope:
         try:
-            if gui.checkBox_Autocontrast.isChecked():
-                autocontrast_ion_beam(gui, microscope, camera_settings)
             gui.fibsem_image = fibsem.new_electron_image(microscope, camera_settings)
             gui.array_list_FIBSEM = gui.fibsem_image.data
-            print(gui.array_list_FIBSEM.dtype)
+            if gui.checkBox_Autocontrast.isChecked():
+                gui.array_list_FIBSEM = ndi.median_filter(gui.array_list_FIBSEM, 2)
+                # autocontrast_ion_beam(gui, microscope, camera_settings)
+            # print(gui.array_list_FIBSEM.dtype)
             gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()]
-            print(gui.array_list_FIBSEM)
+            # print(gui.array_list_FIBSEM)
             gui.update_display("FIBSEM")
         except Exception as e:
             gui.error_msg(str(e))
