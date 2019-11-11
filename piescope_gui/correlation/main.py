@@ -60,7 +60,7 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
         print("Image 2 given as path")
         fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
         # gui.fibsem_image = fibsem_image
-        # get metadata from obtained sem image in this case
+        # get metadata from obtained sem image in this case?
     else:
         fibsem_data = np.copy(fibsem_image.data)
         print("Image 2 given as array")
@@ -69,6 +69,7 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
         fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
 
     img1 = fluorescence_image_rgb
+    img1 = np.flipud(img1)
     img2 = fibsem_image
     output = output_path
 
