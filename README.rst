@@ -1,6 +1,10 @@
 ===============================
-fibsem_gui
+piescope_gui
 ===============================
+
+.. image:: https://ci.appveyor.com/api/projects/status/bnsr1sliamycehiv/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/GenevieveBuckley/piescope-gui-9sta2/branch/master
+
 
 A PyQt5 GUI application
 
@@ -19,7 +23,25 @@ Then install with:
    conda activate piescope_gui
    pip install -e .
 
-To launch the GUI:
+Then download the pypylon wheel "pypylon-1.4.0-cp36-cp36m-win_amd64.whl" located at https://github.com/basler/pypylon/releases
+
+Navigate to where this file is downloaded and then pip install using:
+
+.. code-block::
+
+   pip install pypylon-1.4.0-cp36-cp36m-win_amd64.whl
+
+Finally fork Piescope repository at: https://github.com/DeMarcoLab/piescope_gui.git into a new folder 
+
+Navigate to that folder, then: 
+
+.. code-block::
+
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   pip install -e.
+
+To launch the GUI, navigate to your piescope_gui repository, then:
 
 .. code-block::
 
@@ -37,13 +59,6 @@ Pytest is used for this project. To run the tests:
    pytest
 
 
-To generate new test image baselines with the pytest-mpl plugin, run:
-
-.. code-block::
-
-   pytest --mpl-generate-path=piescope_gui/tests/baseline
-
-
 Features
 --------
 
@@ -56,4 +71,3 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
-
