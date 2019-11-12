@@ -11,19 +11,29 @@ from matplotlib.backends.backend_qt5agg import \
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
 from piescope import fibsem
-import piescope_gui.correlation.main as corr
+from piescope_gui.correlation import main as corr
 
 
 def open_milling_window(main_gui, image, adorned_image, fluorescence_image_rgb,
                         fluorescence_original, output, matched_points_dict):
-    """
+    """Opens a new window to perform correlation
 
-    :param main_gui: main gui window
-    :param image: overlaid image
-    :param adorned_image: adorned overlaid image
-    :param fluorescence_image_rgb: rgb version of original fluorescence image
-    :param fluorescence_original: original fluorescence image
-    :return:
+    Parameters
+    ----------
+    main_gui : PyQt5 Window
+
+    image : numpy array
+    Overlaid image to display
+
+    adorned_image : Adorned Image
+    Adorned image with image as the .data attribute and metadata passed from
+    the fibsem image on display in the main window
+
+    fluorescence_image_rgb : numpy array
+    rgb version of original fluorescence image
+
+    fluorescence_original : numpy array
+    original fluorescence image
     """
     global gui
     global img

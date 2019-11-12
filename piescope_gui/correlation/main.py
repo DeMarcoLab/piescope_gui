@@ -28,14 +28,18 @@ from piescope_gui._version import __version__
 
 
 def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_path):
-    """
+    """Opens a new window to perform correlation
 
-    :param main_gui: Parent window
-    :param fluorescence_image: numpy.array with shape: (rows, columns) or path
-                               to numpy.array with shape: (rows, columns)
-    :param fibsem_image: expecting Adorned Image or path to Adorned image
-    :param output_path: path to save location
-    :return:
+    Parameters
+    ----------
+    main_gui : PyQt5 Window
+
+    fluorescence_image : numpy.array with shape: (rows, columns) or path
+        to numpy.array with shape: (rows, columns)
+
+    fibsem_image : expecting Adorned Image or path to Adorned image
+
+    output_path : path to save location
     """
     global img1
     global img2
@@ -79,6 +83,21 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
 
 
 def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_points_dict):
+    """Correlates two images using points chosen by the user
+
+    Parameters
+    ----------
+    fluorescence_image_rgb : numpy array with shape (cols, rows, channels)
+
+    fibsem_image : Adorned Image.
+    Expecting .data attribute of shape (cols, rows, channels)
+
+    output : str
+    Path to save location
+
+    matched_points_dict : dict
+    Dictionary of points selected in the correlation window
+    """
     if matched_points_dict == []:
         print('No control points selected, exiting.')
         return
@@ -103,6 +122,7 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
 
 
 class _MainWindow(QMainWindow):
+    """Main correlation window"""
     def __init__(self):
         super().__init__(parent=gui)
         self.create_window()
