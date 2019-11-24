@@ -9,7 +9,6 @@ import piescope_gui.correlation.main as correlation_function
 import piescope_gui.piescope_interaction as piescope_hardware
 import piescope_gui.qtdesigner_files.main as gui_main
 import piescope.utils as utility
-import piescope.maximum_intensity_projection as mip
 from autoscript_sdb_microscope_client.structures import *
 
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -437,7 +436,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             destination_for_continual_saving = self.lineEdit_save_destination_FM.text()
             volume = volume_function.volume_acquisition(
                 laser_dict, no_z_slices, z_slice_distance, destination_for_continual_saving)
-            max_intensity = mip.max_intensity_projection(volume)
+            max_intensity = utility.max_intensity_projection(volume)
             channel = 0
 
             # print(max_intensity.shape)
