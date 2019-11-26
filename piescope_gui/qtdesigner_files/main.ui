@@ -380,6 +380,13 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
+             <item row="8" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Absolute Position:</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="0" colspan="2">
               <spacer name="verticalSpacer_2">
                <property name="orientation">
@@ -393,21 +400,7 @@
                </property>
               </spacer>
              </item>
-             <item row="10" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_initialise_stage">
-               <property name="text">
-                <string>Initialise Stage</string>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1">
-              <widget class="QPushButton" name="to_electron_microscope">
-               <property name="text">
-                <string>To Electron Microscope</string>
-               </property>
-              </widget>
-             </item>
-             <item row="8" column="0" colspan="2">
+             <item row="7" column="0" colspan="2">
               <spacer name="verticalSpacer_6">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -420,6 +413,13 @@
                </property>
               </spacer>
              </item>
+             <item row="10" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_initialise_stage">
+               <property name="text">
+                <string>Initialise Stage</string>
+               </property>
+              </widget>
+             </item>
              <item row="12" column="0">
               <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
@@ -427,18 +427,12 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0" colspan="2">
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+             <item row="5" column="1">
+              <widget class="QPushButton" name="to_electron_microscope">
+               <property name="text">
+                <string>To Electron Microscope</string>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
+              </widget>
              </item>
              <item row="11" column="0">
               <widget class="QPushButton" name="pushButton_move_absolute">
@@ -447,10 +441,23 @@
                </property>
               </widget>
              </item>
+             <item row="6" column="0" colspan="2">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Connect to microscope</string>
+               </property>
+              </widget>
+             </item>
              <item row="11" column="1">
               <widget class="QLineEdit" name="lineEdit_move_absolute"/>
              </item>
-             <item row="6" column="0">
+             <item row="5" column="0">
               <widget class="QPushButton" name="to_light_microscope">
                <property name="text">
                 <string>To Light Microscope</string>
@@ -512,16 +519,10 @@
                </layout>
               </widget>
              </item>
-             <item row="7" column="0" colspan="2">
-              <widget class="QPushButton" name="connect_microscope">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
+             <item row="8" column="1">
+              <widget class="QLabel" name="label_objective_stage_position">
                <property name="text">
-                <string>Connect to microscope</string>
+                <string/>
                </property>
               </widget>
              </item>
