@@ -22,8 +22,6 @@ from matplotlib.backends.backend_qt5agg import \
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
 from autoscript_sdb_microscope_client.structures import *
-
-from piescope_gui.milling import main as mill
 from piescope_gui._version import __version__
 
 
@@ -78,8 +76,7 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     output = output_path
 
     window = _MainWindow()
-    window.show()
-    return
+    return window
 
 
 def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_points_dict):
@@ -114,11 +111,8 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
     plt.imsave(output, result)
     overlay_adorned_image.save(output)
     # print(output)
-    mill.open_milling_window(gui, result, overlay_adorned_image,
-                             fluorescence_image_rgb, fluorescence_original,
-                             output, matched_points_dict)
 
-    return result
+    return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
 
 
 class _MainWindow(QMainWindow):
@@ -128,8 +122,8 @@ class _MainWindow(QMainWindow):
         self.create_window()
         self.create_conn()
 
-        self.showMaximized()
-        self.show()
+        # self.showMaximized()
+        # self.show()
         self.wp.canvas.fig.subplots_adjust(
             left=0.01, bottom=0.01, right=0.99, top=0.99)
 
@@ -231,13 +225,14 @@ class _MainWindow(QMainWindow):
 
     def create_conn(self):
         self.pickButton.clicked.connect(self.pickmodechange)
-        self.exitButton.clicked.connect(self.menu_quit)
+        # self.exitButton.clicked.connect(self.menu_quit)
         self.delButton.clicked.connect(self.delCP)
 
     def menu_quit(self):
         matched_points_dict = self.get_dictlist()
-        correlate_images(img1, img2, output, matched_points_dict)
+        result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)
         self.close()
+        return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict
 
     def get_dictlist(self):
         dictlist = []

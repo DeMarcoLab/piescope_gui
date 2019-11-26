@@ -514,9 +514,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
 
-            correlation_function.open_correlation_window(self, fluorescence_image,
+            window = correlation_function.open_correlation_window(self, fluorescence_image,
                                                          fibsem_image,
                                                          output_filename)
+            window.showMaximized()
+            window.show()
+
+            window.exitButton.clicked.connect(lambda: self.mill_window_from_correlation(window))
+
             if p.isfile(tempfile):
                 os.remove(tempfile)
 
@@ -525,6 +530,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 os.remove(tempfile)
             self.error_msg(str(e))
             print(e)
+
+    def mill_window_from_correlation(self, window):
+        result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict = window.menu_quit()
+        milling_function.open_milling_window(self, result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict)
 
     def milling(self):
         try:

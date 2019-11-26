@@ -212,14 +212,20 @@ class _MainWindow(QMainWindow):
 
     def correlate(self):
         new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
-        corr.open_correlation_window(gui, original, new_ion_image, out)
+        new_window = corr.open_correlation_window(gui, original, new_ion_image, out)
+        new_window.showMaximized()
+        new_window.show()
+        new_window.exitButton.clicked.connect(lambda: gui.mill_window_from_correlation(new_window))
         self.close()
 
     def overlay(self):
         new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
         new_ion_image_data = skimage.color.gray2rgb(new_ion_image.data)
-        corr.correlate_images(rgb, new_ion_image_data, out, matched)
+        result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = \
+            corr.correlate_images(rgb, new_ion_image_data, out, matched)
+        open_milling_window(gui, result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, out, matched)
         self.close()
+
         # result = corr.overlay_images(fluorescence, new_ion_image_data)
         # result = skimage.util.img_as_ubyte(result)
         # img = result
