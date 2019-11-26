@@ -406,13 +406,6 @@
                </property>
               </widget>
              </item>
-             <item row="10" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_initialise_stage">
-               <property name="text">
-                <string>Initialise Stage</string>
-               </property>
-              </widget>
-             </item>
              <item row="12" column="0">
               <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
@@ -549,6 +542,20 @@
               <widget class="QPushButton" name="pushButton_go_to_saved_position">
                <property name="text">
                 <string>Go to saved position</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0">
+              <widget class="QPushButton" name="pushButton_get_position">
+               <property name="text">
+                <string>Get Position</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="1">
+              <widget class="QPushButton" name="pushButton_initialise_stage">
+               <property name="text">
+                <string>Initialise Stage</string>
                </property>
               </widget>
              </item>
@@ -979,6 +986,13 @@
                </property>
                <property name="text">
                 <string>Get Basler Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="7">
+              <widget class="QLabel" name="label_max_FM_value">
+               <property name="text">
+                <string>Max Value: </string>
                </property>
               </widget>
              </item>
