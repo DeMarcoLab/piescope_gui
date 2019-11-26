@@ -1,4 +1,5 @@
 """Functions to interact with or get information from the piescope setup"""
+import time
 import skimage.io
 import threading
 from piescope.lm import detector
@@ -154,6 +155,9 @@ def initialise_stage(gui):
     try:
         stage = objective.StageController()
         stage.initialise_system_parameters()
+        time.sleep(0.3)
+        pos = stage.current_position()
+        gui.label_objective_stage_position.setText(str(float(pos)/1000))
         # stage.initialise_system_parameters(0, 0, 0, 0)
         print("Stage initialised")
     except Exception as e:
@@ -166,6 +170,9 @@ def move_absolute(gui, distance):
         # print("Distance: {}nm".format(distance2))
         stage = objective.StageController()
         ans = stage.move_absolute(distance2)
+        time.sleep(0.3)
+        pos = stage.current_position()
+        gui.label_objective_stage_position.setText(str(float(pos)/1000))
     except Exception as e:
         gui.error_msg(str(e))
 
@@ -176,6 +183,9 @@ def move_relative(gui, distance):
         # print("Distance: {}nm".format(distance2))
         stage = objective.StageController()
         ans = stage.move_relative(distance2)
+        time.sleep(0.3)
+        pos = stage.current_position()
+        gui.label_objective_stage_position.setText(str(float(pos)/1000))
     except Exception as e:
         gui.error_msg(str(e))
 
