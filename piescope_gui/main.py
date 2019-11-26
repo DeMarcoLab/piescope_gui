@@ -37,6 +37,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.checkBox_save_destination_FIBSEM.setChecked(1)
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
+        self.label_objective_stage_position.setText("Unknown")
         self.delim = p.normpath("/")
         self.liveCheck = True
         self.microscope = None
@@ -136,8 +137,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                                        self.lineEdit_power_basler_2.text(), self.lasers, self.basler, "single"))
         self.button_live_image_FM.clicked.connect(
             lambda: piescope_hardware.basler_live_imaging(self, self.comboBox_laser_basler.currentText(),
-                                                       self.lineEdit_exposure_basler.text(),
-                                                       self.lineEdit_power_basler_2.text(), self.lasers, self.basler))
+                                                          self.lineEdit_exposure_basler.text(),
+                                                          self.lineEdit_power_basler_2.text(), self.lasers, self.basler))
 
         self.pushButton_initialise_stage.clicked.connect(
             lambda: piescope_hardware.initialise_stage(self))
@@ -160,6 +161,28 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_volume.clicked.connect(self.acquire_volume)
         self.pushButton_correlation.clicked.connect(self.correlateim)
         self.pushButton_milling.clicked.connect(self.milling)
+
+        self.pushButton_save_objective_position.clicked.connect(self.save_position)
+        self.pushButton_go_to_saved_position.clicked.connect(self.go_to_position)
+
+    def save_position(self):
+        try:
+            # pos = piescope_hardware.current_position(self)
+            # print(pos)
+            pos = self.label_objective_stage_position.text()
+            self.label_objective_stage_saved_position.setText(pos)
+        except Exception as e:
+            logger.exception(e)
+            self.error_msg(str(e))
+
+    def go_to_position(self):
+        try:
+            pos = int(float(self.label_objective_stage_saved_position.text()))
+            print(pos)
+            piescope_hardware.move_absolute(self, pos)
+        except Exception as e:
+            logger.exception(e)
+            self.error_msg(str(e))
 
     def open_images(self, modality):
         """Open image files and display the first"""
@@ -515,8 +538,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
 
             window = correlation_function.open_correlation_window(self, fluorescence_image,
-                                                         fibsem_image,
-                                                         output_filename)
+                                                                  fibsem_image,
+                                                                  output_filename)
             window.showMaximized()
             window.show()
 
@@ -560,7 +583,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         while state and not stop_event.isSet():
             piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
-                                            self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text(),
+                                               self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text(),
                                                self.lasers, self.basler, "live")
 
     def error_msg(self, message):
