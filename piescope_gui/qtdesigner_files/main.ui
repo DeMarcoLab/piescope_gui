@@ -148,6 +148,9 @@
              </sizepolicy>
             </property>
             <layout class="QGridLayout" name="gridLayout_19">
+             <property name="verticalSpacing">
+              <number>1</number>
+             </property>
              <item row="4" column="1">
               <widget class="QLineEdit" name="lineEdit_slice_distance"/>
              </item>
@@ -380,38 +383,28 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
-             <item row="8" column="0">
-              <widget class="QLabel" name="label_5">
+             <property name="verticalSpacing">
+              <number>3</number>
+             </property>
+             <item row="6" column="1">
+              <widget class="QLabel" name="label_objective_stage_position">
                <property name="text">
-                <string>Absolute Position:</string>
+                <string/>
                </property>
               </widget>
              </item>
-             <item row="1" column="0" colspan="2">
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="minimumSize">
                 <size>
-                 <width>20</width>
-                 <height>0</height>
+                 <width>0</width>
+                 <height>20</height>
                 </size>
                </property>
-              </spacer>
-             </item>
-             <item row="7" column="0" colspan="2">
-              <spacer name="verticalSpacer_6">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+               <property name="text">
+                <string>Absolute Position (um)</string>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
+              </widget>
              </item>
              <item row="10" column="0" colspan="2">
               <widget class="QPushButton" name="pushButton_initialise_stage">
@@ -427,7 +420,7 @@
                </property>
               </widget>
              </item>
-             <item row="5" column="1">
+             <item row="4" column="1">
               <widget class="QPushButton" name="to_electron_microscope">
                <property name="text">
                 <string>To Electron Microscope</string>
@@ -441,7 +434,7 @@
                </property>
               </widget>
              </item>
-             <item row="6" column="0" colspan="2">
+             <item row="5" column="0" colspan="2">
               <widget class="QPushButton" name="connect_microscope">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -457,7 +450,7 @@
              <item row="11" column="1">
               <widget class="QLineEdit" name="lineEdit_move_absolute"/>
              </item>
-             <item row="5" column="0">
+             <item row="4" column="0">
               <widget class="QPushButton" name="to_light_microscope">
                <property name="text">
                 <string>To Light Microscope</string>
@@ -477,7 +470,7 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
+             <item row="1" column="0" colspan="2">
               <widget class="QFrame" name="frame">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
@@ -519,10 +512,43 @@
                </layout>
               </widget>
              </item>
-             <item row="8" column="1">
-              <widget class="QLabel" name="label_objective_stage_position">
+             <item row="7" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Saved Position (um)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="1">
+              <widget class="QLabel" name="label_objective_stage_saved_position">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>20</height>
+                </size>
+               </property>
                <property name="text">
                 <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QPushButton" name="pushButton_save_objective_position">
+               <property name="text">
+                <string>Save Position</string>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="1">
+              <widget class="QPushButton" name="pushButton_go_to_saved_position">
+               <property name="text">
+                <string>Go to saved position</string>
                </property>
               </widget>
              </item>
