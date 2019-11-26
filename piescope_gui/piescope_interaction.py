@@ -10,6 +10,7 @@ import piescope_gui.correlation.main as corr
 import piescope.lm.objective as objective
 import skimage.util
 import scipy.ndimage as ndi
+import numpy as np
 
 
 def create_array_list(input_list, modality):
@@ -143,9 +144,9 @@ def basler_live_imaging(gui, wavelength, exposure, power, lasers, basler):
             gui.liveCheck = False
             gui.button_live_image_FM.setDown(True)
         else:
-            # lasers[las].emission_off()
             gui.stop_event.set()
             gui.liveCheck = True
+            # lasers[las].emission_off()
             gui.button_live_image_FM.setDown(False)
     except Exception as e:
         gui.error_msg(str(e))
@@ -269,9 +270,8 @@ def get_SEM_image(gui, microscope, camera_settings):
     if gui.microscope:
         try:
             gui.fibsem_image = fibsem.new_electron_image(microscope, camera_settings)
-            gui.array_list_FIBSEM = gui.fibsem_image.data
-            if gui.checkBox_Autocontrast.isChecked():
-                gui.array_list_FIBSEM = ndi.median_filter(gui.array_list_FIBSEM, 2)
+            gui.array_list_FIBSEM = np.copy(gui.fibsem_image.data)
+            gui.array_list_FIBSEM = ndi.median_filter(gui.array_list_FIBSEM, 2)
                 # autocontrast_ion_beam(gui, microscope, camera_settings)
             # print(gui.array_list_FIBSEM.dtype)
             gui.string_list_FIBSEM = [gui.DEFAULT_PATH + "SEM_Image_" + corr._timestamp()]
