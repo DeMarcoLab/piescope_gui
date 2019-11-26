@@ -164,6 +164,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pushButton_save_objective_position.clicked.connect(self.save_position)
         self.pushButton_go_to_saved_position.clicked.connect(self.go_to_position)
+        self.pushButton_get_position.clicked.connect(self.get_position)
+
+    def get_position(self):
+        try:
+            pos = int(piescope_hardware.current_position(self))/1000
+            self.label_objective_stage_position.setText(str(pos))
+        except Exception as e:
+            logger.exception(e)
+            self.error_msg(str(e))
 
     def save_position(self):
         try:
@@ -322,6 +331,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 else:
                     image_array = self.array_list_FM
                 image_array = np.flipud(image_array)
+                FM_max = image_array.max()
+                self.label_max_FM_value.setText("Max value: " + str(FM_max))
                 image_array_crosshair = np.copy(image_array)
                 xshape = image_array_crosshair.shape[0]
                 yshape = image_array_crosshair.shape[1]
