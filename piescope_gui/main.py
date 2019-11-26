@@ -167,8 +167,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def save_position(self):
         try:
-            # pos = piescope_hardware.current_position(self)
-            # print(pos)
             pos = self.label_objective_stage_position.text()
             self.label_objective_stage_saved_position.setText(pos)
         except Exception as e:
