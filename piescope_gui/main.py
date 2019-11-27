@@ -59,7 +59,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.save_destination_FIBSEM = ""
         self.save_destination_correlation = ""
 
-        piescope_hardware.connect_to_microscope(self)
+        self.connect_to_fibsem_microscope()
 
     def setup_connections(self):
 
@@ -67,9 +67,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.basler = piescope.lm.detector.Basler()
 
         self.comboBox_resolution.currentTextChanged.connect(
-            lambda: piescope_hardware.update_fibsem_settings(self))
+            lambda: self.update_fibsem_settings(self))
         self.lineEdit_dwell_time.textChanged.connect(
-            lambda: piescope_hardware.update_fibsem_settings(self))
+            lambda: self.update_fibsem_settings(self))
 
         self.actionOpen_FM_Image.triggered.connect(
             lambda: self.open_images("FM"))
@@ -150,7 +150,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self, self.lineEdit_move_relative.text()))
 
         self.connect_microscope.clicked.connect(
-            lambda: piescope_hardware.connect_to_microscope(self))
+            lambda: self.connect_to_fibsem_microscope(self))
         self.to_light_microscope.clicked.connect(
             lambda: piescope_hardware.move_to_light_microscope(
                 self, self.microscope, 49.952e-3, -0.1911e-3))
@@ -165,6 +165,30 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_save_objective_position.clicked.connect(self.save_position)
         self.pushButton_go_to_saved_position.clicked.connect(self.go_to_position)
         self.pushButton_get_position.clicked.connect(self.get_position)
+
+    def connect_to_fibsem_microscope(self, ip_address="10.0.0.1"):
+        """Connect to the FIBSEM microscope."""
+        try:
+            from piescope import fibsem
+            self.microscope = fibsem.initialize(ip_address=ip_address)
+            self.camera_settings = self.update_fibsem_settings()
+        except Exception as e:
+            self.error_msg(str(e))
+
+    def update_fibsem_settings(self):
+        if self.microscope:
+            try:
+                from piescope import fibsem
+                dwell_time = float(self.lineEdit_dwell_time.text())*1.e-6
+                resolution = self.comboBox_resolution.currentText()
+                fibsem_settings = fibsem.update_camera_settings(dwell_time, resolution)
+                self.camera_settings = fibsem_settings
+                return fibsem_settings
+            except Exception as e:
+                gui.error_msg(str(e))
+        else:
+            print("Not connected to microscope")
+            gui.error_msg("Not connected to microscope")
 
     def get_position(self):
         try:

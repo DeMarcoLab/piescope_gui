@@ -6,7 +6,6 @@ from piescope.lm import detector
 from piescope.lm import laser
 from piescope import fibsem
 import piescope_gui.correlation.main as corr
-# from piescope_gui.correlation import main as corr
 import piescope.lm.objective as objective
 import skimage.util
 import scipy.ndimage as ndi
@@ -200,14 +199,6 @@ def current_position(gui):
         gui.error_msg(str(e))
 
 
-def connect_to_microscope(gui):
-    try:
-        gui.microscope = fibsem.initialize()
-        gui.camera_settings = update_fibsem_settings(gui)
-    except Exception as e:
-        gui.error_msg(str(e))
-
-
 def move_to_light_microscope(gui, microscope, x, y):
     if gui.microscope:
         try:
@@ -313,23 +304,6 @@ def autocontrast_ion_beam(gui, microscope, settings):
 
         except Exception as e:
             gui.error_msg(str(e))
-    else:
-        print("Not connected to microscope")
-        gui.error_msg("Not connected to microscope")
-
-
-def update_fibsem_settings(gui):
-    if gui.microscope:
-        try:
-            dwell_time = float(gui.lineEdit_dwell_time.text())*1.e-6
-            resolution = gui.comboBox_resolution.currentText()
-            fibsem_settings = fibsem.update_camera_settings(dwell_time, resolution)
-            gui.camera_settings = fibsem_settings
-            return fibsem_settings
-
-        except Exception as e:
-            gui.error_msg(str(e))
-
     else:
         print("Not connected to microscope")
         gui.error_msg("Not connected to microscope")

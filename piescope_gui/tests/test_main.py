@@ -7,12 +7,14 @@ from unittest import mock
 
 
 @pytest.fixture
-def window(qtbot):
+def window(qtbot, monkeypatch):
     """Pass the application to the test functions via a pytest fixture."""
-    new_window = main.GUIMainWindow()
-    qtbot.add_widget(new_window)
-    new_window.show()
-    return new_window
+    monkeypatch.setenv("PYLON_CAMEMU", "1")
+    with mock.patch.object(main.GUIMainWindow, 'connect_to_fibsem_microscope'):
+        new_window = main.GUIMainWindow()
+        qtbot.add_widget(new_window)
+        new_window.show()
+        return new_window
 
 
 def test_window_title(window):
