@@ -21,7 +21,6 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
-from autoscript_sdb_microscope_client.structures import *
 from piescope_gui._version import __version__
 
 
@@ -61,8 +60,6 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     if type(fibsem_image) == str:
         print("Image 2 given as path")
         fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
-        # gui.fibsem_image = fibsem_image
-        # get metadata from obtained sem image in this case?
     else:
         fibsem_data = np.copy(fibsem_image.data)
         print("Image 2 given as array")
@@ -110,7 +107,6 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
     save_text(output, transformation, matched_points_dict)
     plt.imsave(output, result)
     overlay_adorned_image.save(output)
-    # print(output)
 
     return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
 
@@ -122,8 +118,6 @@ class _MainWindow(QMainWindow):
         self.create_window()
         self.create_conn()
 
-        # self.showMaximized()
-        # self.show()
         self.wp.canvas.fig.subplots_adjust(
             left=0.01, bottom=0.01, right=0.99, top=0.99)
 
@@ -225,7 +219,6 @@ class _MainWindow(QMainWindow):
 
     def create_conn(self):
         self.pickButton.clicked.connect(self.pickmodechange)
-        # self.exitButton.clicked.connect(self.menu_quit)
         self.delButton.clicked.connect(self.delCP)
 
     def menu_quit(self):

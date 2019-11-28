@@ -1,29 +1,32 @@
-import os.path as p
 import os
+import logging
+import threading
+import time
 import traceback
 
-import piescope.lm.laser
-import piescope.lm.volume as volume_function
-import piescope_gui.milling.main as milling_function
-import piescope_gui.correlation.main as correlation_function
-import piescope_gui.piescope_interaction as piescope_hardware
-import piescope_gui.qtdesigner_files.main as gui_main
-import piescope.utils as utility
-from autoscript_sdb_microscope_client.structures import *
-
-from PyQt5 import QtWidgets, QtGui, QtCore
-import qimage2ndarray as q
-import logging
 import numpy as np
+from PyQt5 import QtWidgets, QtGui, QtCore
+import qimage2ndarray
+import scipy.ndimage as ndi
+import skimage.io
+import skimage.util
+
+import piescope
+
+import piescope_gui.milling
+import piescope_gui.correlation.main as corr
+import piescope_gui.qtdesigner_files.main as gui_main
 
 logger = logging.getLogger(__name__)
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self, ip_address="10.0.0.1"):
         super(GUIMainWindow, self).__init__()
         self.setupUi(self)
         self.setup_connections()
+        self.microscope = None
+        self.connect_to_fibsem_microscope(ip_address=ip_address)
 
         self.DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
         self.setWindowTitle("PIEScope User Interface Main Window")
@@ -38,9 +41,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
         self.label_objective_stage_position.setText("Unknown")
-        self.delim = p.normpath("/")
+        self.delim = os.path.normpath("/")
         self.liveCheck = True
-        self.microscope = None
 
         self.save_name = ""
         self.laser_dict = {}
@@ -58,8 +60,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.save_destination_FM = ""
         self.save_destination_FIBSEM = ""
         self.save_destination_correlation = ""
-
-        self.connect_to_fibsem_microscope()
 
     def setup_connections(self):
 
@@ -94,127 +94,346 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.fill_correlation_destination)
 
         self.checkBox_laser1.clicked.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser640"))
+            lambda: self.update_laser_dict("laser640"))
         self.checkBox_laser2.clicked.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser561"))
+            lambda: self.update_laser_dict("laser561"))
         self.checkBox_laser3.clicked.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser488"))
+            lambda: self.update_laser_dict("laser488"))
         self.checkBox_laser4.clicked.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser405"))
+            lambda: self.update_laser_dict("laser405"))
 
         self.slider_laser1.valueChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser640"))
+            lambda: self.update_laser_dict("laser640"))
         self.slider_laser2.valueChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser561"))
+            lambda: self.update_laser_dict("laser561"))
         self.slider_laser3.valueChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser488"))
+            lambda: self.update_laser_dict("laser488"))
         self.slider_laser4.valueChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser405"))
+            lambda: self.update_laser_dict("laser405"))
 
         self.lineEdit_exposure_1.textChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser640"))
+            lambda: self.update_laser_dict("laser640"))
         self.lineEdit_exposure_2.textChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser561"))
+            lambda: self.update_laser_dict("laser561"))
         self.lineEdit_exposure_3.textChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser488"))
+            lambda: self.update_laser_dict("laser488"))
         self.lineEdit_exposure_4.textChanged.connect(
-            lambda: piescope_hardware.update_laser_dict(self, "laser405"))
+            lambda: self.update_laser_dict("laser405"))
 
         self.button_get_image_FIB.clicked.connect(
-            lambda: piescope_hardware.get_FIB_image(self, self.microscope, self.camera_settings))
+            lambda: self.get_FIB_image())
         self.button_get_image_SEM.clicked.connect(
-            lambda: piescope_hardware.get_SEM_image(self, self.microscope, self.camera_settings))
+            lambda: self.get_SEM_image())
         self.button_last_image_FIB.clicked.connect(
-            lambda: piescope_hardware.get_last_FIB_image(self,
-                                                         self.microscope))
+            lambda: self.get_last_FIB_image())
         self.button_last_image_SEM.clicked.connect(
-            lambda: piescope_hardware.get_last_SEM_image(self,
-                                                         self.microscope))
+            lambda: self.get_last_SEM_image())
 
         self.button_get_image_FM.clicked.connect(
-            lambda: piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
-                                                       self.lineEdit_exposure_basler.text(),
-                                                       self.lineEdit_power_basler_2.text(), self.lasers, self.basler, "single"))
+            lambda: self.get_basler_image(self.comboBox_laser_basler.currentText(),
+                                          self.lineEdit_exposure_basler.text(),
+                                          self.lineEdit_power_basler_2.text(),
+                                          self.lasers,
+                                          self.basler,
+                                          "single"))
         self.button_live_image_FM.clicked.connect(
-            lambda: piescope_hardware.basler_live_imaging(self, self.comboBox_laser_basler.currentText(),
-                                                          self.lineEdit_exposure_basler.text(),
-                                                          self.lineEdit_power_basler_2.text(), self.lasers, self.basler))
+            lambda: self.basler_live_imaging(self.comboBox_laser_basler.currentText(),
+                                             self.lineEdit_exposure_basler.text(),
+                                             self.lineEdit_power_basler_2.text(),
+                                             self.lasers, self.basler))
 
-        self.pushButton_initialise_stage.clicked.connect(
-            lambda: piescope_hardware.initialise_stage(self))
+        self.pushButton_initialize_stage.clicked.connect(
+            lambda: self.initialize_objective_stage())
         self.pushButton_move_absolute.clicked.connect(
-            lambda: piescope_hardware.move_absolute(
+            lambda: self.move_absolute_objective_stage(
                 self, self.lineEdit_move_absolute.text()))
         self.pushButton_move_relative.clicked.connect(
-            lambda: piescope_hardware.move_relative(
-                self, self.lineEdit_move_relative.text()))
+            lambda: self.move_relative_objective_stage())
 
         self.connect_microscope.clicked.connect(
-            lambda: self.connect_to_fibsem_microscope(self))
+            lambda: self.connect_to_fibsem_microscope())
         self.to_light_microscope.clicked.connect(
-            lambda: piescope_hardware.move_to_light_microscope(
-                self, self.microscope, 49.952e-3, -0.1911e-3))
+            lambda: self.move_to_light_microscope())
         self.to_electron_microscope.clicked.connect(
-            lambda: piescope_hardware.move_to_electron_microscope(
-                self, self.microscope, -49.952e-3, 0.1911e-3))
+            lambda: self.move_to_electron_microscope())
 
         self.pushButton_volume.clicked.connect(self.acquire_volume)
         self.pushButton_correlation.clicked.connect(self.correlateim)
         self.pushButton_milling.clicked.connect(self.milling)
 
-        self.pushButton_save_objective_position.clicked.connect(self.save_position)
-        self.pushButton_go_to_saved_position.clicked.connect(self.go_to_position)
-        self.pushButton_get_position.clicked.connect(self.get_position)
+        self.pushButton_save_objective_position.clicked.connect(self.save_objective_stage_position)
+        self.pushButton_go_to_saved_position.clicked.connect(self.move_absolute_objective_stage)
+        self.pushButton_get_position.clicked.connect(self.objective_stage_position)
 
+    ############## FIBSEM microscope methods ##############
     def connect_to_fibsem_microscope(self, ip_address="10.0.0.1"):
         """Connect to the FIBSEM microscope."""
         try:
             from piescope import fibsem
-            self.microscope = fibsem.initialize(ip_address=ip_address)
+            self.microscope = piescope.fibsem.initialize(ip_address=ip_address)
             self.camera_settings = self.update_fibsem_settings()
         except Exception as e:
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
     def update_fibsem_settings(self):
-        if self.microscope:
-            try:
-                from piescope import fibsem
-                dwell_time = float(self.lineEdit_dwell_time.text())*1.e-6
-                resolution = self.comboBox_resolution.currentText()
-                fibsem_settings = fibsem.update_camera_settings(dwell_time, resolution)
-                self.camera_settings = fibsem_settings
-                return fibsem_settings
-            except Exception as e:
-                gui.error_msg(str(e))
-        else:
-            print("Not connected to microscope")
-            gui.error_msg("Not connected to microscope")
-
-    def get_position(self):
+        if not self.microscope:
+            self.connect_to_fibsem_microscope()
         try:
-            pos = int(piescope_hardware.current_position(self))/1000
-            self.label_objective_stage_position.setText(str(pos))
+            from piescope import fibsem
+            dwell_time = float(self.lineEdit_dwell_time.text())*1.e-6
+            resolution = self.comboBox_resolution.currentText()
+            fibsem_settings = piescope.fibsem.update_camera_settings(dwell_time, resolution)
+            self.camera_settings = fibsem_settings
+            return fibsem_settings
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
-    def save_position(self):
+    ############## FIBSEM sample stage methods ##############
+    def move_to_light_microscope(self, x=+49.952e-3, y=-0.1911e-3):
+        try:
+            piescope.fibsem.move_to_light_microscope(self.microscope, x, y)
+        except Exception as e:
+            traceback_message = traceback.format_exc()
+            logger.exception(traceback_message)
+            _error_message(traceback_message)
+
+    def move_to_electron_microscope(self, x=-49.952e-3, y=+0.1911e-3):
+        try:
+            piescope.fibsem.move_to_electron_microscope(self.microscope, x, y)
+        except Exception as e:
+            _error_message( traceback.format_exc())
+
+    ############## FIBSEM image methods ##############
+    def get_FIB_image(self):
+        try:
+            if self.checkBox_Autocontrast.isChecked():
+                self.autocontrast_ion_beam()
+            self.fibsem_image = piescope.fibsem.new_ion_image(self.microscope, self.camera_settings)
+            self.array_list_FIBSEM = self.fibsem_image.data
+            self.string_list_FIBSEM = [self.DEFAULT_PATH + "FIB_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+            self.update_display("FIBSEM")
+        except Exception as e:
+            _error_message( traceback.format_exc())
+        else:
+            return self.fibsem_image
+
+    def get_last_FIB_image(self):
+        try:
+            self.fibsem_image = piescope.fibsem.last_ion_image(self.microscope)
+            self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
+            self.string_list_FIBSEM = [gui.DEFAULT_PATH + "Last_FIB_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+            self.update_display("FIBSEM")
+        except Exception as e:
+            _error_message( traceback.format_exc())
+        else:
+            return self.fibsem_image
+
+    def get_SEM_image(self, camera_settings):
+        try:
+            self.fibsem_image = piescope.fibsem.new_electron_image(self.microscope, self.camera_settings)
+            self.array_list_FIBSEM = np.copy(self.fibsem_image.data)
+            self.array_list_FIBSEM = ndi.median_filter(self.array_list_FIBSEM, 2)
+            self.string_list_FIBSEM = [gui.DEFAULT_PATH + "SEM_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+            self.update_display("FIBSEM")
+        except Exception as e:
+            _error_message( traceback.format_exc())
+        else:
+            return self.fibsem_image
+
+    def get_last_SEM_image(self):
+        try:
+            self.fibsem_image = piescope.fibsem.last_electron_image(self.microscope)
+            self.array_list_FIBSEM = self.fibsem_image.data
+            self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.array_list_FIBSEM)
+            self.string_list_FIBSEM = [self.DEFAULT_PATH + "SEM_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+            print(self.array_list_FIBSEM)
+            self.update_display("FIBSEM")
+        except Exception as e:
+            _error_message( traceback.format_exc())
+        else:
+            return self.fibsem_image
+
+    def autocontrast_ion_beam(self):
+        try:
+            self.microscope.imaging.set_active_view(2)  # the ion beam view
+            piescope.fibsem.autocontrast(self.microscope)
+            self.fibsem_image = piescope.fibsem.last_ion_image(self.microscope)
+            self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
+            self.string_list_FIBSEM = [self.DEFAULT_PATH + "FIB_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+            self.update_display("FIBSEM")
+        except Exception as e:
+            _error_message( traceback.format_exc())
+        else:
+            return self.fibsem_image
+
+    ############## Fluorescence detector methods ##############
+    def get_basler_image(self, wavelength, exposure, power, lasers, basler, mode):
+        try:
+            if wavelength == "640nm":
+                las = "laser640"
+            elif wavelength == "561nm":
+                las = "laser561"
+            elif wavelength == "488nm":
+                las = "laser488"
+            elif wavelength == "405nm":
+                las = "laser405"
+
+            if mode == "single":
+
+                lasers[las].laser_power = int(power)
+                lasers[las].emission_on()
+
+                basler.camera.Open()
+                basler.camera.ExposureTime.SetValue(int(exposure)*1000)
+                self.string_list_FM = [gui.DEFAULT_PATH + "_Basler_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+                self.array_list_FM = basler.camera_grab()
+
+                lasers[las].emission_off()
+
+                print(gui.array_list_FM)
+                self.slider_stack_FM.setValue(1)
+                self.update_display("FM")
+
+            elif mode == "live":
+                basler.camera.Open()
+                basler.camera.ExposureTime.SetValue(int(exposure) * 1000)
+                lasers[las].laser_power = int(power)
+                self.string_list_FM = [gui.DEFAULT_PATH + "_Basler_Image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())]
+                self.array_list_FM = basler.camera_grab()
+                print(self.array_list_FM)
+                self.slider_stack_FM.setValue(1)
+                self.update_display("FM")
+
+        except Exception as e:
+            _error_message( traceback.format_exc())
+
+    def basler_live_imaging(self, wavelength, exposure, power, lasers, basler):
+        try:
+            if wavelength == "640nm":
+                las = "laser640"
+            elif wavelength == "561nm":
+                las = "laser561"
+            elif wavelength == "488nm":
+                las = "laser488"
+            elif wavelength == "405nm":
+                las = "laser405"
+            print(las)
+            if self.liveCheck is True:
+                basler.camera.Open()
+                basler.camera.ExposureTime.SetValue(int(exposure) * 1000)
+                lasers[las].laser_power = int(power)
+                lasers[las].emission_on()
+                self.stop_event = threading.Event()
+                self.c_thread = threading.Thread(
+                    target=gui.live_imaging_event_listener_FM, args=(self.stop_event,))
+                self.c_thread.start()
+                self.liveCheck = False
+                self.button_live_image_FM.setDown(True)
+            else:
+                self.stop_event.set()
+                self.liveCheck = True
+                # lasers[las].emission_off()
+                self.button_live_image_FM.setDown(False)
+        except Exception as e:
+            _error_message(traceback.format_exc())
+
+    ############## Fluorescence objective lens stage methods ##############
+    def initialize_objective_stage(self, time_delay=0.3):
+        """Initialize the fluorescence objective lens stage."""
+        try:
+            stage = piescope.lm.objective.StageController()
+            stage.initialise_system_parameters()
+            time.sleep(time_delay)
+            pos = stage.current_position()
+        except Exception as e:
+            _error_message(traceback.format_exc())
+        else:
+            self.label_objective_stage_position.setText(str(float(pos)/1000))
+            print("Stage initialised")
+
+    def objective_stage_position(self):
+        try:
+            stage = piescope.lm.objective.StageController()
+            pos = stage.current_position()
+        except Exception as e:
+            _error_message( traceback.format_exc())
+        else:
+            self.label_objective_stage_position.setTextstr(float(pos)/1000)
+
+    def save_objective_stage_position(self):
         try:
             pos = self.label_objective_stage_position.text()
             self.label_objective_stage_saved_position.setText(pos)
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
-    def go_to_position(self):
+    def move_absolute_objective_stage(self, position=None, time_delay=0.3):
+        if position is None:
+            position = int(float(self.label_objective_stage_saved_position.text()))
+        position = int(float(position)*1000)
+        # print("Moving to position: {}nm".format(position))
         try:
-            pos = int(float(self.label_objective_stage_saved_position.text()))
-            print(pos)
-            piescope_hardware.move_absolute(self, pos)
+            stage = piescope.lm.objective.StageController()
+            ans = stage.move_absolute(position)
+            time.sleep(time_delay)
+            pos = stage.current_position()
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message(traceback.format_exc())
+        else:
+            self.label_objective_stage_position.setText(str(float(pos)/1000))
 
+    def move_relative_objective_stage(self, distance=None, time_delay=0.3):
+        if distance is None:
+            distance = self.lineEdit_move_relative.text()
+        distance = int(float(distance) * 1000)
+        try:
+            stage = piescope.lm.objective.StageController()
+            ans = stage.move_relative(distance)
+            time.sleep(time_delay)
+            pos = stage.current_position()
+        except Exception as e:
+            _error_message(traceback.format_exc())
+        else:
+            self.label_objective_stage_position.setText(str(float(pos)/1000))
+
+    ############## Fluorescence laser methods ##############
+    def update_laser_dict(self, laser):
+        try:
+            if laser == "laser640":
+                laser_box = self.spinBox_laser1
+                laser_check = self.checkBox_laser1
+                laser_slider = self.slider_laser1
+                laser_exposure = self.lineEdit_exposure_1
+            elif laser == "laser561":
+                laser_box = self.spinBox_laser2
+                laser_check = self.checkBox_laser2
+                laser_slider = self.slider_laser2
+                laser_exposure = self.lineEdit_exposure_2
+            elif laser == "laser488":
+                laser_box = self.spinBox_laser3
+                laser_check = self.checkBox_laser3
+                laser_slider = self.slider_laser3
+                laser_exposure = self.lineEdit_exposure_3
+            elif laser == "laser405":
+                laser_slider = self.slider_laser4
+                laser_check = self.checkBox_laser4
+                laser_box = self.spinBox_laser4
+                laser_exposure = self.lineEdit_exposure_4
+            if laser_check.isChecked():
+                gui.laser_dict[laser] = [laser_box.text(), laser_exposure.text()]
+                laser_slider.setEnabled(1)
+                laser_exposure.setEnabled(1)
+                laser_box.setEnabled(1)
+                print(self.laser_dict)
+            else:
+                gui.laser_dict.pop(laser)
+                laser_slider.setEnabled(0)
+                laser_exposure.setEnabled(0)
+                laser_box.setEnabled(0)
+        except Exception as e:
+            _error_message(traceback.format_exc())
+
+    ############## Image methods ##############
     def open_images(self, modality):
         """Open image files and display the first"""
         try:
@@ -225,7 +444,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     filter="Images (*.bmp *.tif *.tiff *.jpg)")
 
                 if self.string_list_FM:
-                    self.array_list_FM = piescope_hardware.create_array_list(
+                    self.array_list_FM = _create_array_list(
                         self.string_list_FM, "FM")
                     self.slider_stack_FM.setMaximum(len(self.string_list_FM))
                     self.spinbox_slider_FM.setMaximum(len(self.string_list_FM))
@@ -239,8 +458,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     filter="Images (*.bmp *.tif *.tiff *.jpg)")
 
                 if self.string_list_FIBSEM:
-                    self.array_list_FIBSEM = piescope_hardware. \
-                        create_array_list(self.string_list_FIBSEM, "FIBSEM")
+                    self.array_list_FIBSEM = _create_array_list(
+                        self.string_list_FIBSEM, "FIBSEM")
                     self.slider_stack_FIBSEM.setMaximum(
                         len(self.string_list_FIBSEM))
                     self.spinbox_slider_FIBSEM.setMaximum(
@@ -248,14 +467,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.slider_stack_FIBSEM.setValue(1)
                     self.update_display("FIBSEM")
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
     def save_image(self, modality):
         """Save image on display """
         try:
             if modality == "FM":
-                if self.current_image_FM:
+                if self.current_image_FM is not None:
                     max_value = len(self.string_list_FM)
                     if max_value == 1:
                         display_image = self.array_list_FM
@@ -264,37 +482,36 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_image = self.array_list_FM[
                             self.slider_stack_FM.value() - 1]
                         print(display_image)
-                    [save_base, ext] = p.splitext(
+                    [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FM.text())
                     dest = self.lineEdit_save_destination_FM.text() + self.delim \
-                           + save_base + ".tiff"
-                    dir_exists = p.isdir(
+                           + save_base + ".tif"
+                    dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
                         os.makedirs(self.lineEdit_save_destination_FM.text())
-                        utility.save_image(display_image, dest)
+                        piescope.utils.save_image(display_image, dest)
                     else:
-                        exists = p.isfile(dest)
+                        exists = os.path.isfile(dest)
                         if not exists:
-                            utility.save_image(display_image, dest)
+                            piescope.utils.save_image(display_image, dest)
                         else:
                             count = 1
                             while exists:
                                 dest = self.lineEdit_save_destination_FM.text() + \
                                        self.delim + save_base + "(" + str(
                                     count) + \
-                                       ").tiff"
-                                exists = p.isfile(dest)
+                                       ").tif"
+                                exists = os.path.isfile(dest)
                                 count = count + 1
-                                utility.save_image(display_image,
+                                piescope.utils.save_image(display_image,
                                                    dest)
                 else:
-                    logger.error("No image to save")
-                    self.error_msg("No image to save")
+                    _error_message("No image to save")
 
             elif modality == "FIBSEM":
 
-                if self.current_image_FIBSEM:
+                if self.current_image_FIBSEM is not None:
                     # if self.array_list_FIBSEM.all == self.fibsem_image.data.all:
                     #     display_image = self.fibsem_image
                     # else:
@@ -307,38 +524,36 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     #             self.slider_stack_FIBSEM.value() - 1]
                     #         print(display_image)
                     display_image = self.fibsem_image
-                    [save_base, ext] = p.splitext(
+                    [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FIBSEM.text())
                     dest = self.lineEdit_save_destination_FIBSEM.text() + \
-                           self.delim + save_base + ".tiff"
-                    dir_exists = p.isdir(
+                           self.delim + save_base + ".tif"
+                    dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FIBSEM.text())
                     if not dir_exists:
                         os.makedirs(
                             self.lineEdit_save_destination_FIBSEM.text())
-                        utility.save_image(display_image, dest)
+                        piescope.utils.save_image(display_image, dest)
                     else:
-                        exists = p.isfile(dest)
+                        exists = os.path.isfile(dest)
                         if not exists:
-                            utility.save_image(display_image, dest)
+                            piescope.utils.save_image(display_image, dest)
                         else:
                             count = 1
                             while exists:
                                 dest = self.lineEdit_save_destination_FIBSEM.text() + \
                                        self.delim + save_base + "(" + str(
                                     count) + \
-                                       ").tiff"
-                                exists = p.isfile(dest)
+                                       ").tif"
+                                exists = os.path.isfile(dest)
                                 count = count + 1
-                                utility.save_image(display_image, dest)
+                                piescope.utils.save_image(display_image, dest)
 
                 else:
-                    logger.error("No image to save")
-                    self.error_msg("No image to save")
+                    _error_message("No image to save")
 
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
     def update_display(self, modality):
         """Update the GUI display with the current image"""
@@ -348,7 +563,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 max_value = str(len(self.string_list_FM))
 
                 image_string = self.string_list_FM[int(slider_value) - 1]
-                self.current_path_FM = p.normpath(image_string)
+                self.current_path_FM = os.path.normpath(image_string)
 
                 if int(max_value) > 1:
                     image_array = self.array_list_FM[int(slider_value) - 1]
@@ -367,8 +582,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 image_array_crosshair[midx-(thresh*mult):midx+(thresh*mult), midy-thresh:midy+thresh] = 255
                 image_array_crosshair[midx - thresh:midx + thresh, midy - (thresh * mult):midy + (thresh * mult)] = 255
 
-                self.current_image_FM = q.array2qimage(image_array)
-                self.current_image_FM_crosshair = q.array2qimage(image_array_crosshair)
+                self.current_image_FM = qimage2ndarray.array2qimage(image_array)
+                self.current_image_FM_crosshair = qimage2ndarray.array2qimage(image_array_crosshair)
                 print(self.current_image_FM)
 
                 self.status.setText(
@@ -394,9 +609,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 else:
                     image_array = self.array_list_FIBSEM
 
-                self.current_image_FIBSEM = q.array2qimage(image_array)
+                self.current_image_FIBSEM = qimage2ndarray.array2qimage(image_array)
                 print(self.current_image_FIBSEM)
-                self.current_path_FIBSEM = p.normpath(image_string)
+                self.current_path_FIBSEM = os.path.normpath(image_string)
 
                 self.status.setText(
                     "Image " + slider_value + " of " + max_value)
@@ -411,14 +626,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 """Updating display of GUI with current FIBSEM image"""
 
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
     def fill_save_information(self, modality):
         """Fills Save Destination and Save Filename using image path"""
         try:
             if modality == "FM":
-                [destination, self.save_name] = p.split(self.current_path_FM)
+                [destination, self.save_name] = os.path.split(self.current_path_FM)
 
                 if not self.checkBox_save_destination_FM.isChecked():
                     destination = destination + self.delim
@@ -429,7 +643,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.lineEdit_save_filename_FM.setText(self.save_name)
 
             elif modality == "FIBSEM":
-                [destination, self.save_name] = p.split(
+                [destination, self.save_name] = os.path.split(
                     self.current_path_FIBSEM)
 
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
@@ -440,22 +654,21 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
                 self.lineEdit_save_filename_FIBSEM.setText(self.save_name)
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
     def fill_destination(self, modality):
         """Fills the destination box with the text from the directory"""
         try:
             if modality == "FM":
                 if not self.checkBox_save_destination_FM.isChecked():
-                    self.save_destination_FM = p.normpath(
+                    self.save_destination_FM = os.path.normpath(
                         QtWidgets.QFileDialog.getExistingDirectory(
                             self, 'File Destination'))
                     destination_text = self.save_destination_FM + self.delim
                     self.lineEdit_save_destination_FM.setText(destination_text)
             elif modality == "FIBSEM":
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
-                    self.save_destination_FIBSEM = p.normpath(
+                    self.save_destination_FIBSEM = os.path.normpath(
                         QtWidgets.QFileDialog.getExistingDirectory(
                             self, 'File Destination'))
                     destination_text = \
@@ -463,11 +676,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.lineEdit_save_destination_FIBSEM.setText(
                         destination_text)
         except Exception as e:
-            logger.exception(e)
-            self.error_msg(str(e))
+            _error_message( traceback.format_exc())
 
     def fill_correlation_destination(self):
-        self.save_destination_correlation = p.normpath(
+        self.save_destination_correlation = os.path.normpath(
             QtWidgets.QFileDialog.getExistingDirectory(
                 self, 'File Destination'))
         destination_text = self.save_destination_correlation + self.delim
@@ -490,13 +702,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 raise ValueError("Slice distance must be a positive integer")
 
             destination_for_continual_saving = self.lineEdit_save_destination_FM.text()
-            volume = volume_function.volume_acquisition(
+            volume = piescope.lm.volume.volume_acquisition(
                 laser_dict, no_z_slices, z_slice_distance, destination_for_continual_saving)
-            max_intensity = utility.max_intensity_projection(volume)
+            max_intensity = piescope.utils.max_intensity_projection(volume)
             channel = 0
 
-            # print(max_intensity.shape)
-            # print(max_intensity.shape[])
             rgb = self.create_rgb(max_intensity)
 
             self.string_list_FM = ["RGB image"]
@@ -506,19 +716,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             for las in laser_dict:
                 destination = self.lineEdit_save_destination_FM.text() + \
                               "\\volume_stack_wavelength_" + str(las) + "_" + \
-                              correlation_function._timestamp()
+                              time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
                 os.makedirs(destination)
                 channel_max = max_intensity[:, :, channel]
-                utility.save_image(image=channel_max, dest=destination + "\\Maximum_intensity_projection.tif")
+                piescope.utils.save_image(image=channel_max, dest=destination + "\\Maximum_intensity_projection.tif")
 
                 for z_slice in range(0, np.shape(volume)[0]):
-                    utility.save_image(image=volume[z_slice, :, :, channel], dest=destination + "\\slice__" + str(z_slice) + ".tif")
+                    piescope.utils.save_image(image=volume[z_slice, :, :, channel], dest=destination + "\\slice__" + str(z_slice) + ".tif")
 
                 channel = channel + 1
 
         except Exception as e:
-            self.error_msg(str(e))
-            print(e)
+            _error_message( traceback.format_exc())
 
     def create_rgb(self, max_intensity):
         """
@@ -556,13 +765,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             output_filename = self.correlation_output_path.text()
             if output_filename == "":
                 raise ValueError("No path selected")
-            if not p.isdir(output_filename):
+            if not os.path.isdir(output_filename):
                 raise ValueError("Please select a valid directory")
 
-            image_ext = "\\correlated_image_" + correlation_function._timestamp()
+            image_ext = "\\correlated_image_" + time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
             copy_count = 1
 
-            while p.isfile(output_filename + image_ext + "_" + str(copy_count) + ".tiff"):
+            while os.path.isfile(output_filename + image_ext + "_" + str(copy_count) + ".tiff"):
                 copy_count = copy_count + 1
 
             tempfile = output_filename + image_ext + "_" + str(copy_count) + "temp_.tiff"
@@ -570,7 +779,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             output_filename = output_filename + image_ext + "_" + str(copy_count) + ".tiff"
 
-            window = correlation_function.open_correlation_window(self, fluorescence_image,
+            window = corr.open_correlation_window(self, fluorescence_image,
                                                                   fibsem_image,
                                                                   output_filename)
             window.showMaximized()
@@ -578,51 +787,82 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             window.exitButton.clicked.connect(lambda: self.mill_window_from_correlation(window))
 
-            if p.isfile(tempfile):
+            if os.path.isfile(tempfile):
                 os.remove(tempfile)
 
         except Exception as e:
-            if p.isfile(tempfile):
+            if os.path.isfile(tempfile):
                 os.remove(tempfile)
-            self.error_msg(str(e))
-            print(e)
+            _error_message( traceback.format_exc())
 
     def mill_window_from_correlation(self, window):
         result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict = window.menu_quit()
-        milling_function.open_milling_window(self, result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict)
+        piescope_gui.milling.open_milling_window(self, result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict)
 
     def milling(self):
         try:
-            [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(self,
-                                                                  'Open Milling Image',
-                                                                  filter="Images (*.bmp *.tif *.tiff *.jpg)")
+            [image, ext] = QtWidgets.QFileDialog.getOpenFileNames(
+                self, 'Open Milling Image',
+                filter="Images (*.bmp *.tif *.tiff *.jpg)"
+                )
 
             from autoscript_sdb_microscope_client.structures import AdornedImage
             adorned_image = AdornedImage()
             adorned_image = adorned_image.load(image[0])
             if image:
-                image = piescope_hardware.create_array_list(image, "MILLING")
+                image = _create_array_list(image, "MILLING")
             else:
                 raise ValueError("No image selected")
 
-            milling_function.open_milling_window(self, image, adorned_image)
+            piescope_gui.milling.open_milling_window(self, image, adorned_image)
 
         except Exception as e:
-            self.error_msg(str(e))
-            print(e)
+            _error_message( traceback.format_exc())
 
     def live_imaging_event_listener_FM(self, stop_event):
         state = True
 
         while state and not stop_event.isSet():
-            piescope_hardware.get_basler_image(self, self.comboBox_laser_basler.currentText(),
-                                               self.lineEdit_exposure_basler.text(), self.lineEdit_power_basler_2.text(),
-                                               self.lasers, self.basler, "live")
+            self.get_basler_image(self.comboBox_laser_basler.currentText(),
+                                  self.lineEdit_exposure_basler.text(),
+                                  self.lineEdit_power_basler_2.text(),
+                                  self.lasers, self.basler, "live")
 
-    def error_msg(self, message):
-        error_dialog = QtWidgets.QErrorMessage()
-        error_dialog.showMessage(message)
-        error_dialog.exec_()
+
+def _create_array_list(input_list, modality):
+    if modality == "FM":
+        if len(input_list) > 1:
+            array_list_FM = skimage.io.imread_collection(input_list, conserve_memory=True)
+
+        else:
+            array_list_FM = skimage.io.imread(input_list[0])
+            print("ARRAY LIST IS:", array_list_FM)
+
+        return array_list_FM
+
+    elif modality == "FIBSEM":
+        if len(input_list) > 1:
+            array_list_FIBSEM = skimage.io.imread_collection(input_list)
+        else:
+            array_list_FIBSEM = skimage.io.imread(input_list[0])
+
+        return array_list_FIBSEM
+
+    elif modality == "MILLING":
+        if len(input_list) > 1:
+            array_list_MILLING = skimage.io.imread_collection(input_list)
+        else:
+            array_list_MILLING = skimage.io.imread(input_list[0])
+
+        return array_list_MILLING
+
+
+def _error_message(message):
+    logging.exception(message)
+    error_dialog = QtWidgets.QErrorMessage()
+    error_dialog.showMessage(message)
+    error_dialog.exec_()
+    return error_dialog
 
 
 def main():
