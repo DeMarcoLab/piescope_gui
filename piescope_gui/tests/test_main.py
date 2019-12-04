@@ -1,9 +1,11 @@
-import pytest
+import os
+import mock
 
+import pytest
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
+
 from piescope_gui import main
-from unittest import mock
 
 
 @pytest.fixture
@@ -13,7 +15,6 @@ def window(qtbot, monkeypatch):
     with mock.patch.object(main.GUIMainWindow, 'connect_to_fibsem_microscope'):
         new_window = main.GUIMainWindow()
         qtbot.add_widget(new_window)
-        new_window.show()
         return new_window
 
 
@@ -68,3 +69,52 @@ def test_about_dialog(window, qtbot, mocker):
     qtbot.keyClick(window.menuHelp, Qt.Key_Down)
     mocker.patch.object(QDialog, 'exec_', return_value='accept')
     qtbot.keyClick(window.menuHelp, Qt.Key_Enter)
+
+
+def test_fill_save_information_FM(window, tmpdir):
+    expected = 'filename_FM.tif'
+    window.current_path_FM = os.path.join(str(tmpdir), expected)
+    window.checkBox_save_destination_FM.setChecked(0)
+    window.fill_save_information("FM")
+    assert window.save_destination_FM == str(tmpdir) + os.path.sep
+    assert window.save_name == expected
+    assert window.lineEdit_save_filename_FM.text() == expected
+
+
+def test_fill_save_information_FIBSEM(window, tmpdir):
+    expected = 'filename_FIBSEM.tif'
+    window.current_path_FIBSEM = os.path.join(str(tmpdir), expected)
+    window.checkBox_save_destination_FIBSEM.setChecked(0)
+    window.fill_save_information("FIBSEM")
+    assert window.save_destination_FIBSEM == str(tmpdir) + os.path.sep
+    assert window.save_name == expected
+    assert window.lineEdit_save_filename_FIBSEM.text() == expected
+
+
+@pytest.mark.parametrize("modality", [
+    ("FM"),
+    ("FIBSEM"),
+])
+def test_fill_destination(window, tmpdir, modality):
+    expected = str(tmpdir) + os.path.sep
+    with mock.patch.object(main.QtWidgets.QFileDialog, 'getExistingDirectory') as mocker:
+        mocker.return_value = tmpdir
+        window.checkBox_save_destination_FM.setChecked(0)
+        window.checkBox_save_destination_FIBSEM.setChecked(0)
+        output = window.fill_destination(modality)
+        assert output == expected
+        if modality == "FM":
+            assert window.lineEdit_save_destination_FM.text() == expected
+        elif modality == "FIBSEM":
+            assert window.lineEdit_save_destination_FIBSEM.text() == expected
+        else:
+            assert False  # should never reach this case, fail test if so.
+
+
+def test_fill_correlation_destination(window, tmpdir):
+    expected = str(tmpdir) + os.path.sep
+    with mock.patch.object(main.QtWidgets.QFileDialog, 'getExistingDirectory') as mocker:
+        mocker.return_value = tmpdir
+        output = window.fill_correlation_destination()
+        assert output == expected
+        assert window.correlation_output_path.text() == expected

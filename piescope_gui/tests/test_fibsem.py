@@ -1,10 +1,10 @@
-import pytest
+import mock
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
-from unittest import mock
-
-import numpy as np
 
 import piescope
 
@@ -22,7 +22,6 @@ def window(qtbot, monkeypatch):
     assert hasattr(new_window, 'microscope')
     assert new_window.microscope is not None
     qtbot.add_widget(new_window)
-    new_window.show()
     return new_window
 
 
@@ -61,14 +60,53 @@ def test_move_to_electron_microscope(qtbot, monkeypatch):
     assert np.isclose(new_position.t, old_position.t)
 
 
+@pytest.mark.mpl_image_compare
 def test_get_FIB_image(window):
     image = window.get_FIB_image()
     assert isinstance(image.data, np.ndarray)
+    assert image.data.shape == (512, 768)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.imshow(image.data, cmap='Greys_r')
+    return fig
 
 
-def test_get_last_FIB_image(window):
+@pytest.mark.mpl_image_compare
+def test_get_last_FIB_image(window, tmpdir):
+    window.DEFAULT_PATH = str(tmpdir)
     image = window.get_FIB_image()
+    last_image = window.get_last_FIB_image()
     assert isinstance(image.data, np.ndarray)
+    assert last_image.data.shape == (884, 1024)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.imshow(last_image.data, cmap='Greys_r')
+    return fig
+
+
+@pytest.mark.mpl_image_compare
+def test_get_SEM_image(window):
+    image = window.get_SEM_image()
+    assert isinstance(image.data, np.ndarray)
+    assert image.data.shape == (512, 768)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.imshow(image.data, cmap='Greys_r')
+    return fig
+
+
+@pytest.mark.mpl_image_compare
+def test_get_last_SEM_image(window, tmpdir):
+    window.DEFAULT_PATH = str(tmpdir)
+    image = window.get_SEM_image()
+    last_image = window.get_last_SEM_image()
+    assert isinstance(image.data, np.ndarray)
+    assert last_image.data.shape == (884, 1024)
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.imshow(last_image.data, cmap='Greys_r')
+    return fig
+
 
 def test_autocontrast_ion_beam(window):
     image = window.autocontrast_ion_beam()
