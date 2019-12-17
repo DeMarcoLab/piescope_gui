@@ -31,9 +31,9 @@ Navigate to where this file is downloaded and then pip install using:
 
    pip install pypylon-1.4.0-cp36-cp36m-win_amd64.whl
 
-Finally fork Piescope repository at: https://github.com/DeMarcoLab/piescope_gui.git into a new folder 
+Finally fork Piescope repository at: https://github.com/DeMarcoLab/piescope_gui.git into a new folder
 
-Navigate to that folder, then: 
+Navigate to that folder, then:
 
 .. code-block::
 
@@ -41,11 +41,17 @@ Navigate to that folder, then:
    pip install -r requirements-dev.txt
    pip install -e.
 
-To launch the GUI, navigate to your piescope_gui repository, then:
+To launch the GUI, navigate to your piescope_gui repository.
+To launch `piescope_gui` when connected to all the microscope hardware:
 
 .. code-block::
 
-   python piescope_gui\main.py
+   piescope
+
+or...
+.. code-block::
+
+   python piescope_gui/main.py
 
 
 Running the tests
@@ -57,6 +63,26 @@ Pytest is used for this project. To run the tests:
 
    cd piescope_gui
    pytest
+
+
+To launch `piescope_gui` in offline mode for testing
+(you will need an offline scripting version of AutoScript installed),
+call `piescope_gui` using the `--offline=True` command line option:
+
+.. code-block::
+
+   piescope --offline=True
+
+or...
+
+.. code-block::
+
+   python piescope_gui/main.py --offline=True
+
+If offline is True, `piescope_gui` is launched using:
+* The Basler offline emulator for the fluorescence detector.
+* A mock patch for the StageController SMARACT objective lens stage.
+* AutoScript via "localhost" (requires offline scripting installation).
 
 
 Features
