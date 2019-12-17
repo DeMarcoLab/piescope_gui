@@ -72,7 +72,7 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     img2 = fibsem_image
     output = output_path
 
-    window = _MainWindow()
+    window = _CorrelationWindow(parent=gui)
     return window
 
 
@@ -81,13 +81,12 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
 
     Parameters
     ----------
-    fluorescence_image_rgb : numpy array with shape (cols, rows, channels)
-
-    fibsem_image : Adorned Image.
-    Expecting .data attribute of shape (cols, rows, channels)
-
+    fluorescence_image_rgb :
+        umpy array with shape (cols, rows, channels)
+    fibsem_image : AdornedImage.
+        Expecting .data attribute of shape (cols, rows, channels)
     output : str
-    Path to save location
+        Path to save location
 
     matched_points_dict : dict
     Dictionary of points selected in the correlation window
@@ -102,19 +101,21 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
     result = overlay_images(fluorescence_image_aligned, fibsem_image.data)
     result = skimage.util.img_as_ubyte(result)
 
-    overlay_adorned_image = AdornedImage(result)
-    overlay_adorned_image.metadata = gui.fibsem_image.metadata
-    save_text(output, transformation, matched_points_dict)
-    plt.imsave(output, result)
-    overlay_adorned_image.save(output)
+    # TODO: the only imports h ere should be numpy arrays, not AdornedImagE
+    # TODO: get rid of this, saving should happen outside the function
+    # overlay_adorned_image = AdornedImage(result)
+    # overlay_adorned_image.metadata = gui.fibsem_image.metadata
+    # save_text(output, transformation, matched_points_dict)
+    # plt.imsave(output, result)
+    # overlay_adorned_image.save(output)
 
-    return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
+    return result#, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
 
 
-class _MainWindow(QMainWindow):
+class _CorrelationWindow(QMainWindow):
     """Main correlation window"""
-    def __init__(self):
-        super().__init__(parent=gui)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.create_window()
         self.create_conn()
 
@@ -223,9 +224,12 @@ class _MainWindow(QMainWindow):
 
     def menu_quit(self):
         matched_points_dict = self.get_dictlist()
-        result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)
+        # TODO: correlation fix
+        # result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)
+        result = correlate_images(img1, img2, output, matched_points_dict)
         self.close()
-        return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict
+        # return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict
+        return result
 
     def get_dictlist(self):
         dictlist = []

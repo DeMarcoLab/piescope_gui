@@ -1,11 +1,18 @@
 import logging
 import time
+import traceback
 
 from PyQt5 import QtWidgets
+
+__all__ = [
+    'display_error_message',
+    'timestamp',
+    ]
 
 
 def display_error_message(message):
     """PyQt dialog box displaying an error message."""
+    print('display_error_message')
     logging.exception(message)
     error_dialog = QtWidgets.QErrorMessage()
     error_dialog.showMessage(message)

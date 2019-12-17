@@ -1,17 +1,18 @@
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import skimage
 import skimage.color
 import skimage.io
 import skimage.transform
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
 from piescope import fibsem
+
 from piescope_gui.correlation import main as corr
+from piescope_gui.utils import display_error_message, timestamp
 
 
 def open_milling_window(main_gui, image, adorned_image, fluorescence_image_rgb,
@@ -234,21 +235,21 @@ class _MainWindow(QMainWindow):
     def start_patterning(self):
         state = gui.microscope.patterning.state
         if state == "Running":
-            gui.error_msg('Patterning already running')
+            display_error_message('Patterning already running')
         else:
             gui.microscope.patterning.start()
 
     def pause_patterning(self):
         state = gui.microscope.patterning.state
         if state == "Idle" or state == "Paused":
-            gui.error_msg('Patterning already paused or idle')
+            display_error_message('Patterning already paused or idle')
         else:
             gui.microscope.patterning.pause()
 
     def stop_patterning(self):
         state = gui.microscope.patterning.state
         if state == "Idle" or state == "Paused":
-            gui.error_msg('Patterning already paused or idle')
+            display_error_message('Patterning already paused or idle')
         else:
             gui.microscope.patterning.stop()
 
@@ -286,8 +287,8 @@ class _MainWindow(QMainWindow):
             print(self.dragged)
             try:
                 self.x1_label2.setText("%.1f" % self.x1)
-            except:
-                gui.error_msg(gui, "Mouse released outside image.  Please try again")
+            except Exception as e:
+                display_error_message("Mouse released outside image. Please try again")
             self.x0_label2.setText("%.1f" % self.xclick)
             self.y0_label2.setText("%.1f" % self.yclick)
             self.y1_label2.setText("%.1f" % self.y1)
@@ -301,15 +302,15 @@ class _WidgetPlot(QWidget):
         self.layout().addWidget(self.canvas)
 
 
-class _PlotCanvas(FigureCanvas):
+class _PlotCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None):
         self.fig = Figure()
-        FigureCanvas.__init__(self, self.fig)
+        FigureCanvasQTAgg.__init__(self, self.fig)
 
         self.setParent(parent)
-        FigureCanvas.setSizePolicy(
+        FigureCanvasQTAgg.setSizePolicy(
             self, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        FigureCanvasQTAgg.updateGeometry(self)
         self.plot()
         self.createConn()
 
