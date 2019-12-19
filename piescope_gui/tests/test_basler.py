@@ -39,19 +39,30 @@ def test_fluorescence_image(window, monkeypatch, wavelength, exposure_time, lase
     monkeypatch.setenv("PYLON_CAMEMU", "1")
     output = window.fluorescence_image(wavelength, exposure_time, laser_power)
     expected = piescope.data.basler_image()
-    assert output.shape == (1040, 1024)
-    assert np.allclose(output, expected)
-    assert np.allclose(window.array_list_FM, expected)
+    # Basler emulated mode produces images with shape (1040, 1024)
+    # The real Basler detector in the lab produces images with shape (1200, 1920)
+    assert output.shape == (1040, 1024) or output.shape == (1200, 1920)
+    if output.shape == (1040, 1024):  # emulated image
+        assert np.allclose(output, expected)
+        assert np.allclose(window.array_list_FM, expected)
 
 
-def test_fluorescence_live_imaging(window, monkeypatch):
+@pytest.mark.parametrize("wavelength", [
+    ("640nm"),
+    ("561nm"),
+    ("488nm"),
+    ("405nm"),
+])
+def test_fluorescence_live_imaging(window, monkeypatch, wavelength):
     monkeypatch.setenv("PYLON_CAMEMU", "1")
-    wavelength = "640nm"  # "640nm", "561nm", "488nm", "405nm"
     exposure_time = 150  # in microseconds
     laser_power = 1.0
     window.fluorescence_live_imaging(wavelength, exposure_time, laser_power)
-    time.sleep(1)            # run live imaging for one second
+    time.sleep(0.5)          # run live imaging for half a second
     window.stop_event.set()  # stop live imaging
-    expected = piescope.data.basler_image()
-    assert window.array_list_FM.shape == (1040, 1024)
-    assert np.allclose(window.array_list_FM, expected)
+    # Basler emulated mode produces images with shape (1040, 1024)
+    # The real Basler detector in the lab produces images with shape (1200, 1920)
+    assert window.array_list_FM.shape == (1040, 1024) or window.array_list_FM.shape == (1200, 1920)
+    if window.array_list_FM.shape == (1040, 1024):  # emulated image
+        expected = piescope.data.basler_image()
+        assert np.allclose(window.array_list_FM, expected)
