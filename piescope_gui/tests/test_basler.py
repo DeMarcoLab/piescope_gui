@@ -47,18 +47,35 @@ def test_fluorescence_image(window, monkeypatch, wavelength, exposure_time, lase
         assert np.allclose(window.array_list_FM, expected)
 
 
-@pytest.mark.parametrize("wavelength", [
-    ("640nm"),
-    ("561nm"),
-    ("488nm"),
-    ("405nm"),
-])
-def test_fluorescence_live_imaging(window, monkeypatch, wavelength):
+# Do not parameterize this test function
+def test_fluorescence_live_imaging(window, monkeypatch):
     monkeypatch.setenv("PYLON_CAMEMU", "1")
+    wavelength = "640nm"  # "640nm", "561nm", "488nm", "405nm"
     exposure_time = 150  # in microseconds
     laser_power = 1.0
     window.fluorescence_live_imaging(wavelength, exposure_time, laser_power)
-    time.sleep(0.5)          # run live imaging for half a second
+    time.sleep(0.2)          # run live imaging for half a second
+    window.stop_event.set()  # stop live imaging
+    # Basler emulated mode produces images with shape (1040, 1024)
+    # The real Basler detector in the lab produces images with shape (1200, 1920)
+    assert window.array_list_FM.shape == (1040, 1024) or window.array_list_FM.shape == (1200, 1920)
+    if window.array_list_FM.shape == (1040, 1024):  # emulated image
+        expected = piescope.data.basler_image()
+        assert np.allclose(window.array_list_FM, expected)
+
+
+def test_fluorescence_live_imaging_stop_start(window, monkeypatch):
+    monkeypatch.setenv("PYLON_CAMEMU", "1")
+    wavelength = "640nm"  # "640nm", "561nm", "488nm", "405nm"
+    exposure_time = 150  # in microseconds
+    laser_power = 1.0
+    # Start live imaging
+    window.fluorescence_live_imaging(wavelength, exposure_time, laser_power)
+    time.sleep(0.2)          # run live imaging for half a second
+    window.stop_event.set()  # stop live imaging
+    # Start live imaging again
+    window.fluorescence_live_imaging(wavelength, exposure_time, laser_power)
+    time.sleep(0.2)          # run live imaging for half a second
     window.stop_event.set()  # stop live imaging
     # Basler emulated mode produces images with shape (1040, 1024)
     # The real Basler detector in the lab produces images with shape (1200, 1920)
