@@ -1,8 +1,10 @@
 import logging
+import traceback
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
+import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -26,25 +28,20 @@ def open_milling_window(parent_gui, image):
     ----------
     parent_gui : PyQt5 Window
 
-    image : numpy array
-        Overlaid image to display
-
     adorned_image : Adorned Image
         Adorned image with image as the .data attribute and metadata passed from
         the fibsem image on display in the main window
 
     """
-    global gui
     global img
     # global adorned
 
-    # gui = parent_gui
     img = image
     # adorned = adorned_image
 
     window = _MainWindow(parent=parent_gui)
     window.show()
-    return
+    return window
 
 
 class _MainWindow(QMainWindow):
@@ -174,8 +171,9 @@ class _MainWindow(QMainWindow):
         self.exitButton.clicked.connect(self.menu_quit)
 
         self.pattern_creation_button.clicked.connect(
-            lambda: fibsem.create_rectangular_pattern(gui.microscope, adorned, self.xclick,
-                                                      self.x1, self.yclick, self.y1, depth=1e-6))
+            lambda: fibsem.create_rectangular_pattern(
+                self.parent().microscope, adorned_image,
+                self.xclick, self.x1, self.yclick, self.y1, depth=1e-6))
 
         self.pattern_start_button.clicked.connect(self.start_patterning)
         self.pattern_pause_button.clicked.connect(self.pause_patterning)
@@ -185,28 +183,46 @@ class _MainWindow(QMainWindow):
         self.close()
 
     def start_patterning(self):
-        # should have try/except block here
-        state = gui.microscope.patterning.state
-        if state == "Running":
-            display_error_message('Patterning already running')
-        else:
-            gui.microscope.patterning.start()
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = self.parent().microscope.patterning.state
+            if state == "Idle":
+                self.parent().microscope.patterning.start()
+        except ApplicationServerException:
+            logging.warning("Patterning state is not currently Idle.")
+            logger.warning("microscope.patterning.state = {}".format(state))
+        except Exception:
+            display_error_message(traceback.format_exc())
 
     def pause_patterning(self):
-        # should have try/except block here
-        state = gui.microscope.patterning.state
-        if state == "Idle" or state == "Paused":
-            display_error_message('Patterning already paused or idle')
-        else:
-            gui.microscope.patterning.pause()
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = self.parent().microscope.patterning.state
+            if state == "Running":
+                self.parent().microscope.patterning.pause()
+        except ApplicationServerException:
+            logging.warning("Patterning state is not currently running.")
+            logger.warning("microscope.patterning.state = {}".format(state))
+        except Exception:
+            display_error_message(
+                "microscope.patterning.state = {}\n".format(state) +
+                traceback.format_exc()
+                )
 
     def stop_patterning(self):
-        # should have try/except block here
-        state = gui.microscope.patterning.state
-        if state == "Idle" or state == "Paused":
-            display_error_message('Patterning already paused or idle')
-        else:
-            gui.microscope.patterning.stop()
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = self.parent().microscope.patterning.state
+            if state == "Running" or state == "Paused":
+                self.parent().microscope.patterning.stop()
+        except ApplicationServerException:
+            logging.warning("Patterning state is not running or paused.")
+            logger.warning("microscope.patterning.state = {}".format(state))
+        except Exception:
+            display_error_message(
+                "microscope.patterning.state = {}\n".format(state) +
+                traceback.format_exc()
+                )
 
     def on_click(self, event):
         if event.button == 1 or event.button == 3:
@@ -311,7 +327,3 @@ class _PlotCanvas(FigureCanvasQTAgg):
     def mouseClicked(self, event):
         x = event.xdata
         y = event.ydata
-
-
-if __name__ == "__main__":
-    open_milling_window()
