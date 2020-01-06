@@ -101,7 +101,7 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
     result = overlay_images(fluorescence_image_aligned, fibsem_image.data)
     result = skimage.util.img_as_ubyte(result)
 
-    # TODO: the only imports h ere should be numpy arrays, not AdornedImagE
+    # TODO: the only imports here should be numpy arrays, not AdornedImagE
     # TODO: get rid of this, saving should happen outside the function
     # overlay_adorned_image = AdornedImage(result)
     # overlay_adorned_image.metadata = gui.fibsem_image.metadata
