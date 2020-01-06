@@ -31,7 +31,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.microscope = None
         self.connect_to_fibsem_microscope(ip_address=ip_address)
 
-        self.DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
+        self.DEFAULT_PATH = os.path.normpath(
+            os.path.expanduser('~/Pictures/PIESCOPE'))
         self.setWindowTitle("PIEScope User Interface Main Window")
         self.statusbar.setSizeGripEnabled(0)
         self.status = QtWidgets.QLabel(self.statusbar)
@@ -44,7 +45,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
         self.label_objective_stage_position.setText("Unknown")
-        self.delim = os.path.normpath("/")  #TODO: replace with os.path.join or os.path.sep in the code
 
         # self.liveCheck is True when ready to start live imaging,
         # and False while live imaging is running:
@@ -76,9 +76,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.detector = piescope.lm.detector.Basler()
 
         self.comboBox_resolution.currentTextChanged.connect(
-            lambda: self.update_fibsem_settings(self))
+            lambda: self.update_fibsem_settings())
         self.lineEdit_dwell_time.textChanged.connect(
-            lambda: self.update_fibsem_settings(self))
+            lambda: self.update_fibsem_settings())
 
         self.actionOpen_FM_Image.triggered.connect(
             lambda: self.open_images("FM"))
@@ -219,7 +219,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.autocontrast_ion_beam()
             self.fibsem_image = piescope.fibsem.new_ion_image(self.microscope, self.camera_settings)
             self.array_list_FIBSEM = self.fibsem_image.data
-            self.string_list_FIBSEM = [self.DEFAULT_PATH + "FIB_Image_" + timestamp()]
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -230,7 +229,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             self.fibsem_image = piescope.fibsem.last_ion_image(self.microscope)
             self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
-            self.string_list_FIBSEM = [self.DEFAULT_PATH + "Last_FIB_Image_" + timestamp()]
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -242,7 +240,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.fibsem_image = piescope.fibsem.new_electron_image(self.microscope, self.camera_settings)
             self.array_list_FIBSEM = np.copy(self.fibsem_image.data)
             self.array_list_FIBSEM = ndi.median_filter(self.array_list_FIBSEM, 2)
-            self.string_list_FIBSEM = [self.DEFAULT_PATH + "SEM_Image_" + timestamp()]
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -254,8 +251,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.fibsem_image = piescope.fibsem.last_electron_image(self.microscope)
             self.array_list_FIBSEM = self.fibsem_image.data
             self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.array_list_FIBSEM)
-            self.string_list_FIBSEM = [self.DEFAULT_PATH + "SEM_Image_" + timestamp()]
-            print(self.array_list_FIBSEM)
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -268,7 +263,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             piescope.fibsem.autocontrast(self.microscope)
             self.fibsem_image = piescope.fibsem.last_ion_image(self.microscope)
             self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
-            self.string_list_FIBSEM = [self.DEFAULT_PATH + "FIB_Image_" + timestamp()]
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -290,7 +284,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             image = self.detector.camera_grab(float(exposure_time))
             self.lasers[laser_name].emission_off()
             # Update GUI
-            self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + timestamp()]
+            self.string_list_FM = [self.DEFAULT_PATH + os.path.sep + "F_" + timestamp()]
             self.array_list_FM = image
             self.slider_stack_FM.setValue(1)
             self.update_display("FM")
@@ -330,7 +324,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         while not stop_event.isSet():
             image = self.detector.camera_grab(float(exposure_time))
             # Update GUI
-            self.string_list_FM = [self.DEFAULT_PATH + "_Basler_Image_" + timestamp()]
+            self.string_list_FM = [self.DEFAULT_PATH + os.path.sep + "F_" + timestamp()]
             self.array_list_FM = image
             self.slider_stack_FM.setValue(1)
             self.update_display("FM")
@@ -587,8 +581,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         print(display_image)
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FM.text())
-                    dest = self.lineEdit_save_destination_FM.text() + self.delim \
-                           + save_base + ".tif"
+                    dest = self.lineEdit_save_destination_FM.text() + \
+                        os.path.sep + save_base + ".tif"
+                    print(self.lineEdit_save_destination_FM.text())
+                    print(os.path.sep)
+                    print(save_base)
+                    print(dest)
                     dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
@@ -602,7 +600,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                             count = 1
                             while exists:
                                 dest = (self.lineEdit_save_destination_FM.text()
-                                        + self.delim + save_base + "("
+                                        + os.path.sep + save_base + "("
                                         + str(count) + ").tif")
                                 exists = os.path.isfile(dest)
                                 count = count + 1
@@ -616,7 +614,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FIBSEM.text())
                     dest = self.lineEdit_save_destination_FIBSEM.text() + \
-                           self.delim + save_base + ".tif"
+                           os.path.sep + save_base + ".tif"
+                    print(self.lineEdit_save_destination_FIBSEM.text())
+                    print(os.path.sep)
+                    print(self.lineEdit_save_filename_FIBSEM.text())
+                    print(save_base)
+                    print(ext)
+                    print(dest)
                     dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FIBSEM.text())
                     if not dir_exists:
@@ -631,7 +635,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                             count = 1
                             while exists:
                                 dest = (self.lineEdit_save_destination_FIBSEM.text()
-                                        + self.delim + save_base + "("
+                                        + os.path.sep + save_base + "("
                                         + str(count) + ").tif")
                                 exists = os.path.isfile(dest)
                                 count = count + 1
@@ -720,7 +724,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 [destination, self.save_name] = os.path.split(self.current_path_FM)
 
                 if not self.checkBox_save_destination_FM.isChecked():
-                    destination = destination + self.delim
+                    destination = destination + os.path.sep
                     self.save_destination_FM = destination
                     self.lineEdit_save_destination_FM.setText(
                         self.save_destination_FM)
@@ -732,7 +736,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.current_path_FIBSEM)
 
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
-                    destination = destination + self.delim
+                    destination = destination + os.path.sep
                     self.save_destination_FIBSEM = destination
                     self.lineEdit_save_destination_FIBSEM.setText(
                         self.save_destination_FIBSEM)
@@ -749,7 +753,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.save_destination_FM = os.path.normpath(
                         QtWidgets.QFileDialog.getExistingDirectory(
                             self, 'File Destination'))
-                    destination_text = self.save_destination_FM + self.delim
+                    destination_text = self.save_destination_FM + os.path.sep
                     self.lineEdit_save_destination_FM.setText(destination_text)
                     return destination_text
             elif modality == "FIBSEM":
@@ -758,7 +762,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         QtWidgets.QFileDialog.getExistingDirectory(
                             self, 'File Destination'))
                     destination_text = \
-                        self.save_destination_FIBSEM + self.delim
+                        self.save_destination_FIBSEM + os.path.sep
                     self.lineEdit_save_destination_FIBSEM.setText(
                         destination_text)
                     return destination_text
@@ -769,7 +773,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.save_destination_correlation = os.path.normpath(
             QtWidgets.QFileDialog.getExistingDirectory(
                 self, 'File Destination'))
-        destination_text = self.save_destination_correlation + self.delim
+        destination_text = self.save_destination_correlation + os.path.sep
         self.correlation_output_path.setText(destination_text)
         return destination_text
 
