@@ -28,8 +28,8 @@ def window(qtbot, monkeypatch):
     ("405nm"),
 ])
 @pytest.mark.parametrize("exposure_time", [
-    (150),  # in microseconds
-    (200),  # in microseconds
+    (150),  # in milliseconds (ms)
+    (200),  # in milliseconds (ms)
 ])
 @pytest.mark.parametrize("laser_power", [
     (0.1),
@@ -53,6 +53,7 @@ def test_fluorescence_live_imaging(window, monkeypatch):
     wavelength = "640nm"  # "640nm", "561nm", "488nm", "405nm"
     exposure_time = 150  # in microseconds
     laser_power = 1.0
+    # Start live imaging
     window.fluorescence_live_imaging(wavelength, exposure_time, laser_power)
     time.sleep(0.2)          # run live imaging for half a second
     window.stop_event.set()  # stop live imaging

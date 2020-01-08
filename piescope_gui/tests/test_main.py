@@ -71,26 +71,6 @@ def test_about_dialog(window, qtbot, mocker):
     qtbot.keyClick(window.menuHelp, Qt.Key_Enter)
 
 
-def test_fill_save_information_FM(window, tmpdir):
-    expected = 'filename_FM.tif'
-    window.current_path_FM = os.path.join(str(tmpdir), expected)
-    window.checkBox_save_destination_FM.setChecked(0)
-    window.fill_save_information("FM")
-    assert window.save_destination_FM == str(tmpdir) + os.path.sep
-    assert window.save_name == expected
-    assert window.lineEdit_save_filename_FM.text() == expected
-
-
-def test_fill_save_information_FIBSEM(window, tmpdir):
-    expected = 'filename_FIBSEM.tif'
-    window.current_path_FIBSEM = os.path.join(str(tmpdir), expected)
-    window.checkBox_save_destination_FIBSEM.setChecked(0)
-    window.fill_save_information("FIBSEM")
-    assert window.save_destination_FIBSEM == str(tmpdir) + os.path.sep
-    assert window.save_name == expected
-    assert window.lineEdit_save_filename_FIBSEM.text() == expected
-
-
 @pytest.mark.parametrize("modality", [
     ("FM"),
     ("FIBSEM"),
