@@ -168,7 +168,7 @@ class _MainWindow(QMainWindow):
 
         self.pattern_creation_button.clicked.connect(
             lambda: fibsem.create_rectangular_pattern(
-                self.parent().microscope, image,
+                self.parent().microscope, self.parent().image_ion,
                 self.xclick, self.x1, self.yclick, self.y1, depth=1e-6))
 
         self.pattern_start_button.clicked.connect(self.start_patterning)
