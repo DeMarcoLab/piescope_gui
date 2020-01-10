@@ -44,7 +44,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.image_lm = None   # Fluorescence microscope image (numpy array, integer pixel values)
         self.image_volume = None
 
-        self.DEFAULT_PATH = "C:\\Users\\Admin\\Pictures\\Basler"
+        self.DEFAULT_PATH = os.path.normpath(
+            os.path.expanduser('~/Pictures/PIESCOPE'))
         self.setWindowTitle("PIEScope User Interface Main Window")
         self.statusbar.setSizeGripEnabled(0)
         self.status = QtWidgets.QLabel(self.statusbar)
@@ -57,7 +58,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
         self.label_objective_stage_position.setText("Unknown")
-        self.delim = os.path.normpath("/")  #TODO: replace with os.path.join or os.path.sep in the code
 
         # self.liveCheck is True when ready to start live imaging,
         # and False while live imaging is running:
@@ -79,9 +79,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.current_image_FIBSEM = ""  #TODO: REMOVE. David not sure why these are strings.
         self.current_pixmap_FM = []  #TODO: should be None, not an empty list to start with. PixMap object (pyqt)
         self.current_pixmap_FIBSEM = []  #TODO: should be None, not an empty list to start with. PixMap object (pyqt)
-        self.save_destination_FM = ""  # string
-        self.save_destination_FIBSEM = ""  # string
-        self.save_destination_correlation = ""  # string
+        self.save_destination_FM = self.DEFAULT_PATH
+        self.save_destination_FIBSEM = self.DEFAULT_PATH
+        self.save_destination_correlation = self.DEFAULT_PATH
 
     def initialize_hardware(self):
         self.connect_to_fibsem_microscope(ip_address=self.ip_address)
@@ -115,7 +115,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.button_save_destination_FIBSEM.clicked.connect(
             lambda: self.fill_destination("FIBSEM"))
         self.toolButton_correlation_output.clicked.connect(
-            self.fill_correlation_destination)
+            lambda: self.fill_destination("correlation"))
 
         self.checkBox_laser1.clicked.connect(
             lambda: self.update_laser_dict("laser640"))
@@ -618,7 +618,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         print(display_image)
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FM.text())
-                    dest = self.lineEdit_save_destination_FM.text() + self.delim \
+                    dest = self.lineEdit_save_destination_FM.text() + os.path.sep \
                            + save_base + ".tif"
                     dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FM.text())
@@ -633,7 +633,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                             count = 1
                             while exists:
                                 dest = (self.lineEdit_save_destination_FM.text()
-                                        + self.delim + save_base + "("
+                                        + os.path.sep + save_base + "("
                                         + str(count) + ").tif")
                                 exists = os.path.isfile(dest)
                                 count = count + 1
@@ -647,7 +647,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FIBSEM.text())
                     dest = self.lineEdit_save_destination_FIBSEM.text() + \
-                           self.delim + save_base + ".tif"
+                           os.path.sep + save_base + ".tif"
                     dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FIBSEM.text())
                     if not dir_exists:
@@ -662,7 +662,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                             count = 1
                             while exists:
                                 dest = (self.lineEdit_save_destination_FIBSEM.text()
-                                        + self.delim + save_base + "("
+                                        + os.path.sep + save_base + "("
                                         + str(count) + ").tif")
                                 exists = os.path.isfile(dest)
                                 count = count + 1
@@ -751,7 +751,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 [destination, self.save_name] = os.path.split(self.current_path_FM)
 
                 if not self.checkBox_save_destination_FM.isChecked():
-                    destination = destination + self.delim
+                    destination = destination + os.path.sep
                     self.save_destination_FM = destination
                     self.lineEdit_save_destination_FM.setText(
                         self.save_destination_FM)
@@ -763,7 +763,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.current_path_FIBSEM)
 
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
-                    destination = destination + self.delim
+                    destination = destination + os.path.sep
                     self.save_destination_FIBSEM = destination
                     self.lineEdit_save_destination_FIBSEM.setText(
                         self.save_destination_FIBSEM)
@@ -775,34 +775,29 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def fill_destination(self, modality):
         """Fills the destination box with the text from the directory"""
         try:
+            user_input = QtWidgets.QFileDialog.getExistingDirectory(
+                self, 'File Destination')
+            if user_input == '':
+                directory_path = self.DEFAULT_PATH
+            else:
+                directory_path = os.path.normpath(user_input) + os.path.sep
+
             if modality == "FM":
                 if not self.checkBox_save_destination_FM.isChecked():
-                    self.save_destination_FM = os.path.normpath(
-                        QtWidgets.QFileDialog.getExistingDirectory(
-                            self, 'File Destination'))
-                    destination_text = self.save_destination_FM + self.delim
-                    self.lineEdit_save_destination_FM.setText(destination_text)
-                    return destination_text
+                    self.save_destination_FM = directory_path
+                    self.lineEdit_save_destination_FM.setText(directory_path)
+                    return directory_path
             elif modality == "FIBSEM":
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
-                    self.save_destination_FIBSEM = os.path.normpath(
-                        QtWidgets.QFileDialog.getExistingDirectory(
-                            self, 'File Destination'))
-                    destination_text = \
-                        self.save_destination_FIBSEM + self.delim
-                    self.lineEdit_save_destination_FIBSEM.setText(
-                        destination_text)
-                    return destination_text
+                    self.save_destination_FIBSEM = directory_path
+                    self.lineEdit_save_destination_FIBSEM.setText(directory_path)
+                    return directory_path
+            elif modality == "correlation":
+                self.save_destination_correlation = directory_path
+                self.correlation_output_path.setText(directory_path)
+                return directory_path
         except Exception as e:
             display_error_message(traceback.format_exc())
-
-    def fill_correlation_destination(self):
-        self.save_destination_correlation = os.path.normpath(
-            QtWidgets.QFileDialog.getExistingDirectory(
-                self, 'File Destination'))
-        destination_text = self.save_destination_correlation + self.delim
-        self.correlation_output_path.setText(destination_text)
-        return destination_text
 
     def acquire_volume(self):
         try:
@@ -840,8 +835,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.update_display("FM")
 
             for las in laser_dict:
-                destination = self.lineEdit_save_destination_FM.text() + \
-                              "\\volume_stack_wavelength_" + str(las) + "_" + \
+                destination = self.lineEdit_save_destination_FM.text() + os.path.sep + \
+                              "volume_stack_wavelength_" + str(las) + "_" + \
                               timestamp()
                 os.makedirs(destination)
                 channel_max = max_intensity[:, :, channel]
@@ -878,7 +873,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if not os.path.isdir(output_filename):
                 raise ValueError("Please select a valid directory")
 
-            image_ext = "\\correlated_image_" + timestamp()
+            image_ext = os.path.sep + "correlated_image_" + timestamp()
             copy_count = 1
 
             while os.path.isfile(output_filename + image_ext + "_" + str(copy_count) + ".tiff"):
