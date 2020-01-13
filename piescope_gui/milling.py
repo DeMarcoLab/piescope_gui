@@ -80,7 +80,17 @@ class _MainWindow(QMainWindow):
         self.exitButton.setFixedHeight(button_height)
         self.exitButton.setStyleSheet("font-size: 16px;")
 
-        self.pattern_creation_button = QPushButton("Send milling pattern to FIBSEM")
+        self.button_move_to_fibsem = QPushButton("Move to FIBSEM")
+        self.button_move_to_fibsem.setFixedWidth(button_width)
+        self.button_move_to_fibsem.setFixedHeight(button_height)
+        self.button_move_to_fibsem.setStyleSheet("font-size: 16px;")
+
+        self.button_move_to_fluorescence = QPushButton("Move to fluorescence")
+        self.button_move_to_fluorescence.setFixedWidth(button_width)
+        self.button_move_to_fluorescence.setFixedHeight(button_height)
+        self.button_move_to_fluorescence.setStyleSheet("font-size: 16px;")
+
+        self.pattern_creation_button = QPushButton("Add milling pattern")
         self.pattern_creation_button.setFixedWidth(button_width)
         self.pattern_creation_button.setFixedHeight(button_height)
         self.pattern_creation_button.setStyleSheet("font-size: 16px;")
@@ -147,6 +157,8 @@ class _MainWindow(QMainWindow):
         hlay.addWidget(self.y1_label)
         hlay.addWidget(self.y1_label2)
         # hlay.addSpacerItem(spacerItem)
+        hlay.addWidget(self.button_move_to_fibsem)
+        hlay.addWidget(self.button_move_to_fluorescence)
         hlay.addWidget(self.pattern_creation_button)
         hlay.addWidget(self.pattern_start_button)
         hlay.addWidget(self.pattern_pause_button)
@@ -166,11 +178,12 @@ class _MainWindow(QMainWindow):
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
 
-        self.pattern_creation_button.clicked.connect(
-            lambda: fibsem.create_rectangular_pattern(
-                self.parent().microscope, image,
-                self.xclick, self.x1, self.yclick, self.y1, depth=1e-6))
+        self.button_move_to_fibsem.clicked.connect(
+            lambda: self.parent().move_to_electron_microscope())
+        self.button_move_to_fluorescence.clicked.connect(
+            lambda: self.parent().move_to_light_microscope())
 
+        self.pattern_creation_button.clicked.connect(self.add_milling_pattern)
         self.pattern_start_button.clicked.connect(self.start_patterning)
         self.pattern_pause_button.clicked.connect(self.pause_patterning)
         self.pattern_stop_button.clicked.connect(self.stop_patterning)
@@ -178,15 +191,29 @@ class _MainWindow(QMainWindow):
     def menu_quit(self):
         self.close()
 
+    def add_milling_pattern(self):
+        try:
+            fibsem.create_rectangular_pattern(
+                self.parent().microscope, image,
+                self.xclick, self.x1, self.yclick, self.y1, depth=1e-6)
+            print('Added milling pattern to the FIBSEM microscope.')
+        except Exception:
+            display_error_message(traceback.format_exc())
+
     def start_patterning(self):
         from autoscript_core.common import ApplicationServerException
         try:
             state = self.parent().microscope.patterning.state
-            if state == "Idle":
+            if state != "Idle":
+                logger.warning(
+                    "Can't start milling pattern! "
+                    "Patterning state is not currently Idle.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
                 self.parent().microscope.patterning.start()
-        # except ApplicationServerException:
-        #     logging.warning("Patterning state is not currently Idle.")
-        #     logger.warning("microscope.patterning.state = {}".format(state))
+                print('Started milling pattern.')
         except Exception:
             display_error_message(traceback.format_exc())
 
@@ -194,11 +221,16 @@ class _MainWindow(QMainWindow):
         from autoscript_core.common import ApplicationServerException
         try:
             state = self.parent().microscope.patterning.state
-            if state == "Running":
+            if state != "Running":
+                logger.warning(
+                    "Can't pause milling pattern! "
+                    "Patterning state is not currently running.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
                 self.parent().microscope.patterning.pause()
-        except ApplicationServerException:
-            logging.warning("Patterning state is not currently running.")
-            logger.warning("microscope.patterning.state = {}".format(state))
+                print('Paused milling pattern.')
         except Exception:
             display_error_message(
                 "microscope.patterning.state = {}\n".format(state) +
@@ -209,11 +241,16 @@ class _MainWindow(QMainWindow):
         from autoscript_core.common import ApplicationServerException
         try:
             state = self.parent().microscope.patterning.state
-            if state == "Running" or state == "Paused":
+            if state != "Running" and state != "Paused":
+                logger.warning(
+                    "Can't stop milling pattern! "
+                    "Patterning state is not running or paused.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
                 self.parent().microscope.patterning.stop()
-        except ApplicationServerException:
-            logging.warning("Patterning state is not running or paused.")
-            logger.warning("microscope.patterning.state = {}".format(state))
+                print('Stopped milling pattern.')
         except Exception:
             display_error_message(
                 "microscope.patterning.state = {}\n".format(state) +
