@@ -168,7 +168,7 @@ class _MainWindow(QMainWindow):
 
         self.pattern_creation_button.clicked.connect(
             lambda: fibsem.create_rectangular_pattern(
-                self.parent().microscope, self.parent().image_ion,
+                self.parent().microscope, image,
                 self.xclick, self.x1, self.yclick, self.y1, depth=1e-6))
 
         self.pattern_start_button.clicked.connect(self.start_patterning)
@@ -184,9 +184,9 @@ class _MainWindow(QMainWindow):
             state = self.parent().microscope.patterning.state
             if state == "Idle":
                 self.parent().microscope.patterning.start()
-        except ApplicationServerException:
-            logging.warning("Patterning state is not currently Idle.")
-            logger.warning("microscope.patterning.state = {}".format(state))
+        # except ApplicationServerException:
+        #     logging.warning("Patterning state is not currently Idle.")
+        #     logger.warning("microscope.patterning.state = {}".format(state))
         except Exception:
             display_error_message(traceback.format_exc())
 

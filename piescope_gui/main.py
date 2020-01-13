@@ -979,7 +979,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             else:
                 raise ValueError("No image selected")
 
-            piescope_gui.milling.open_milling_window(self, image, adorned_image)
+            piescope_gui.milling.open_milling_window(self, adorned_image)
 
         except Exception as e:
             display_error_message(traceback.format_exc())
