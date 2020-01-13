@@ -338,9 +338,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     ############## Fluorescence detector methods ##############
     def fluorescence_image(self, wavelength, exposure_time, laser_power,
                            autosave=True):
-        print('fluorescence_image function')
+        """Acquire a single fluorescence image, at a single wavelength..
+
+        Parameters
+        ----------
+        wavelength : str
+            Laser wavelength. Can be '640nm', '561nm', '488nm', or '405nm'.
+        exposure_time : float (or string resolving to float)
+            Exposure time in milliseconds (ms)
+        laser_power : float
+            Laser power to use in live imaging.
+        autosave : bool, optional
+            Whether to save images automatically, by default True
+
+        Returns
+        -------
+        numpy ndarray
+            Fluorescence image array.
+        """
         try:
             # Setup
+            exposure_time_microseconds = float(exposure_time) * 1000  # ms ->us
             WAVELENGTH_TO_LASERNAME = {"640nm": "laser640",
                                        "561nm": "laser561",
                                        "488nm": "laser488",
@@ -349,7 +367,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.lasers[laser_name].laser_power = float(laser_power)
             # Acquire image
             self.lasers[laser_name].emission_on()
-            image = self.detector.camera_grab(float(exposure_time))
+            image = self.detector.camera_grab(exposure_time_microseconds)
             timestamp_string = timestamp()
             meta = {'exposure_time': str(exposure_time),
                     'laser_name': str(laser_name),
@@ -390,7 +408,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         laser_power : float
             Laser power to use in live imaging.
         exposure_time : float
-            Exposure time, in microseconds.
+            Exposure time, in milliseconds (ms).
         image_frame_interval : float, optional
             Waiting period between acquisition of live imaging frames.
             By default, None. This means live images will be acquired as fast
@@ -398,13 +416,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         """
         # Setup
         print("Live imaging mode running...")
+        exposure_time_microseconds = float(exposure_time) * 1000  # ms ->us
         self.liveCheck = False
         self.button_live_image_FM.setDown(True)
         self.lasers[laser_name].laser_power = float(laser_power)
         self.lasers[laser_name].emission_on()
         # Running live imaging
         while not stop_event.isSet():
-            image = self.detector.camera_grab(float(exposure_time))
+            image = self.detector.camera_grab(exposure_time_microseconds)
             # Update GUI
             self.array_list_FM = image
             self.slider_stack_FM.setValue(1)
@@ -435,7 +454,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             Which laser wavelength to use for live imaging.
             Available values are: "640nm", "561nm", "488nm", or "405nm".
         exposure_time : float
-            Exposure time, in microseconds
+            Exposure time, in milliseconds (ms).
         laser_power : float
             Laser power to use for live imaging.
         image_frame_interval : float, optional
@@ -456,7 +475,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     args=(self.stop_event,
                           laser_name,
                           laser_power,
-                          exposure_time,
+                          exposure_time,  # in ms, converted to us in function
                           image_frame_interval))
                 self._thread.start()
             else:
