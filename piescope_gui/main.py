@@ -416,18 +416,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         """
         # Setup
         print("Live imaging mode running...")
+        exposure_time_microseconds = float(exposure_time) * 1000  # ms ->us
         self.liveCheck = False
         self.button_live_image_FM.setDown(True)
         self.lasers[laser_name].laser_power = float(laser_power)
         self.lasers[laser_name].emission_on()
         # Running live imaging
         while not stop_event.isSet():
-            # Update exposure time and laser power (can't cahnge *which* laser)
-            laser_power = self.lineEdit_power_basler_2.text()
-            self.lasers[laser_name].laser_power = float(laser_power)
-            exposure_time = self.lineEdit_exposure_basler.text()
-            exposure_time_microseconds = float(exposure_time) * 1000  # ms ->us
-            # Take image
             image = self.detector.camera_grab(exposure_time_microseconds)
             # Update GUI
             self.array_list_FM = image
