@@ -16,9 +16,11 @@ def window(qtbot, monkeypatch):
     """Pass the application to the test functions via a pytest fixture."""
     monkeypatch.setenv("PYLON_CAMEMU", "1")
     with mock.patch.object(main.GUIMainWindow, 'connect_to_fibsem_microscope'):
-        new_window = main.GUIMainWindow()
-        qtbot.add_widget(new_window)
-        return new_window
+        with mock.patch('piescope.lm.laser.connect_serial_port'):
+            new_window = main.GUIMainWindow(offline=True)
+            qtbot.add_widget(new_window)
+            yield new_window
+            new_window.disconnect()
 
 
 @pytest.mark.parametrize("wavelength", [
@@ -35,8 +37,9 @@ def window(qtbot, monkeypatch):
     (0.1),
     (1.0),
 ])
-def test_fluorescence_image(window, monkeypatch, wavelength, exposure_time, laser_power):
+def test_fluorescence_image(window, monkeypatch, tmpdir, wavelength, exposure_time, laser_power):
     monkeypatch.setenv("PYLON_CAMEMU", "1")
+    window.save_destination_FM = tmpdir
     output = window.fluorescence_image(wavelength, exposure_time, laser_power)
     expected = piescope.data.basler_image()
     # Basler emulated mode produces images with shape (1040, 1024)

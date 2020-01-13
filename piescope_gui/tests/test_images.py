@@ -16,10 +16,12 @@ from piescope_gui import main
 def window(qtbot, monkeypatch):
     """Pass the application to the test functions via a pytest fixture."""
     monkeypatch.setenv("PYLON_CAMEMU", "1")
-    with mock.patch.object(piescope_gui.main.GUIMainWindow, 'connect_to_fibsem_microscope'):
-        new_window = piescope_gui.main.GUIMainWindow()
-        qtbot.add_widget(new_window)
-        return new_window
+    with mock.patch.object(main.GUIMainWindow, 'connect_to_fibsem_microscope'):
+        with mock.patch('piescope.lm.laser.connect_serial_port'):
+            new_window = main.GUIMainWindow(offline=True)
+            qtbot.add_widget(new_window)
+            yield new_window
+            new_window.disconnect()
 
 
 def test_open_images_fluorescence(window, tmpdir):

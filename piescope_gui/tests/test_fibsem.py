@@ -25,12 +25,15 @@ except Exception as e:
 
 @pytest.fixture
 def window(qtbot, monkeypatch):
+    """Pass the application to the test functions via a pytest fixture."""
     monkeypatch.setenv("PYLON_CAMEMU", "1")
-    new_window = piescope_gui.main.GUIMainWindow(ip_address="localhost")
-    assert hasattr(new_window, 'microscope')
-    assert new_window.microscope is not None
-    qtbot.add_widget(new_window)
-    return new_window
+    with mock.patch('piescope.lm.laser.connect_serial_port'):
+        new_window = piescope_gui.main.GUIMainWindow(ip_address="localhost", offline=True)
+        assert hasattr(new_window, 'microscope')
+        assert new_window.microscope is not None
+        qtbot.add_widget(new_window)
+        yield new_window
+        new_window.disconnect()
 
 
 def test_microscope_attr(window):
@@ -40,7 +43,7 @@ def test_microscope_attr(window):
 
 def test_move_to_light_microscope(qtbot, monkeypatch):
     monkeypatch.setenv("PYLON_CAMEMU", "1")
-    new_window = piescope_gui.main.GUIMainWindow(ip_address="localhost")
+    new_window = piescope_gui.main.GUIMainWindow(ip_address="localhost", offline=True)
     old_position = new_window.microscope.specimen.stage.current_position
     new_window.move_to_light_microscope()
     new_position = new_window.microscope.specimen.stage.current_position
@@ -55,7 +58,7 @@ def test_move_to_light_microscope(qtbot, monkeypatch):
 
 def test_move_to_electron_microscope(qtbot, monkeypatch):
     monkeypatch.setenv("PYLON_CAMEMU", "1")
-    new_window = piescope_gui.main.GUIMainWindow(ip_address="localhost")
+    new_window = piescope_gui.main.GUIMainWindow(ip_address="localhost", offline=True)
     old_position = new_window.microscope.specimen.stage.current_position
     new_window.move_to_electron_microscope()
     new_position = new_window.microscope.specimen.stage.current_position
@@ -81,7 +84,7 @@ def test_get_FIB_image(window):
 
 @pytest.mark.mpl_image_compare
 def test_get_last_FIB_image(window, tmpdir):
-    window.DEFAULT_PATH = str(tmpdir)
+    window.save_destination_FIBSEM = str(tmpdir)
     image = window.get_FIB_image()
     last_image = window.get_last_FIB_image()
     assert isinstance(image.data, np.ndarray)
@@ -105,7 +108,7 @@ def test_get_SEM_image(window):
 
 @pytest.mark.mpl_image_compare
 def test_get_last_SEM_image(window, tmpdir):
-    window.DEFAULT_PATH = str(tmpdir)
+    window.save_destination_FIBSEM = str(tmpdir)
     image = window.get_SEM_image()
     last_image = window.get_last_SEM_image()
     assert isinstance(image.data, np.ndarray)

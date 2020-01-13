@@ -13,9 +13,11 @@ def window(qtbot, monkeypatch):
     """Pass the application to the test functions via a pytest fixture."""
     monkeypatch.setenv("PYLON_CAMEMU", "1")
     with mock.patch.object(main.GUIMainWindow, 'connect_to_fibsem_microscope'):
-        new_window = main.GUIMainWindow()
-        qtbot.add_widget(new_window)
-        return new_window
+        with mock.patch('piescope.lm.laser.connect_serial_port'):
+            new_window = main.GUIMainWindow(offline=True)
+            qtbot.add_widget(new_window)
+            yield new_window
+            new_window.disconnect()
 
 
 def test_window_title(window):
@@ -74,6 +76,7 @@ def test_about_dialog(window, qtbot, mocker):
 @pytest.mark.parametrize("modality", [
     ("FM"),
     ("FIBSEM"),
+    ("correlation"),
 ])
 def test_fill_destination(window, tmpdir, modality):
     expected = str(tmpdir) + os.path.sep
@@ -87,14 +90,7 @@ def test_fill_destination(window, tmpdir, modality):
             assert window.lineEdit_save_destination_FM.text() == expected
         elif modality == "FIBSEM":
             assert window.lineEdit_save_destination_FIBSEM.text() == expected
+        elif modality == "correlation":
+            assert window.correlation_output_path.text() == expected
         else:
             assert False  # should never reach this case, fail test if so.
-
-
-def test_fill_correlation_destination(window, tmpdir):
-    expected = str(tmpdir) + os.path.sep
-    with mock.patch.object(main.QtWidgets.QFileDialog, 'getExistingDirectory') as mocker:
-        mocker.return_value = tmpdir
-        output = window.fill_correlation_destination()
-        assert output == expected
-        assert window.correlation_output_path.text() == expected
