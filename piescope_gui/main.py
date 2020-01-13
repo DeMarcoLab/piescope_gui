@@ -414,8 +414,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             By default, None. This means live images will be acquired as fast
             as possible. Note the laser stays on even if imaging is paused.
         """
+        # TODO: Can you allow changing which laser is on during live imaging?
         # Setup
         print("Live imaging mode running...")
+        min_exposure = self.detector.minimum_exposure()
+        max_exposure = self.detector.maximum_exposure()
         exposure_time_microseconds = float(exposure_time) * 1000  # ms ->us
         self.liveCheck = False
         self.button_live_image_FM.setDown(True)
@@ -423,6 +426,29 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.lasers[laser_name].emission_on()
         # Running live imaging
         while not stop_event.isSet():
+            # Update laser power (can't cahnge *which* laser is on though)
+            try:
+                updated_laser_power = self.lineEdit_power_basler_2.text()
+                float(updated_laser_power)
+            except Exception:
+                pass
+            else:
+                self.lasers[laser_name].laser_power = float(updated_laser_power)
+                logging.debug(
+                    '{} power {} '.format(laser_name, updated_laser_power))
+            # Update exposure time
+            updated_exposure_time = self.lineEdit_exposure_basler.text()
+            updated_exposure_time_us = float(exposure_time) * 1000
+            if min_exposure < updated_exposure_time_us < max_exposure:
+                exposure_time_microseconds = updated_exposure_time_us
+                logging.debug(
+                    'Expsure time is {} '.format(updated_exposure_time) +
+                    'milliseconds (ms).')
+            else:
+                logging.warning('Exposure time outside allowed range! '
+                    'Minimum {} microseconds (us);'.format(min_exposure) +
+                    'Maximum {} microseconds (us).'.format(max_exposure))
+            # Take image
             image = self.detector.camera_grab(exposure_time_microseconds)
             # Update GUI
             self.array_list_FM = image
@@ -851,7 +877,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 raise ValueError("Slice distance must be a positive integer")
 
             volume = piescope.lm.volume.volume_acquisition(
-                laser_dict, num_z_slices, z_slice_distance)
+                laser_dict, num_z_slices, z_slice_distance,
+                detector=self.detector, lasers=self.lasers,
+                objective_stage=self.objective_stage)
             meta = {'z_slice_distance': str(z_slice_distance),
                         'num_z_slices': str(num_z_slices),
                         'laser_dict': str(laser_dict),
