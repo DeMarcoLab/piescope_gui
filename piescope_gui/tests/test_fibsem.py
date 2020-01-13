@@ -75,7 +75,7 @@ def test_move_to_electron_microscope(qtbot, monkeypatch):
 def test_get_FIB_image(window):
     image = window.get_FIB_image()
     assert isinstance(image.data, np.ndarray)
-    assert image.data.shape == (512, 768)
+    assert image.data.shape == (2048, 3072)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.imshow(image.data, cmap='Greys_r')
@@ -99,7 +99,7 @@ def test_get_last_FIB_image(window, tmpdir):
 def test_get_SEM_image(window):
     image = window.get_SEM_image()
     assert isinstance(image.data, np.ndarray)
-    assert image.data.shape == (512, 768)
+    assert image.data.shape == (2048, 3072)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.imshow(image.data, cmap='Greys_r')
