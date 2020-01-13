@@ -59,6 +59,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
         self.label_objective_stage_position.setText("Unknown")
+        self.comboBox_resolution.setCurrentIndex(2)  # resolution "3072x2048"
 
         # self.liveCheck is True when ready to start live imaging,
         # and False while live imaging is running:
