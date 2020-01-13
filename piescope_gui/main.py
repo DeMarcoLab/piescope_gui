@@ -180,7 +180,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.lineEdit_move_relative.text()))
 
         self.connect_microscope.clicked.connect(
-            lambda: self.connect_to_fibsem_microscope())
+            lambda: self.connect_to_fibsem_microscope(ip_address=self.ip_address))
         self.to_light_microscope.clicked.connect(
             lambda: self.move_to_light_microscope())
         self.to_electron_microscope.clicked.connect(
