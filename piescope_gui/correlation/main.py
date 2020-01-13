@@ -55,7 +55,6 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     else:
         print("Image 1 given as array")
         fluorescence_image_rgb = np.copy(fluorescence_image)
-        fluorescence_image_rgb = skimage.color.gray2rgb(fluorescence_image_rgb)
 
     if type(fibsem_image) == str:
         print("Image 2 given as path")
