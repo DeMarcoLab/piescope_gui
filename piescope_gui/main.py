@@ -95,9 +95,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def setup_connections(self):
         self.comboBox_resolution.currentTextChanged.connect(
-            lambda: self.update_fibsem_settings(self))
+            lambda: self.update_fibsem_settings())
         self.lineEdit_dwell_time.textChanged.connect(
-            lambda: self.update_fibsem_settings(self))
+            lambda: self.update_fibsem_settings())
 
         self.actionOpen_FM_Image.triggered.connect(
             lambda: self.open_images("FM"))
