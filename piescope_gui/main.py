@@ -910,7 +910,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def mill_window_from_correlation(self, window):
         aligned_image = window.menu_quit()
-        piescope_gui.milling.open_milling_window(self, aligned_image)#, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict)
+        try:
+            self.move_to_electron_microscope()
+            piescope_gui.milling.open_milling_window(self, aligned_image)
+        except Exception:
+            display_error_message(traceback.format_exc())
 
     def milling(self):
         try:
