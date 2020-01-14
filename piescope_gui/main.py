@@ -850,21 +850,35 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     def acquire_volume(self, autosave=True):
-        print('acquire_volume function')
+        print('Acqiuring fluorescence volume image...')
         try:
             laser_dict = self.laser_dict
             if laser_dict == {}:
-                raise ValueError("No lasers selected")
+                display_error_message("Please select up to three lasers.")
+                return
             if len(laser_dict) > 3:
-                raise ValueError("Select max 3 lasers")
+                display_error_message("Please select a maximum of 3 lasers.")
+                return
 
+            try:
             num_z_slices = int(self.lineEdit_slice_number.text())
+            except ValueError:
+                display_error_message("Number of slices must be a positive integer")
+                return
+            else:
             if num_z_slices < 0:
-                raise ValueError("Number of slices must be a positive integer")
+                    display_error_message("Number of slices must be a positive integer")
+                    return
 
+            try:
             z_slice_distance = int(self.lineEdit_slice_distance.text())
+            except ValueError:
+                display_error_message("Slice distance must be a positive integer")
+                return
+            else:
             if z_slice_distance < 0:
-                raise ValueError("Slice distance must be a positive integer")
+                    display_error_message("Slice distance must be a positive integer")
+                    return
 
             volume = piescope.lm.volume.volume_acquisition(
                 laser_dict, num_z_slices, z_slice_distance,
