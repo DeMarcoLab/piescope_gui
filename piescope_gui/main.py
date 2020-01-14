@@ -591,28 +591,28 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if laser == "laser640":
                 laser_selected = self.checkBox_laser1.isChecked()
                 laser_power = int(self.spinBox_laser1.text())
-                exposure_time = int(self.lineEdit_exposure_1.text())
+                exposure_time = int(self.lineEdit_exposure_1.text()) * 1000  # ms -> us
                 widget_spinbox = self.spinBox_laser1
                 widget_slider = self.slider_laser1
                 widget_textexposure = self.lineEdit_exposure_1
             elif laser == "laser561":
                 laser_selected = self.checkBox_laser2.isChecked()
                 laser_power = int(self.spinBox_laser2.text())
-                exposure_time = int(self.lineEdit_exposure_2.text())
+                exposure_time = int(self.lineEdit_exposure_2.text()) * 1000  # ms -> us
                 widget_spinbox = self.spinBox_laser2
                 widget_slider = self.slider_laser2
                 widget_textexposure = self.lineEdit_exposure_2
             elif laser == "laser488":
                 laser_selected = self.checkBox_laser3.isChecked()
                 laser_power = int(self.spinBox_laser3.text())
-                exposure_time = int(self.lineEdit_exposure_3.text())
+                exposure_time = int(self.lineEdit_exposure_3.text()) * 1000  # ms -> us
                 widget_spinbox = self.spinBox_laser3
                 widget_slider = self.slider_laser3
                 widget_textexposure = self.lineEdit_exposure_3
             elif laser == "laser405":
                 laser_selected = self.checkBox_laser4.isChecked()
                 laser_power = int(self.spinBox_laser4.text())
-                exposure_time = int(self.lineEdit_exposure_4.text())
+                exposure_time = int(self.lineEdit_exposure_4.text()) * 1000  # ms -> us
                 widget_spinbox = self.spinBox_laser4
                 widget_slider = self.slider_laser4
                 widget_textexposure = self.lineEdit_exposure_4
