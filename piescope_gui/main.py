@@ -969,13 +969,21 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 filter="Images (*.bmp *.tif *.tiff *.jpg)"
                 )
 
-            from autoscript_sdb_microscope_client.structures import AdornedImage
-            adorned_image = AdornedImage()
-            adorned_image = adorned_image.load(filename)
             if filename:
                 image = _create_array_list(filename, "MILLING")
             else:
-                raise ValueError("No image selected")
+                display_error_message("Please select a filename. No image is selected.")
+                return
+
+            from autoscript_sdb_microscope_client.structures import AdornedImage
+            adorned_image = AdornedImage()
+            adorned_image = adorned_image.load(filename)
+            try:
+                adorned_image.metadata.binary_result.pixel_size.x
+            except AttributeError:
+                display_error_message("Please acquire a new ion beam image. "
+                    "The selected image is not an ion beam image including pixel size metadata.")
+                return
 
             piescope_gui.milling.open_milling_window(self, adorned_image.data, adorned_image)
 
