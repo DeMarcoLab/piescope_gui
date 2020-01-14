@@ -987,7 +987,6 @@ def _create_array_list(input_list, modality):
             array_list_FM = skimage.io.imread_collection(input_list, conserve_memory=True)
         else:
             array_list_FM = skimage.io.imread(input_list[0])
-            print("ARRAY LIST IS:", array_list_FM)
         return array_list_FM
     elif modality == "FIBSEM":
         if len(input_list) > 1:
