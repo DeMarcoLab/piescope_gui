@@ -392,6 +392,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
         else:
             print("Fluorescence image acquired.")
+            self.image_lm = image
             return image
 
     def live_imaging_worker(self, stop_event, laser_name, laser_power,
