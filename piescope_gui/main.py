@@ -766,14 +766,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     display_error_message(msg)
                     return
                 elif image_array.ndim == 3:
-                    if image_array.shape[0] >= 4:  # should be the channel axis
+                    shape = image_array.shape
+                    if image_array.shape[-1] > 3:
+                        image_array = np.moveaxis(image_array, 0, -1)
+                    # After any swap axis...
+                    if image_array.shape[-1] > 3:  # should be the channel axis, can't have more than RGB
                         msg = "Please select a 2D image with no more than 3 color channels for display.\n" + \
                               "Image shape here is {}".format(image_array.shape)
                         logging.warning(msg)
                         display_error_message(msg)
                         return
-                    else:
-                        image_array = np.moveaxis(image_array, 0, -1)
                 image_array = skimage.util.img_as_ubyte(piescope.utils.rgb_image(image_array))
                 self.array_list_FM = image_array
 
@@ -806,6 +808,25 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     image_array = self.array_list_FIBSEM[1]
                 else:
                     image_array = self.array_list_FIBSEM
+
+                # Ensure image for display is RGB
+                if image_array.ndim >=4:
+                    msg = "Please select a 2D image for display.\n" + \
+                          "Image shape here is {}".format(image_array.shape)
+                    logging.warning(msg)
+                    display_error_message(msg)
+                    return
+                elif image_array.ndim == 3:
+                    shape = image_array.shape
+                    if image_array.shape[-1] > 3:
+                        image_array = np.moveaxis(image_array, 0, -1)
+                    # After any swap axis...
+                    if image_array.shape[-1] > 3:  # should be the channel axis, can't have more than RGB
+                        msg = "Please select a 2D image with no more than 3 color channels for display.\n" + \
+                              "Image shape here is {}".format(image_array.shape)
+                        logging.warning(msg)
+                        display_error_message(msg)
+                        return
 
                 self.current_image_FIBSEM = qimage2ndarray.array2qimage(image_array.copy())
                 self.current_path_FIBSEM = os.path.normpath(image_string)
