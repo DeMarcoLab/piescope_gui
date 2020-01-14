@@ -956,7 +956,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def mill_window_from_correlation(self, window):
         aligned_image = window.menu_quit()
         try:
-            piescope_gui.milling.open_milling_window(self, aligned_image)
+            piescope_gui.milling.open_milling_window(self, aligned_image, self.image_ion)
         except Exception:
             display_error_message(traceback.format_exc())
 
@@ -975,7 +975,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             else:
                 raise ValueError("No image selected")
 
-            piescope_gui.milling.open_milling_window(self, adorned_image)
+            piescope_gui.milling.open_milling_window(self, adorned_image.data, adorned_image)
 
         except Exception as e:
             display_error_message(traceback.format_exc())

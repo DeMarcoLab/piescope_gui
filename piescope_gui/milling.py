@@ -20,29 +20,31 @@ from piescope_gui.utils import display_error_message, timestamp
 logger = logging.getLogger(__name__)
 
 
-def open_milling_window(parent_gui, adorned_image):
+def open_milling_window(parent_gui, display_image, adorned_ion_image):
     """Opens a new window to perform correlation
 
     Parameters
     ----------
     parent_gui : PyQt5 Window
-
-    adorned_image : Adorned Image
+    display_image : numpy ndarray
+        Image to display in milling GUI window.
+    adorned_ion_image : Adorned Image
         Adorned image with image as the .data attribute and metadata passed from
         the fibsem image on display in the main window
 
     """
     global image
-    image = adorned_image
+    image = display_image
 
-    window = _MainWindow(parent=parent_gui)
+    window = _MainWindow(parent=parent_gui, adorned_ion_image=adorned_ion_image)
     window.show()
     return window
 
 
 class _MainWindow(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, adorned_ion_image=None):
         super().__init__(parent=parent)
+        self.adorned_ion_image = adorned_ion_image
         self.create_window()
         self.create_conn()
 
@@ -194,7 +196,7 @@ class _MainWindow(QMainWindow):
     def add_milling_pattern(self):
         try:
             fibsem.create_rectangular_pattern(
-                self.parent().microscope, image,
+                self.parent().microscope, self.adorned_ion_image,
                 self.xclick, self.x1, self.yclick, self.y1, depth=1e-6)
             print('Added milling pattern to the FIBSEM microscope.')
         except Exception:
@@ -328,7 +330,7 @@ class _PlotCanvas(FigureCanvasQTAgg):
 
         self.ax11 = self.fig.add_subplot(
             gs0[0], xticks=[], yticks=[], title="")
-        self.ax11.imshow(image.data)
+        self.ax11.imshow(image)
 
     def updateCanvas(self, event=None):
         ax11_xlim = self.ax11.get_xlim()
