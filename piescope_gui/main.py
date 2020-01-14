@@ -200,7 +200,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def disconnect(self):
         print('Running cleanup/teardown')
         logging.debug('Running cleanup/teardown')
-        print(self.offline)
         if self.objective_stage is not None and self.offline is False:
             # Return objective lens stage to the "out" position and disconnect.
             self.move_absolute_objective_stage(self.objective_stage, position=0)
@@ -262,7 +261,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.save_destination_FIBSEM,
                 "I_" + self.lineEdit_save_filename_FIBSEM.text() + '_' + \
                     timestamp() + '.tif')
-            print(save_filename)
             self.string_list_FIBSEM = [save_filename]
             if autosave is True:
                 piescope.utils.save_image(self.fibsem_image, save_filename)
@@ -299,7 +297,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.save_destination_FIBSEM,
                 "E_" + self.lineEdit_save_filename_FIBSEM.text() + '_' + \
                     timestamp() + '.tif')
-            print(save_filename)
             self.string_list_FIBSEM = [save_filename]
             if autosave is True:
                 piescope.utils.save_image(self.fibsem_image, save_filename)
@@ -682,11 +679,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     max_value = len(self.string_list_FM)
                     if max_value == 1:
                         display_image = self.array_list_FM
-                        print(display_image)
                     else:
                         display_image = self.array_list_FM[
                             self.slider_stack_FM.value() - 1]
-                        print(display_image)
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FM.text())
                     dest = self.lineEdit_save_destination_FM.text() + os.path.sep \
@@ -781,7 +776,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         image_array = np.moveaxis(image_array, 0, -1)
                 image_array = skimage.util.img_as_ubyte(piescope.utils.rgb_image(image_array))
                 self.array_list_FM = image_array
-                print(image_array)
 
                 image_array_crosshair = np.copy(image_array)
                 xshape = image_array_crosshair.shape[0]
@@ -806,7 +800,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             elif modality == "FIBSEM" and self.string_list_FIBSEM:
                 slider_value = str(self.slider_stack_FIBSEM.value())
                 max_value = str(len(self.string_list_FIBSEM))
-
                 image_string = self.string_list_FIBSEM[0]
 
                 if int(max_value) > 1:
@@ -815,7 +808,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     image_array = self.array_list_FIBSEM
 
                 self.current_image_FIBSEM = qimage2ndarray.array2qimage(image_array.copy())
-                print(self.current_image_FIBSEM)
                 self.current_path_FIBSEM = os.path.normpath(image_string)
 
                 self.status.setText(
@@ -883,10 +875,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         'laser_dict': str(laser_dict),
                         }
             max_intensity = piescope.utils.max_intensity_projection(volume)
-            print(volume.shape)
-            print(meta)
-            print(max_intensity.shape)
-            print('autosave {}'.format(autosave))
             if autosave is True:
                 # Save volume
                 save_filename = os.path.join(self.save_destination_FM,
@@ -914,7 +902,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         tempfile = "C:"
         try:
             fluorescence_image = self.array_list_FM
-            print(type(fluorescence_image))
 
             if fluorescence_image == [] or fluorescence_image == "":
                 raise ValueError("No first image selected")
