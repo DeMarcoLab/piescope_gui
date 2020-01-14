@@ -761,6 +761,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 image_array = np.flipud(image_array)
                 FM_max = image_array.max()
                 self.label_max_FM_value.setText("Max value: " + str(FM_max))
+
+                # Ensure image for display is RGB
+                if image_array.ndim >=4:
+                    msg = "Please select a 2D image for display.\n" + \
+                          "Image shape here is {}".format(image_array.shape)
+                    logging.warning(msg)
+                    display_error_message(msg)
+                    return
+                elif image_array.ndim == 3:
+                    if image_array.shape[0] >= 4:  # should be the channel axis
+                        msg = "Please select a 2D image with no more than 3 color channels for display.\n" + \
+                              "Image shape here is {}".format(image_array.shape)
+                        logging.warning(msg)
+                        display_error_message(msg)
+                        return
+                    else:
+                        image_array = np.moveaxis(image_array, 0, -1)
+                image_array = skimage.util.img_as_ubyte(piescope.utils.rgb_image(image_array))
+                self.array_list_FM = image_array
+                print(image_array)
+
                 image_array_crosshair = np.copy(image_array)
                 xshape = image_array_crosshair.shape[0]
                 yshape = image_array_crosshair.shape[1]
@@ -771,7 +792,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 image_array_crosshair[midx-(thresh*mult):midx+(thresh*mult), midy-thresh:midy+thresh] = 255
                 image_array_crosshair[midx - thresh:midx + thresh, midy - (thresh * mult):midy + (thresh * mult)] = 255
 
-                self.current_image_FM = qimage2ndarray.array2qimage(image_array.copy())
+                self.current_image_FM = qimage2ndarray.array2qimage(image_array)
                 self.current_image_FM_crosshair = qimage2ndarray.array2qimage(image_array_crosshair.copy())
                 self.status.setText("Image " + slider_value + " of " + max_value)
 
