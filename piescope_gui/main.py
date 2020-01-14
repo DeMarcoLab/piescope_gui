@@ -754,7 +754,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     image_array = self.array_list_FM[int(slider_value) - 1]
                 else:
                     image_array = self.array_list_FM
-                image_array = np.flipud(image_array)
+                image_array = image_array
                 FM_max = image_array.max()
                 self.label_max_FM_value.setText("Max value: " + str(FM_max))
 
@@ -882,22 +882,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 return
 
             try:
-            num_z_slices = int(self.lineEdit_slice_number.text())
+                num_z_slices = int(self.lineEdit_slice_number.text())
             except ValueError:
                 display_error_message("Number of slices must be a positive integer")
                 return
             else:
-            if num_z_slices < 0:
+                if num_z_slices < 0:
                     display_error_message("Number of slices must be a positive integer")
                     return
 
             try:
-            z_slice_distance = int(self.lineEdit_slice_distance.text())
+                z_slice_distance = int(self.lineEdit_slice_distance.text())
             except ValueError:
                 display_error_message("Slice distance must be a positive integer")
                 return
             else:
-            if z_slice_distance < 0:
+                if z_slice_distance < 0:
                     display_error_message("Slice distance must be a positive integer")
                     return
 

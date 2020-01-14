@@ -67,7 +67,6 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
         fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
 
     img1 = fluorescence_image_rgb
-    img1 = np.flipud(img1)
     img2 = fibsem_image
     output = output_path
 
