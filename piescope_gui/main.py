@@ -202,7 +202,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         logging.debug('Running cleanup/teardown')
         print(self.offline)
         if self.objective_stage is not None and self.offline is False:
-            # TODO: Return objective lens stage to the "out" position
+            # Return objective lens stage to the "out" position and disconnect.
             self.move_absolute_objective_stage(self.objective_stage, position=0)
             self.objective_stage.disconnect()
         if self.microscope is not None:
