@@ -1,16 +1,16 @@
-# Getting started  with `piescope_gui` #
+# Getting started  with `piescope_gui`
 
-## Turn on hardware in the lab ##
+## Turn on hardware in the lab
 
-make sure:
+Make sure:
 1. the lasers are switched on,
 2. the fluorescence detector is switched on,
 3. the SMARACT objective lens stage is switched on and connected,
-4. you have loaded your sample into the FIBSEM 
+4. you have loaded your sample into the FIBSEM
 
 Make sure you remember to turn off all of these things at the end of your session!
 
-## Opening the GUI ##
+## Opening the GUI
 
 The `piescope_gui` has been installed on the PFIB2 support machine.
 
@@ -25,6 +25,16 @@ You should then see `piescope_gui` launch on the screen.
 
 ![piescope_gui screenshot 1](imgs/screenshot_1.png)
 
+## Shutdown procedure
+
+Before leaving please remember to properly close the hardware and software.
+
+Make sure each of these steps is completed:
+- Close the piescope GUI
+- Put the FIBSEM to sleep (click the "Sleep" button on the Xt UI)
+- Turn off lasers (turn the key on the laser box)
+- Log out of the microscope support computer.
+
 ## Troubleshooting
 If you run into problems, there are two places you can look to find information to help:
 
@@ -34,19 +44,57 @@ If you run into problems, there are two places you can look to find information 
 
 This information, along with a detailed description of what happened, will help your friendly developer figure out what might have happened.
 
-Additionally, here are
+Additionally, try this checklist of possible issues:
 
-* Lasers: make sure 
-Make sure turned on (image)
-Make sure Toptica is not controlling
+**Python environment**
 
-Basler
-Make sure plugged in
-Make sure that Pylon software suite is not open at the same time.
+Check that you have the correct python envireonment activated in Anaconda.
+You can see this by looking at the name in brackets to the left of each line
+in the terminal you used to launch the piescope GUI from, eg:
+```
+(piescope) ~/Users/Admin>
+```
+If you don't see `(piescope)` at the start of each line at the prompt:
+* Try `conda activate piescope`
+(if there's an error, follow the installation instructions again).
+* Try `pip list`
+If you don't see `piescope` and `piescope_gui` in the list of packages,
+or if see the wrong version number, try the installation instructions again.
 
-(IP address stuff too complicated for troubleshooting)
+**Lasers**
+* Make sure the lasers are turned on (turn the key on the laser box)
+* Make sure the Toptica software is not open, all lasers must be disconnected.
 
-# Standard operations #
+**Fluorescence detector (Basler)**
+* Make sure the detector is plugged in and turned on.
+* Make sure that Pylon software suite is not open at the same time.
+* Make sure the IP address and network configuration for the detector is ok:
+The Network Configuration under the "Connection" tab should be
+169.254.111.111, port 139.
+
+Checking the network connection of the Basler fluorescence detector:
+* Click the "Connect" button under the """" Tab.
+* If connection successful, type "GSI" into the textbox & press "Send Command".
+If the Basler is properly connected you will see output ":ID4050785033",
+but if not connected the output will be a diamond with a question mark.
+
+Checking IP address used to connect to the Basler fluorescence detector:
+1. Go to the Start Menu
+2. Type "View Network Connectons"
+3. Press enter.
+4. Right click on "Ethernet 2" and press "Properties".
+5. Under the "This connection uses the following items" line, navigate to "Internet Protocol Version 4 (TCP/IPv4)
+6. Click properties.
+7. Click "Use the following IP address:" if it is not already selected.
+8. Check/change the values:
+  ```
+  IP address: 169.254.111.112
+  Subnet Mask: 255.255.255.192
+  Default Gateway: Blank
+  ```
+9. Press OK.
+
+# Standard GUI operations
 
 [**Imaging**](#imaging)
 - [FIBSEM imaging](FIBSEM-imaging)
@@ -61,10 +109,9 @@ Make sure that Pylon software suite is not open at the same time.
 - [Image correlation](#image-correlation)
 - [Milling](#milling)
 
-----------------------------------------
-## Overview ##
+## Overview
 
-![](imgs/screenshot_annotated.png)
+![Annotated screenshot of the piescope GUI](imgs/screenshot_annotated.png)
 
 There are three main regions of the GUI:
 
@@ -72,126 +119,166 @@ There are three main regions of the GUI:
 2. Center left (purple outline): Flourescence image acquisition and display
 3. Right side (light blue outline): FIBSEM image acquisition and display
 
+### Left hand sidebar controls
+
 The left hand sidebar controls are grouped according by function:
 * Red outline: Fluorescence volume imaging
 * Blue outline: Image correlation and milling pattern creation
 * Green outline: Sample stage movement between FIBSEM and fluorescence imaging positions
 * Orange outline: Objective lens stage movement for focussing fluorescence images
 
-## Imaging ##
+## Imaging
 
-----------------------------------------
+### FIBSEM imaging
 
-### FIBSEM imaging ###
+![piescope GUI, electron and ion beam section](imgs/screenshot_2_fibsem.png)
 
+#### Taking FIBSEM images
 
-![](imgs/screenshot_2_fibsem.png)
+*Note:* Check the settings before taking images.
 
+To take a new electron image press the "Get SEM Image" button.
 
+To grab the last taken electron image press the "Grab Last SEM" button.
 
-#### Taking images ####
+#### Settings for FIBSEM imaging
 
-INSERT IMAGE OF IMAGE BUTTONS~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!
+File saving settings are changed in the top section of the
+Scanning Electron Microscope section (FIBSEM):
 
-*Note:*  Ensure to check settings before taking images
+To change the folder in which the electron microscope images are saved,
+uncheck the "Lock Save Destination" checkbox and either:
+* manually type in the path to the folder for saving, or
+* press the [ ... ] button and navigate to the folder for saving.
 
-To take a new ion beam image press the "Get FIB Image" Button.
+Imaging parameters like "dwell time" and "resolution" can be changed
+at the bottom right of the FIBSEM GUI controls.
+For any other imaging parameters (not displayed on the piescope GUI),
+`piescope` will apply whatever the current imaging settings are in Xt.
+* Dwell time is set in microseconds (must be an integer value)
+* Image resolution can be selected from the drop down list of options.
+* Check the autocontrast box to run the autocontrast routine before new image
+acquistions.
 
-To grab the last taken ion beamimage press the "Grab Last FIB" Button.
+### Fluorescence imaging
 
-To take a new electron image press the "Get SEM Image" Button.
+![piescope GUI, fluorescence image section](imgs/screenshot_2_fluorescence.png)
 
-To grab the last taken electron image press the "Grab Last SEM" Button.
+#### Taking fluorescence images
 
-#### Settings ####
+*Note:* Check the settings before taking images.
 
-INSERT IMAGE OF FILE SAVING SECTION~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!
+To take a single fluorescence image click the "Get Basler Image" button.
 
-File saving settings are changed in the top section of the Fluorescence Microscope Section:
+To start live imaging click the "Live Basler View" button.
+To stop live imaging click the button again.
 
-To change the folder in which fluorescence images are saved you can either manually enter the save path folder or press the [ ... ] button to navigate to the desired folder [Dark Blue].
+*You **must stop** live imaging before taking more fluorescence images
+(for both single flouorescence images, or fluorescence image volumes).*
 
-**Note**:  In order to use the [ ... ] button the "Lock Save Destination" button must be unchecked.
+#### Settings for fluorescence imaging
 
-To change the save filename manually enter the desired name in the "Save Filename" box [Dark Green].
+File saving settings are changed in the top section of the
+Fluorescence Microscope section (FIBSEM):
 
-INSERT IMAGE OF IMAGING PARAMETER SECTION~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!
+To change the folder in which the electron microscope images are saved,
+uncheck the "Lock Save Destination" checkbox and either:
+* manually type in the path to the folder for saving, or
+* press the [ ... ] button and navigate to the folder for saving.
 
+Fluorescence Imaging parameters are changed in the bottom section [Orange].
 
-### Fluorescence imaging ###
+First move the objective lens into position using the 'Absolute' or 'Relative'
+stage controls.
 
-![](imgs/screenshot_2_fluorescence.png)
+Then choose the laser wavelength from the drop down menu on the left.
+Available options are 640nm, 561nm, 488nm, and 405nm (excitation wavelengths).
 
-
-#### Taking images ####
-
-INSERT IMAGE OF IMAGE BUTTONS~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!
-
-*Note:*  Ensure to check settings before taking images
-
-To take a single basler image simply press the "Get Basler Image" Button.  
-
-To conduct live imaging press the "Live Basler View" button.  In order to stop live imaging press this button again.
-
-#### Settings ####
-INSERT IMAGE OF FILE SAVING SECTION~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!
-
-File saving settings are changed in the top section of the Fluorescence Microscope Section:
-
-To change the folder in which fluorescence images are saved you can either manually enter the save path folder or press the [ ... ] button to navigate to the desired folder [Dark Blue].
-
-*Note*:  In order to use the [ ... ] button the "Lock Save Destination" button must be unchecked.
-
-To change the save filename manually enter the desired name in the "Save Filename" box [Dark Green].
-
-INSERT IMAGE OF IMAGING PARAMETER SECTION~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!
-
-Imaging parameters are changed in the bottom section [Orange].
-
-First choose the laser wavelength (Available options are 640nm, 561nm, 488nm, 
-405nm) from the drop down menu on the left.  
-
-Then enter the desired power level as a percentage (Integer with range from 0-100).
-
-Finally set the exposure time in ms.
-
-------------------------------------------------------------------------------------
+Then enter the desired power level as a percentage (integer with range 0-100).
 
 
+**Correlation**
 
-## Stage movement
+Then, under the correlation button <!--[show image]-->,  select the path to which the output correlated image will be saved to.  This can be done by manually entering the path in the text field or by clicking on the [ ... ] button and navigating to the desired path.
 
-### Sample stage
-Buttons and reading
+Once the preparation is complete click the "Correlation" button <!--(IMAGE)--> which will open the [Control Point Selection Tool](#image-correlation).
+
+<!--Show Image-->
+
+This window places the two images to correlate side by side.  There are controls to interact with the images, such as zooming and panning, in the top left corner.
+
+A help dialogue is located in the top right corner to guide you through the point selection process.
+
+Correlation is done by clicking on control points in each image that correspond to the same location.
+
+Once correlation is complete and the "Return" button is clicked, the [Milling Parameter Selection](#milling) window will be opened.
+
+
+## Milling
+
+<!--Image of window-->
+
+The Milling Parameter Window shows the overlaid image of the correlation of two images completed in the [Control Point Selection Tool](#image-correlation).
+
+**Creation of milling pattern**
+
+To create a rectangular milling pattern simply click and drag from the top left corner of the desired rectangle to the bottom left corner.
+
+Once satisfied with the rectangle press the "Send milling pattern to FIBSEM" button to send the pattern to the FIBSEM controller.
+
+**Milling control**
+
+Milling of the rectangular pattern sent to the FIBSEM can be controlled by starting, pausing and stopping.
+
+To start milling with the pattern sent to the FIBSEM, press the "Start milling pattern" button.
+
+To pause the milling operation in progress, press the "Pause milling pattern" button.
+
+To completely stop the milling process, press the "Stop milling pattern" button.
+
+When done with milling, press the "Exit" button to return to the GUI main window.
+
+
+## TROUBLESHOOTING
+
+### Troubleshoting opening the GUI
+
+If you are having trouble with opening the GUI, check that you have the
+correct envireonment activated in Anaconda.
+You can check this by looking at the name in brackets to the left of each line
+in the terminal you used to launch the piescope GUI from, eg:
+```
+(piescope) ~/Users/Admin>
+```
+
+If an error is thrown whilst operating the GUI, check that each piece of hardware is properly connected as per [Hardware connections](#hardware-connections).
+
+
+**Lasers**
+
+An issue that can be encountered when communicating with the laser control hardware is that another program is currently controlling the lasers.  The most common cause of this is that Toptica is connected to the lasers.  This can be checked by opening the Toptica application by going to the start menu, typing "Topas" and pressing enter.  If the application is connected to the lasers, as shown in the image below, click "disconnect" under MENU. <!--(IMAGES).-->
 
 ![](screenshot_annotated-controls)
 
 ### Objective stage
-Buttons and reading 
+Buttons and reading
+You should now be able to connect to the lasers properly.
 
-## Additional functions
+**Basler**
 
-### Fluorescence volume acquisition
-settings
-Path etc
-Press
-Output rgb
+If communicaton to the Basler fails it is possibly an IP address problem.
 
-### Image correlation
-Load two images/take
-Path
-Click control points on new window
-return
-overlays and opens milling window
+This can be checked by opening the ASCII Terminal by going to the start menu and typing "ASCII" and pressing enter.
 
 ![](imgs/screenshot_correlation.png)
 
 ![](imgs/screenshot_correlation_picking.png)
 
-### Milling 
+### Milling
 drag rectangle
 press buttons
 
 ![piescope_gui milling pattern screenshot](imgs/screenshot_milling.png)
+Go to EDIT/SETTINGS then
 
 
