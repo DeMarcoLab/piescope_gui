@@ -9,4 +9,3 @@ pytest-cov
 pytest-faulthandler
 pytest-mock
 pytest-qt
-pytest-xvfb

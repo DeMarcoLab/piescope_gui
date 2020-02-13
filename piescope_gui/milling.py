@@ -1,66 +1,50 @@
+import logging
+import traceback
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
+import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import skimage
 import skimage.color
 import skimage.io
 import skimage.transform
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
 from piescope import fibsem
-from piescope_gui.correlation import main as corr
+
+from piescope_gui.utils import display_error_message, timestamp
+
+logger = logging.getLogger(__name__)
 
 
-def open_milling_window(main_gui, image, adorned_image, fluorescence_image_rgb,
-                        fluorescence_original, output, matched_points_dict):
+def open_milling_window(parent_gui, display_image, adorned_ion_image):
     """Opens a new window to perform correlation
 
     Parameters
     ----------
-    main_gui : PyQt5 Window
+    parent_gui : PyQt5 Window
+    display_image : numpy ndarray
+        Image to display in milling GUI window.
+    adorned_ion_image : Adorned Image
+        Adorned image with image as the .data attribute and metadata passed from
+        the fibsem image on display in the main window
 
-    image : numpy array
-    Overlaid image to display
-
-    adorned_image : Adorned Image
-    Adorned image with image as the .data attribute and metadata passed from
-    the fibsem image on display in the main window
-
-    fluorescence_image_rgb : numpy array
-    rgb version of original fluorescence image
-
-    fluorescence_original : numpy array
-    original fluorescence image
     """
-    global gui
-    global img
-    global adorned
+    global image
+    image = display_image
 
-    global rgb
-    global original
-    global out
-    global matched
-
-    rgb = fluorescence_image_rgb
-    original = fluorescence_original
-    out = output
-    matched = matched_points_dict
-
-    gui = main_gui
-    img = image
-    adorned = adorned_image
-
-    window = _MainWindow()
+    window = _MainWindow(parent=parent_gui, adorned_ion_image=adorned_ion_image)
     window.show()
-    return
+    return window
 
 
 class _MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__(parent=gui)
+    def __init__(self, parent=None, adorned_ion_image=None):
+        super().__init__(parent=parent)
+        self.adorned_ion_image = adorned_ion_image
         self.create_window()
         self.create_conn()
 
@@ -93,12 +77,22 @@ class _MainWindow(QMainWindow):
         button_height = 60
         label_width = 60
 
-        self.exitButton = QPushButton("Return")
+        self.exitButton = QPushButton("Exit")
         self.exitButton.setFixedWidth(button_width)
         self.exitButton.setFixedHeight(button_height)
         self.exitButton.setStyleSheet("font-size: 16px;")
 
-        self.pattern_creation_button = QPushButton("Create milling pattern")
+        self.button_move_to_fibsem = QPushButton("Move to FIBSEM")
+        self.button_move_to_fibsem.setFixedWidth(button_width)
+        self.button_move_to_fibsem.setFixedHeight(button_height)
+        self.button_move_to_fibsem.setStyleSheet("font-size: 16px;")
+
+        self.button_move_to_fluorescence = QPushButton("Move to fluorescence")
+        self.button_move_to_fluorescence.setFixedWidth(button_width)
+        self.button_move_to_fluorescence.setFixedHeight(button_height)
+        self.button_move_to_fluorescence.setStyleSheet("font-size: 16px;")
+
+        self.pattern_creation_button = QPushButton("Add milling pattern")
         self.pattern_creation_button.setFixedWidth(button_width)
         self.pattern_creation_button.setFixedHeight(button_height)
         self.pattern_creation_button.setStyleSheet("font-size: 16px;")
@@ -117,16 +111,6 @@ class _MainWindow(QMainWindow):
         self.pattern_stop_button.setFixedWidth(button_width)
         self.pattern_stop_button.setFixedHeight(button_height)
         self.pattern_stop_button.setStyleSheet("font-size: 16px;")
-
-        self.reoverlay_button = QPushButton("New FIB image + Overlay")
-        self.reoverlay_button.setFixedWidth(button_width)
-        self.reoverlay_button.setFixedHeight(button_height)
-        self.reoverlay_button.setStyleSheet("font-size: 16px;")
-
-        self.recorrelate_button = QPushButton("Recorrelate image")
-        self.recorrelate_button.setFixedWidth(button_width)
-        self.recorrelate_button.setFixedHeight(button_height)
-        self.recorrelate_button.setStyleSheet("font-size: 16px;")
 
         self.x0_label = QLabel("X0:")
         self.x0_label.setFixedHeight(30)
@@ -175,12 +159,12 @@ class _MainWindow(QMainWindow):
         hlay.addWidget(self.y1_label)
         hlay.addWidget(self.y1_label2)
         # hlay.addSpacerItem(spacerItem)
+        hlay.addWidget(self.button_move_to_fibsem)
+        hlay.addWidget(self.button_move_to_fluorescence)
         hlay.addWidget(self.pattern_creation_button)
         hlay.addWidget(self.pattern_start_button)
         hlay.addWidget(self.pattern_pause_button)
         hlay.addWidget(self.pattern_stop_button)
-        hlay.addWidget(self.reoverlay_button)
-        hlay.addWidget(self.recorrelate_button)
         hlay.addWidget(self.exitButton)
         vlay.addLayout(hlay)
 
@@ -196,71 +180,94 @@ class _MainWindow(QMainWindow):
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
 
-        self.pattern_creation_button.clicked.connect(
-            lambda: fibsem.create_rectangular_pattern(gui.microscope, adorned, self.xclick,
-                                                      self.x1, self.yclick, self.y1, depth=1e-6))
+        self.button_move_to_fibsem.clicked.connect(
+            lambda: self.parent().move_to_electron_microscope())
+        self.button_move_to_fluorescence.clicked.connect(
+            lambda: self.parent().move_to_light_microscope())
 
+        self.pattern_creation_button.clicked.connect(self.add_milling_pattern)
         self.pattern_start_button.clicked.connect(self.start_patterning)
         self.pattern_pause_button.clicked.connect(self.pause_patterning)
         self.pattern_stop_button.clicked.connect(self.stop_patterning)
 
-        self.recorrelate_button.clicked.connect(self.correlate)
-        self.reoverlay_button.clicked.connect(self.overlay)
-
     def menu_quit(self):
         self.close()
 
-    def correlate(self):
-        new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
-        new_window = corr.open_correlation_window(gui, original, new_ion_image, out)
-        new_window.showMaximized()
-        new_window.show()
-        new_window.exitButton.clicked.connect(lambda: gui.mill_window_from_correlation(new_window))
-        self.close()
-
-    def overlay(self):
-        new_ion_image = fibsem.new_ion_image(gui.microscope, gui.camera_settings)
-        new_ion_image_data = skimage.color.gray2rgb(new_ion_image.data)
-        result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = \
-            corr.correlate_images(rgb, new_ion_image_data, out, matched)
-        open_milling_window(gui, result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, out, matched)
-        self.close()
-
-        # result = corr.overlay_images(fluorescence, new_ion_image_data)
-        # result = skimage.util.img_as_ubyte(result)
-        # img = result
-        # self.wp.canvas.ax11.imshow(img)
+    def add_milling_pattern(self):
+        try:
+            fibsem.create_rectangular_pattern(
+                self.parent().microscope, self.adorned_ion_image,
+                self.xclick, self.x1, self.yclick, self.y1, depth=1e-6)
+            print('Added milling pattern to the FIBSEM microscope.')
+        except Exception:
+            display_error_message(traceback.format_exc())
 
     def start_patterning(self):
-        state = gui.microscope.patterning.state
-        if state == "Running":
-            gui.error_msg('Patterning already running')
-        else:
-            gui.microscope.patterning.start()
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = self.parent().microscope.patterning.state
+            if state != "Idle":
+                logger.warning(
+                    "Can't start milling pattern! "
+                    "Patterning state is not currently Idle.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
+                self.parent().microscope.patterning.start()
+                print('Started milling pattern.')
+        except Exception:
+            display_error_message(traceback.format_exc())
 
     def pause_patterning(self):
-        state = gui.microscope.patterning.state
-        if state == "Idle" or state == "Paused":
-            gui.error_msg('Patterning already paused or idle')
-        else:
-            gui.microscope.patterning.pause()
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = self.parent().microscope.patterning.state
+            if state != "Running":
+                logger.warning(
+                    "Can't pause milling pattern! "
+                    "Patterning state is not currently running.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
+                self.parent().microscope.patterning.pause()
+                print('Paused milling pattern.')
+        except Exception:
+            display_error_message(
+                "microscope.patterning.state = {}\n".format(state) +
+                traceback.format_exc()
+                )
 
     def stop_patterning(self):
-        state = gui.microscope.patterning.state
-        if state == "Idle" or state == "Paused":
-            gui.error_msg('Patterning already paused or idle')
-        else:
-            gui.microscope.patterning.stop()
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = self.parent().microscope.patterning.state
+            if state != "Running" and state != "Paused":
+                logger.warning(
+                    "Can't stop milling pattern! "
+                    "Patterning state is not running or paused.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
+                self.parent().microscope.patterning.stop()
+                print('Stopped milling pattern.')
+        except Exception:
+            display_error_message(
+                "microscope.patterning.state = {}\n".format(state) +
+                traceback.format_exc()
+                )
 
     def on_click(self, event):
         if event.button == 1 or event.button == 3:
             if event.inaxes is not None:
                 self.xclick = event.xdata
                 self.yclick = event.ydata
-                print(self.xclick)
-                print(self.yclick)
+                logger.debug(self.xclick)
+                logger.debug(self.yclick)
                 self.dragged = False
-                print(self.dragged)
+                logger.debug(self.dragged)
                 self.on_press = True
 
     def on_motion(self, event):
@@ -275,19 +282,19 @@ class _MainWindow(QMainWindow):
                     self.rect.set_height(self.y1 - y0)
                     self.rect.set_xy((x0, y0))
                     self.rect.set_visible(True)
-                    print("x0 %s", str(x0))
-                    print("y0 %s", str(y0))
-                    print("x1 %s", str(self.x1))
-                    print("y1 %s", str(self.y1))
+                    logger.debug("x0 %s", str(x0))
+                    logger.debug("y0 %s", str(y0))
+                    logger.debug("x1 %s", str(self.x1))
+                    logger.debug("y1 %s", str(self.y1))
                     self.wp.canvas.draw()
 
     def on_release(self, event):
         if event.button == 1 and self.dragged:
-            print(self.dragged)
+            logger.debug(self.dragged)
             try:
                 self.x1_label2.setText("%.1f" % self.x1)
-            except:
-                gui.error_msg(gui, "Mouse released outside image.  Please try again")
+            except Exception as e:
+                display_error_message("Mouse released outside image. Please try again")
             self.x0_label2.setText("%.1f" % self.xclick)
             self.y0_label2.setText("%.1f" % self.yclick)
             self.y1_label2.setText("%.1f" % self.y1)
@@ -301,15 +308,15 @@ class _WidgetPlot(QWidget):
         self.layout().addWidget(self.canvas)
 
 
-class _PlotCanvas(FigureCanvas):
+class _PlotCanvas(FigureCanvasQTAgg):
     def __init__(self, parent=None):
         self.fig = Figure()
-        FigureCanvas.__init__(self, self.fig)
+        FigureCanvasQTAgg.__init__(self, self.fig)
 
         self.setParent(parent)
-        FigureCanvas.setSizePolicy(
+        FigureCanvasQTAgg.setSizePolicy(
             self, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        FigureCanvasQTAgg.updateGeometry(self)
         self.plot()
         self.createConn()
 
@@ -323,7 +330,7 @@ class _PlotCanvas(FigureCanvas):
 
         self.ax11 = self.fig.add_subplot(
             gs0[0], xticks=[], yticks=[], title="")
-        self.ax11.imshow(img)
+        self.ax11.imshow(image)
 
     def updateCanvas(self, event=None):
         ax11_xlim = self.ax11.get_xlim()
@@ -344,11 +351,9 @@ class _PlotCanvas(FigureCanvas):
         self.ax11.callbacks.connect("xlim_changed", self.updateCanvas)
 
     def activeFigure(self, event):
-
         self.figureActive = True
 
     def leftFigure(self, event):
-
         self.figureActive = False
         if self.cursorGUI != "arrow":
             self.cursorGUI = "arrow"
@@ -357,7 +362,3 @@ class _PlotCanvas(FigureCanvas):
     def mouseClicked(self, event):
         x = event.xdata
         y = event.ydata
-
-
-if __name__ == "__main__":
-    open_milling_window()

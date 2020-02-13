@@ -21,7 +21,6 @@ from matplotlib.backends.backend_qt5agg import \
     NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from skimage.transform import AffineTransform
-from autoscript_sdb_microscope_client.structures import *
 from piescope_gui._version import __version__
 
 
@@ -56,13 +55,10 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     else:
         print("Image 1 given as array")
         fluorescence_image_rgb = np.copy(fluorescence_image)
-        fluorescence_image_rgb = skimage.color.gray2rgb(fluorescence_image_rgb)
 
     if type(fibsem_image) == str:
         print("Image 2 given as path")
         fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
-        # gui.fibsem_image = fibsem_image
-        # get metadata from obtained sem image in this case?
     else:
         fibsem_data = np.copy(fibsem_image.data)
         print("Image 2 given as array")
@@ -71,11 +67,10 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
         fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
 
     img1 = fluorescence_image_rgb
-    img1 = np.flipud(img1)
     img2 = fibsem_image
     output = output_path
 
-    window = _MainWindow()
+    window = _CorrelationWindow(parent=gui)
     return window
 
 
@@ -84,13 +79,12 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
 
     Parameters
     ----------
-    fluorescence_image_rgb : numpy array with shape (cols, rows, channels)
-
-    fibsem_image : Adorned Image.
-    Expecting .data attribute of shape (cols, rows, channels)
-
+    fluorescence_image_rgb :
+        umpy array with shape (cols, rows, channels)
+    fibsem_image : AdornedImage.
+        Expecting .data attribute of shape (cols, rows, channels)
     output : str
-    Path to save location
+        Path to save location
 
     matched_points_dict : dict
     Dictionary of points selected in the correlation window
@@ -105,25 +99,24 @@ def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_point
     result = overlay_images(fluorescence_image_aligned, fibsem_image.data)
     result = skimage.util.img_as_ubyte(result)
 
-    overlay_adorned_image = AdornedImage(result)
-    overlay_adorned_image.metadata = gui.fibsem_image.metadata
-    save_text(output, transformation, matched_points_dict)
-    plt.imsave(output, result)
-    overlay_adorned_image.save(output)
-    # print(output)
+    # TODO: the only imports here should be numpy arrays, not AdornedImagE
+    # TODO: get rid of this, saving should happen outside the function
+    # overlay_adorned_image = AdornedImage(result)
+    # overlay_adorned_image.metadata = gui.fibsem_image.metadata
+    # save_text(output, transformation, matched_points_dict)
+    # plt.imsave(output, result)
+    # overlay_adorned_image.save(output)
 
-    return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
+    return result#, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
 
 
-class _MainWindow(QMainWindow):
+class _CorrelationWindow(QMainWindow):
     """Main correlation window"""
-    def __init__(self):
-        super().__init__(parent=gui)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.create_window()
         self.create_conn()
 
-        # self.showMaximized()
-        # self.show()
         self.wp.canvas.fig.subplots_adjust(
             left=0.01, bottom=0.01, right=0.99, top=0.99)
 
@@ -225,14 +218,16 @@ class _MainWindow(QMainWindow):
 
     def create_conn(self):
         self.pickButton.clicked.connect(self.pickmodechange)
-        # self.exitButton.clicked.connect(self.menu_quit)
         self.delButton.clicked.connect(self.delCP)
 
     def menu_quit(self):
         matched_points_dict = self.get_dictlist()
-        result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)
+        # TODO: correlation fix
+        # result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)
+        result = correlate_images(img1, img2, output, matched_points_dict)
         self.close()
-        return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict
+        # return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict
+        return result
 
     def get_dictlist(self):
         dictlist = []
