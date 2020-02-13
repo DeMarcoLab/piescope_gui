@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import copy
 import logging
 import mock
@@ -26,6 +27,22 @@ import piescope_gui.milling
 import piescope_gui.correlation.main as corr
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
+=======
+import os
+import logging
+import traceback
+
+import numpy as np
+
+import piescope
+import piescope_gui.milling.main as milling_function
+import piescope_gui.correlation.main as correlation_function
+import piescope_gui.piescope_interaction as piescope_hardware
+import piescope_gui.qtdesigner_files.main as gui_main
+import piescope.utils as utility
+
+from PyQt5 import QtWidgets, QtGui, QtCore
+>>>>>>> develop
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +81,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_filename_FIBSEM.setText("Image")
         self.label_objective_stage_position.setText("Unknown")
+<<<<<<< HEAD
         self.comboBox_resolution.setCurrentIndex(2)  # resolution "3072x2048"
 
         # self.liveCheck is True when ready to start live imaging,
         # and False while live imaging is running:
+=======
+        self.delim = os.path.normpath("/")
+>>>>>>> develop
         self.liveCheck = True
 
         self.save_name = ""
@@ -681,10 +702,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     else:
                         display_image = self.array_list_FM[
                             self.slider_stack_FM.value() - 1]
+<<<<<<< HEAD
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FM.text())
                     dest = self.lineEdit_save_destination_FM.text() + os.path.sep \
                            + save_base + ".tif"
+=======
+                        print(display_image)
+                    [save_base, ext] = os.path.splitext(
+                        self.lineEdit_save_filename_FM.text())
+                    dest = self.lineEdit_save_destination_FM.text() + self.delim \
+                           + save_base + ".tiff"
+>>>>>>> develop
                     dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
@@ -697,12 +726,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         else:
                             count = 1
                             while exists:
+<<<<<<< HEAD
                                 dest = (self.lineEdit_save_destination_FM.text()
                                         + os.path.sep + save_base + "("
                                         + str(count) + ").tif")
                                 exists = os.path.isfile(dest)
                                 count = count + 1
                                 piescope.utils.save_image(display_image, dest)
+=======
+                                dest = self.lineEdit_save_destination_FM.text() + \
+                                       self.delim + save_base + "(" + str(
+                                    count) + \
+                                       ").tiff"
+                                exists = os.path.isfile(dest)
+                                count = count + 1
+                                piescope.utils.save_image(display_image,
+                                                   dest)
+>>>>>>> develop
                 else:
                     display_error_message("No image to save")
 
@@ -712,7 +752,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FIBSEM.text())
                     dest = self.lineEdit_save_destination_FIBSEM.text() + \
+<<<<<<< HEAD
                            os.path.sep + save_base + ".tif"
+=======
+                           self.delim + save_base + ".tiff"
+>>>>>>> develop
                     dir_exists = os.path.isdir(
                         self.lineEdit_save_destination_FIBSEM.text())
                     if not dir_exists:
@@ -726,9 +770,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         else:
                             count = 1
                             while exists:
+<<<<<<< HEAD
                                 dest = (self.lineEdit_save_destination_FIBSEM.text()
                                         + os.path.sep + save_base + "("
                                         + str(count) + ").tif")
+=======
+                                dest = self.lineEdit_save_destination_FIBSEM.text() + \
+                                       self.delim + save_base + "(" + str(
+                                    count) + \
+                                       ").tiff"
+>>>>>>> develop
                                 exists = os.path.isfile(dest)
                                 count = count + 1
                                 piescope.utils.save_image(display_image, dest)
@@ -789,8 +840,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 image_array_crosshair[midx - thresh:midx + thresh, midy - (thresh * mult):midy + (thresh * mult)] = 255
 
                 self.current_image_FM = qimage2ndarray.array2qimage(image_array)
+<<<<<<< HEAD
                 self.current_image_FM_crosshair = qimage2ndarray.array2qimage(image_array_crosshair.copy())
                 self.status.setText("Image " + slider_value + " of " + max_value)
+=======
+                self.current_image_FM_crosshair = qimage2ndarray.array2qimage(image_array_crosshair)
+                print(self.current_image_FM)
+
+                self.status.setText(
+                    "Image " + slider_value + " of " + max_value)
+>>>>>>> develop
 
                 self.current_pixmap_FM = QtGui.QPixmap.fromImage(
                     self.current_image_FM_crosshair)
@@ -808,6 +867,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 else:
                     image_array = self.array_list_FIBSEM
 
+<<<<<<< HEAD
                 # Ensure image for display is RGB
                 if image_array.ndim >=4:
                     msg = "Please select a 2D image for display.\n" + \
@@ -828,6 +888,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         return
 
                 self.current_image_FIBSEM = qimage2ndarray.array2qimage(image_array.copy())
+=======
+                self.current_image_FIBSEM = qimage2ndarray.array2qimage(image_array)
+                print(self.current_image_FIBSEM)
+>>>>>>> develop
                 self.current_path_FIBSEM = os.path.normpath(image_string)
 
                 self.status.setText(
@@ -839,6 +903,41 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     640, 400, QtCore.Qt.KeepAspectRatio)
                 self.label_image_FIBSEM.setPixmap(self.current_pixmap_FIBSEM)
 
+<<<<<<< HEAD
+=======
+                self.fill_save_information("FIBSEM")
+                """Updating display of GUI with current FIBSEM image"""
+
+        except Exception as e:
+            logger.exception(e)
+            self.error_msg(str(e))
+
+    def fill_save_information(self, modality):
+        """Fills Save Destination and Save Filename using image path"""
+        try:
+            if modality == "FM":
+                [destination, self.save_name] = os.path.split(self.current_path_FM)
+
+                if not self.checkBox_save_destination_FM.isChecked():
+                    destination = destination + self.delim
+                    self.save_destination_FM = destination
+                    self.lineEdit_save_destination_FM.setText(
+                        self.save_destination_FM)
+
+                self.lineEdit_save_filename_FM.setText(self.save_name)
+
+            elif modality == "FIBSEM":
+                [destination, self.save_name] = os.path.split(
+                    self.current_path_FIBSEM)
+
+                if not self.checkBox_save_destination_FIBSEM.isChecked():
+                    destination = destination + self.delim
+                    self.save_destination_FIBSEM = destination
+                    self.lineEdit_save_destination_FIBSEM.setText(
+                        self.save_destination_FIBSEM)
+
+                self.lineEdit_save_filename_FIBSEM.setText(self.save_name)
+>>>>>>> develop
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -854,6 +953,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             if modality == "FM":
                 if not self.checkBox_save_destination_FM.isChecked():
+<<<<<<< HEAD
                     self.save_destination_FM = directory_path
                     self.lineEdit_save_destination_FM.setText(directory_path)
                     return directory_path
@@ -868,6 +968,32 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 return directory_path
         except Exception as e:
             display_error_message(traceback.format_exc())
+=======
+                    self.save_destination_FM = os.path.normpath(
+                        QtWidgets.QFileDialog.getExistingDirectory(
+                            self, 'File Destination'))
+                    destination_text = self.save_destination_FM + self.delim
+                    self.lineEdit_save_destination_FM.setText(destination_text)
+            elif modality == "FIBSEM":
+                if not self.checkBox_save_destination_FIBSEM.isChecked():
+                    self.save_destination_FIBSEM = os.path.normpath(
+                        QtWidgets.QFileDialog.getExistingDirectory(
+                            self, 'File Destination'))
+                    destination_text = \
+                        self.save_destination_FIBSEM + self.delim
+                    self.lineEdit_save_destination_FIBSEM.setText(
+                        destination_text)
+        except Exception as e:
+            logger.exception(e)
+            self.error_msg(str(e))
+
+    def fill_correlation_destination(self):
+        self.save_destination_correlation = os.path.normpath(
+            QtWidgets.QFileDialog.getExistingDirectory(
+                self, 'File Destination'))
+        destination_text = self.save_destination_correlation + self.delim
+        self.correlation_output_path.setText(destination_text)
+>>>>>>> develop
 
     def acquire_volume(self, autosave=True):
         print('Acqiuring fluorescence volume image...')
@@ -880,6 +1006,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 display_error_message("Please select a maximum of 3 lasers.")
                 return
 
+<<<<<<< HEAD
             try:
                 num_z_slices = int(self.lineEdit_slice_number.text())
             except ValueError:
@@ -889,6 +1016,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 if num_z_slices < 0:
                     display_error_message("Number of slices must be a positive integer")
                     return
+=======
+            no_z_slices = int(self.lineEdit_slice_number.text())
+            if no_z_slices < 0:
+                raise ValueError("Number of slices must be a positive integer")
+
+            z_slice_distance = int(self.lineEdit_slice_distance.text())
+            if z_slice_distance < 0:
+                raise ValueError("Slice distance must be a positive integer")
+
+            destination_for_continual_saving = self.lineEdit_save_destination_FM.text()
+            volume = piescope.lm.volume.volume_acquisition(
+                laser_dict, no_z_slices, z_slice_distance, destination_for_continual_saving)
+            max_intensity = piescope.utils.max_intensity_projection(volume)
+            channel = 0
+
+            rgb = self.create_rgb(max_intensity)
+>>>>>>> develop
 
             try:
                 z_slice_distance = int(self.lineEdit_slice_distance.text())
@@ -927,6 +1071,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.string_list_FM = ["RGB image"]
             self.array_list_FM = rgb
             self.update_display("FM")
+<<<<<<< HEAD
+=======
+
+            for las in laser_dict:
+                destination = self.lineEdit_save_destination_FM.text() + \
+                              "\\volume_stack_wavelength_" + str(las) + "_" + \
+                              correlation_function._timestamp()
+                os.makedirs(destination)
+                channel_max = max_intensity[:, :, channel]
+                piescope.utils.save_image(image=channel_max, dest=destination + "\\Maximum_intensity_projection.tif")
+
+                for z_slice in range(0, np.shape(volume)[0]):
+                    piescope.utils.save_image(image=volume[z_slice, :, :, channel], dest=destination + "\\slice__" + str(z_slice) + ".tif")
+
+                channel = channel + 1
+
+>>>>>>> develop
         except Exception as e:
             display_error_message(traceback.format_exc())
 
