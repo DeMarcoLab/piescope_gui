@@ -47,10 +47,17 @@ Software developers may also like to refer to the
 
 ## Running the program
 
-You can launch the program with the command:
+First activate your python environment
+(the same one you installed piescope into).
+Eg: open the Anaconda Prompt from the start menu and type:;;
 
 ```
-python piescope_gui\main.py
+conda activate piescope
+```
+
+Then you can launch the GUI using the command:
+```
+piescope
 ```
 
 You will then see the main GUI screen appear:

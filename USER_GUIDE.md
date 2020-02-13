@@ -94,6 +94,11 @@ Checking IP address used to connect to the Basler fluorescence detector:
   ```
 9. Press OK.
 
+## Suggested end-to-end workflow
+This is the suggested end-to-end workflow for experiments, consisting of six steps:
+
+![Suggested end-to-end workflow](imgs/workflow.png)
+
 # Standard GUI operations
 
 [**Imaging**](#imaging)
@@ -270,15 +275,13 @@ If communicaton to the Basler fails it is possibly an IP address problem.
 
 This can be checked by opening the ASCII Terminal by going to the start menu and typing "ASCII" and pressing enter.
 
+### Correlation
+
 ![](imgs/screenshot_correlation.png)
 
 ![](imgs/screenshot_correlation_picking.png)
 
 ### Milling
-drag rectangle
-press buttons
 
 ![piescope_gui milling pattern screenshot](imgs/screenshot_milling.png)
-Go to EDIT/SETTINGS then
-
 
