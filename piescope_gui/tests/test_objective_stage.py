@@ -5,7 +5,7 @@ import pytest
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
 
-import piescope
+import piescope.lm
 
 from piescope_gui import main
 

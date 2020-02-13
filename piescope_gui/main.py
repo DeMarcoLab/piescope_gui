@@ -17,6 +17,10 @@ import skimage.io
 import skimage.util
 
 import piescope
+import piescope.data
+import piescope.lm
+import piescope.fibsem
+import piescope.utils
 
 import piescope_gui.milling
 import piescope_gui.correlation.main as corr
@@ -259,8 +263,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # save image
             save_filename = os.path.join(
                 self.save_destination_FIBSEM,
-                "I_" + self.lineEdit_save_filename_FIBSEM.text() + '_' + \
-                    timestamp() + '.tif')
+                "I_" + self.lineEdit_save_filename_FIBSEM.text() + '.tif')
             self.string_list_FIBSEM = [save_filename]
             if autosave is True:
                 piescope.utils.save_image(self.fibsem_image, save_filename)
@@ -295,8 +298,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # save image
             save_filename = os.path.join(
                 self.save_destination_FIBSEM,
-                "E_" + self.lineEdit_save_filename_FIBSEM.text() + '_' + \
-                    timestamp() + '.tif')
+                "E_" + self.lineEdit_save_filename_FIBSEM.text() + '.tif')
             self.string_list_FIBSEM = [save_filename]
             if autosave is True:
                 piescope.utils.save_image(self.fibsem_image, save_filename)
@@ -365,18 +367,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # Acquire image
             self.lasers[laser_name].emission_on()
             image = self.detector.camera_grab(exposure_time_microseconds)
-            timestamp_string = timestamp()
             meta = {'exposure_time': str(exposure_time),
                     'laser_name': str(laser_name),
                     'laser_power': str(laser_power),
-                    'timestamp': timestamp_string,
+                    'timestamp': timestamp(),
                     }
             self.lasers[laser_name].emission_off()
             # Save image
             save_filename = os.path.join(
                 self.save_destination_FM,
-                'F_' + self.lineEdit_save_filename_FM.text() + '_' + \
-                    timestamp_string + '.tif')
+                'F_' + self.lineEdit_save_filename_FM.text() + '.tif')
             self.string_list_FM = [save_filename]
             if autosave is True:
                 piescope.utils.save_image(image, save_filename, metadata=meta)
@@ -431,8 +431,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # Update filename (if you want to save this image later)
             save_filename = os.path.join(
                 self.save_destination_FM,
-                'F_' + self.lineEdit_save_filename_FM.text() + '_' + \
-                    timestamp() + '.tif')
+                'F_' + self.lineEdit_save_filename_FM.text() + '.tif')
             self.string_list_FM = [save_filename]
             # Pause between frames if desired (the laser will remain on)
             if image_frame_interval is not None:
@@ -913,15 +912,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if autosave is True:
                 # Save volume
                 save_filename = os.path.join(self.save_destination_FM,
-                    'Volume_' + self.lineEdit_save_filename_FM.text() + '_' + \
-                        timestamp() + '.tif')
+                    'Volume_' + self.lineEdit_save_filename_FM.text() + '.tif')
                 piescope.utils.save_image(volume, save_filename, metadata=meta)
                 print('Saved: {}'.format(save_filename))
                 # Save maximum intensity projection
                 save_filename_max_intensity = os.path.join(
                     self.save_destination_FM,
-                    'MIP_' + self.lineEdit_save_filename_FM.text() + '_' + \
-                        timestamp() + '.tif')
+                    'MIP_' + self.lineEdit_save_filename_FM.text() + '.tif')
                 piescope.utils.save_image(
                     max_intensity, save_filename_max_intensity, metadata=meta)
                 print('Saved: {}'.format(save_filename_max_intensity))
