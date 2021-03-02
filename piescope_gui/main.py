@@ -435,7 +435,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.string_list_FM = [save_filename]
             # Pause between frames if desired (the laser will remain on)
             if image_frame_interval is not None:
-                stopevent.wait(image_frame_interval)
+                stop_event.wait(image_frame_interval)
         # Teardown / cleanup
         print("Stopping live imaging mode.")
         self.lasers[laser_name].emission_off()
