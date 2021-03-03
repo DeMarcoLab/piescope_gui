@@ -366,7 +366,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.lasers[laser_name].laser_power = float(laser_power)
             # Acquire image
             self.lasers[laser_name].emission_on()
-            image = self.detector.camera_grab(exposure_time_microseconds)
+            image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='software')
             meta = {'exposure_time': str(exposure_time),
                     'laser_name': str(laser_name),
                     'laser_power': str(laser_power),
@@ -423,7 +423,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # Running live imaging
         while not stop_event.isSet():
             # Take image
-            image = self.detector.camera_grab(exposure_time_microseconds)
+            image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='hardware')
             # Update GUI
             self.array_list_FM = image
             self.slider_stack_FM.setValue(1)
