@@ -157,12 +157,12 @@
              <item row="5" column="0">
               <widget class="QLabel" name="label_slice_number">
                <property name="text">
-                <string>Number of Slices</string>
+                <string>Total Volume Height (nm)</string>
                </property>
               </widget>
              </item>
              <item row="5" column="1">
-              <widget class="QLineEdit" name="lineEdit_slice_number"/>
+              <widget class="QLineEdit" name="lineEdit_volume_height"/>
              </item>
              <item row="4" column="0">
               <widget class="QLabel" name="label_slice_distance">
@@ -386,84 +386,14 @@
              <property name="verticalSpacing">
               <number>3</number>
              </property>
-             <item row="6" column="1">
-              <widget class="QLabel" name="label_objective_stage_position">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Absolute Position (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="12" column="0">
-              <widget class="QPushButton" name="pushButton_move_relative">
-               <property name="text">
-                <string>Move Relative (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="1">
-              <widget class="QPushButton" name="to_electron_microscope">
-               <property name="text">
-                <string>To Electron Microscope</string>
-               </property>
-              </widget>
-             </item>
-             <item row="11" column="0">
-              <widget class="QPushButton" name="pushButton_move_absolute">
-               <property name="text">
-                <string>Move Absolute (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QPushButton" name="connect_microscope">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Connect to microscope</string>
-               </property>
-              </widget>
-             </item>
              <item row="11" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
-             </item>
-             <item row="4" column="0">
-              <widget class="QPushButton" name="to_light_microscope">
+              <widget class="QPushButton" name="pushButton_go_to_saved_position">
                <property name="text">
-                <string>To Light Microscope</string>
+                <string>Go to saved position</string>
                </property>
               </widget>
              </item>
-             <item row="12" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_relative"/>
-             </item>
-             <item row="0" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_volume">
-               <property name="text">
-                <string>Acquire Volume</string>
-               </property>
-               <property name="flat">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="0" colspan="2">
+             <item row="2" column="0" colspan="2">
               <widget class="QFrame" name="frame">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
@@ -505,7 +435,21 @@
                </layout>
               </widget>
              </item>
-             <item row="7" column="0">
+             <item row="12" column="0">
+              <widget class="QPushButton" name="pushButton_get_position">
+               <property name="text">
+                <string>Get Position</string>
+               </property>
+              </widget>
+             </item>
+             <item row="12" column="1">
+              <widget class="QPushButton" name="pushButton_initialize_stage">
+               <property name="text">
+                <string>Initialise Stage</string>
+               </property>
+              </widget>
+             </item>
+             <item row="10" column="0">
               <widget class="QLabel" name="label_6">
                <property name="minimumSize">
                 <size>
@@ -518,7 +462,33 @@
                </property>
               </widget>
              </item>
-             <item row="7" column="1">
+             <item row="9" column="0">
+              <widget class="QLabel" name="label_5">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Absolute Position (um)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="15" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_relative"/>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_volume">
+               <property name="text">
+                <string>Acquire Volume</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="10" column="1">
               <widget class="QLabel" name="label_objective_stage_saved_position">
                <property name="minimumSize">
                 <size>
@@ -531,31 +501,61 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="0">
+             <item row="7" column="0">
+              <widget class="QPushButton" name="to_light_microscope">
+               <property name="text">
+                <string>To Light Microscope</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="1">
+              <widget class="QLabel" name="label_objective_stage_position">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="11" column="0">
               <widget class="QPushButton" name="pushButton_save_objective_position">
                <property name="text">
                 <string>Save Position</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="1">
-              <widget class="QPushButton" name="pushButton_go_to_saved_position">
+             <item row="6" column="0" colspan="2">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
-                <string>Go to saved position</string>
+                <string>Connect to microscope</string>
                </property>
               </widget>
              </item>
-             <item row="9" column="0">
-              <widget class="QPushButton" name="pushButton_get_position">
+             <item row="15" column="0">
+              <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
-                <string>Get Position</string>
+                <string>Move Relative (um)</string>
                </property>
               </widget>
              </item>
-             <item row="9" column="1">
-              <widget class="QPushButton" name="pushButton_initialize_stage">
+             <item row="14" column="0">
+              <widget class="QPushButton" name="pushButton_move_absolute">
                <property name="text">
-                <string>Initialise Stage</string>
+                <string>Move Absolute (um)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="14" column="1">
+              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
+             </item>
+             <item row="7" column="1">
+              <widget class="QPushButton" name="to_electron_microscope">
+               <property name="text">
+                <string>To Electron Microscope</string>
                </property>
               </widget>
              </item>
@@ -858,7 +858,7 @@
              <property name="spacing">
               <number>4</number>
              </property>
-             <item row="4" column="7">
+             <item row="5" column="7">
               <spacer name="horizontalSpacer">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -874,7 +874,54 @@
                </property>
               </spacer>
              </item>
-             <item row="4" column="1">
+             <item row="5" column="6">
+              <widget class="QLineEdit" name="lineEdit_exposure_basler">
+               <property name="text">
+                <string>1000</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="5" column="3">
+              <widget class="QLineEdit" name="lineEdit_power_basler_2">
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Power level:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="5">
+              <widget class="QLabel" name="label">
+               <property name="maximumSize">
+                <size>
+                 <width>80</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Exposure (ms): </string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
               <widget class="QComboBox" name="comboBox_laser_basler">
                <property name="editable">
                 <bool>false</bool>
@@ -904,73 +951,7 @@
                </item>
               </widget>
              </item>
-             <item row="4" column="3">
-              <widget class="QLineEdit" name="lineEdit_power_basler_2">
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="2">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Power level:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="6">
-              <widget class="QLineEdit" name="lineEdit_exposure_basler">
-               <property name="text">
-                <string>1000</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="5">
-              <widget class="QLabel" name="label">
-               <property name="maximumSize">
-                <size>
-                 <width>80</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Exposure (ms): </string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0">
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="3" column="5" colspan="2">
-              <widget class="QPushButton" name="button_live_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Live Basler View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2" colspan="3">
+             <item row="3" column="2" rowspan="2" colspan="3">
               <widget class="QPushButton" name="button_get_image_FM">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
@@ -989,10 +970,43 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="7">
+             <item row="3" column="5" rowspan="2" colspan="2">
+              <widget class="QPushButton" name="button_live_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Live Basler View</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="7" rowspan="2">
               <widget class="QLabel" name="label_max_FM_value">
                <property name="text">
                 <string>Max Value: </string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QPushButton" name="button_pattern_next">
+               <property name="text">
+                <string>Next Pattern</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QPushButton" name="button_pattern_on">
+               <property name="text">
+                <string>Pattern On</string>
                </property>
               </widget>
              </item>
