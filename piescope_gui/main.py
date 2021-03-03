@@ -363,9 +363,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        "488nm": "laser488",
                                        "405nm": "laser405"}
             laser_name = WAVELENGTH_TO_LASERNAME[wavelength]
-            self.lasers[laser_name].laser_power = float(laser_power)
+
+            # Software triggering of lasers:
+            # self.lasers[laser_name].laser_power = float(laser_power)
+            # self.lasers[laser_name].emission_on()
+
             # Acquire image
-            self.lasers[laser_name].emission_on()
             image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='software')
             meta = {'exposure_time': str(exposure_time),
                     'laser_name': str(laser_name),
@@ -870,7 +873,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     def acquire_volume(self, autosave=True):
-        print('Acqiuring fluorescence volume image...')
+        print('Acquiring fluorescence volume image...')
         try:
             laser_dict = self.laser_dict
             if laser_dict == {}:
@@ -881,13 +884,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 return
 
             try:
-                num_z_slices = int(self.lineEdit_slice_number.text())
+                volume_height = int(self.lineEdit_volume_height.text())
             except ValueError:
-                display_error_message("Number of slices must be a positive integer")
+                display_error_message("Volume height must be a positive integer")
                 return
             else:
-                if num_z_slices < 0:
-                    display_error_message("Number of slices must be a positive integer")
+                if volume_height < 0:
+                    display_error_message("Volume height must be a positive integer")
                     return
 
             try:
@@ -899,6 +902,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 if z_slice_distance < 0:
                     display_error_message("Slice distance must be a positive integer")
                     return
+
+            num_z_slices = round(volume_height/z_slice_distance)
 
             volume = piescope.lm.volume.volume_acquisition(
                 laser_dict, num_z_slices, z_slice_distance,
