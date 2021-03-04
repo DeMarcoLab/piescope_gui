@@ -625,6 +625,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 if i.selected is True:
                     laser_dict[i.NAME] = (i.laser_power, i.exposure_time)
             self.laser_dict = laser_dict
+            logger.debug(self.laser_dict)
             # Grey out laser contol widgets if laser checkbox is not selected
             if laser_selected:
                 widget_slider.setEnabled(1)
@@ -903,7 +904,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     display_error_message("Slice distance must be a positive integer")
                     return
 
-            num_z_slices = round(volume_height/z_slice_distance)
+            num_z_slices = round(volume_height/z_slice_distance) + 1
 
             volume = piescope.lm.volume.volume_acquisition(
                 laser_dict, num_z_slices, z_slice_distance,
@@ -912,6 +913,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             meta = {'z_slice_distance': str(z_slice_distance),
                         'num_z_slices': str(num_z_slices),
                         'laser_dict': str(laser_dict),
+                        'volume_height': str(volume_height)
                         }
             max_intensity = piescope.utils.max_intensity_projection(volume)
             if autosave is True:
