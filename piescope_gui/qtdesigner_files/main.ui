@@ -828,191 +828,6 @@
             </layout>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QFrame" name="frame_buttons_FM">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_18">
-             <property name="leftMargin">
-              <number>0</number>
-             </property>
-             <property name="topMargin">
-              <number>0</number>
-             </property>
-             <property name="rightMargin">
-              <number>0</number>
-             </property>
-             <property name="bottomMargin">
-              <number>0</number>
-             </property>
-             <property name="spacing">
-              <number>4</number>
-             </property>
-             <item row="5" column="7">
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>100</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="5" column="6">
-              <widget class="QLineEdit" name="lineEdit_exposure_basler">
-               <property name="text">
-                <string>1000</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="5" column="3">
-              <widget class="QLineEdit" name="lineEdit_power_basler_2">
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="2">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Power level:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="5">
-              <widget class="QLabel" name="label">
-               <property name="maximumSize">
-                <size>
-                 <width>80</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Exposure (ms): </string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QComboBox" name="comboBox_laser_basler">
-               <property name="editable">
-                <bool>false</bool>
-               </property>
-               <property name="currentText">
-                <string>640nm</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>640nm</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>561nm</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>488nm</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>405nm</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="3" column="2" rowspan="2" colspan="3">
-              <widget class="QPushButton" name="button_get_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Get Basler Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="5" rowspan="2" colspan="2">
-              <widget class="QPushButton" name="button_live_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Live Basler View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="7" rowspan="2">
-              <widget class="QLabel" name="label_max_FM_value">
-               <property name="text">
-                <string>Max Value: </string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0" colspan="2">
-              <widget class="QPushButton" name="button_pattern_next">
-               <property name="text">
-                <string>Next Pattern</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QPushButton" name="button_pattern_on">
-               <property name="text">
-                <string>Pattern On</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
           <item row="3" column="0">
            <widget class="QFrame" name="frame_slider_FM">
             <property name="frameShape">
@@ -1022,6 +837,38 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_2">
+             <item row="0" column="2">
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::MinimumExpanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="0">
+              <spacer name="horizontalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::MinimumExpanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
              <item row="0" column="1">
               <layout class="QVBoxLayout" name="layout_image_vertical">
                <item>
@@ -1094,37 +941,168 @@
                </item>
               </layout>
              </item>
-             <item row="0" column="2">
-              <spacer name="horizontalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+            </layout>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QFrame" name="frame_buttons_FM">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_18">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <property name="spacing">
+              <number>4</number>
+             </property>
+             <item row="5" column="7">
+              <widget class="QComboBox" name="comboBox_laser_basler">
+               <property name="editable">
+                <bool>false</bool>
                </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::MinimumExpanding</enum>
+               <property name="currentText">
+                <string>640nm</string>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
+               <item>
+                <property name="text">
+                 <string>640nm</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>561nm</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>488nm</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>405nm</string>
+                </property>
+               </item>
+              </widget>
              </item>
-             <item row="0" column="0">
-              <spacer name="horizontalSpacer_6">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+             <item row="5" column="6">
+              <widget class="QLineEdit" name="lineEdit_exposure_basler">
+               <property name="text">
+                <string>1000</string>
                </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::MinimumExpanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
+              </widget>
+             </item>
+             <item row="5" column="5">
+              <widget class="QLabel" name="label">
+               <property name="maximumSize">
                 <size>
-                 <width>40</width>
-                 <height>20</height>
+                 <width>80</width>
+                 <height>16777215</height>
                 </size>
                </property>
-              </spacer>
+               <property name="text">
+                <string>Exposure (ms): </string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="3">
+              <widget class="QLineEdit" name="lineEdit_power_basler_2">
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="7" rowspan="2">
+              <widget class="QLabel" name="label_max_FM_value">
+               <property name="text">
+                <string>Max Value: </string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="2">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Power level:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="5" rowspan="2" colspan="2">
+              <widget class="QPushButton" name="button_live_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Live Basler View</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_pattern_on">
+               <property name="text">
+                <string>Pattern On</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2" rowspan="2" colspan="3">
+              <widget class="QPushButton" name="button_get_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Get Basler Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_mirror_on">
+               <property name="text">
+                <string>Mirror On</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_pattern_next">
+               <property name="text">
+                <string>Pattern Next</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
