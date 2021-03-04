@@ -74,6 +74,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # self.laser_dict is a dictionary like: {"name": (power, exposure)}
         # with types {str: (int, int)}
         # Could refactor this out and rely only on self.lasers instead
+        self.mirror_pin = 'P25'
+        self.pattern_pin = 'P27'
         self.laser_dict = {}  # {"name": (power, exposure)}
         self.fibsem_image = []  # AdornedImage (for whatever is currently displayed in the FIBSEM side of the piescope GUI)
         self.array_list_FM = []  # list of 2D numpy arrays (how we open many images & use the slider for fluorescence images)
@@ -369,13 +371,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # self.lasers[laser_name].emission_on()
 
             # Acquire image
-            image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='software')
+            image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='hardware',
+                                              laser_name=laser_name)
             meta = {'exposure_time': str(exposure_time),
                     'laser_name': str(laser_name),
                     'laser_power': str(laser_power),
                     'timestamp': timestamp(),
                     }
-            self.lasers[laser_name].emission_off()
+            # self.lasers[laser_name].emission_off()
+
             # Save image
             save_filename = os.path.join(
                 self.save_destination_FM,
@@ -422,11 +426,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.liveCheck = False
         self.button_live_image_FM.setDown(True)
         self.lasers[laser_name].laser_power = float(laser_power)
-        self.lasers[laser_name].emission_on()
+        # self.lasers[laser_name].emission_on()
+
         # Running live imaging
         while not stop_event.isSet():
             # Take image
-            image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='hardware')
+            image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='hardware',
+                                              laser_name=laser_name)
             # Update GUI
             self.array_list_FM = image
             self.slider_stack_FM.setValue(1)
@@ -441,7 +447,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 stop_event.wait(image_frame_interval)
         # Teardown / cleanup
         print("Stopping live imaging mode.")
-        self.lasers[laser_name].emission_off()
+        # self.lasers[laser_name].emission_off()
         self.detector.camera.Close()
         self.liveCheck = True
         self.button_live_image_FM.setDown(False)
