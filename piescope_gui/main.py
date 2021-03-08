@@ -371,10 +371,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        "488nm": "laser488",
                                        "405nm": "laser405"}
             laser_name = WAVELENGTH_TO_LASERNAME[wavelength]
-
-            # Software triggering of lasers:
-            # self.lasers[laser_name].laser_power = float(laser_power)
-            # self.lasers[laser_name].emission_on()
+            self.lasers[laser_name].laser_power = float(laser_power)
 
             # Acquire image
             image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='hardware',
