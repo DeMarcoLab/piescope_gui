@@ -77,6 +77,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # Could refactor this out and rely only on self.lasers instead
         self.mirror_pin = 'P25'
         self.pattern_pin = 'P27'
+        self.pattern_pin_on = 'P26'
         self.laser_dict = {}  # {"name": (power, exposure)}
         self.fibsem_image = []  # AdornedImage (for whatever is currently displayed in the FIBSEM side of the piescope GUI)
         self.array_list_FM = []  # list of 2D numpy arrays (how we open many images & use the slider for fluorescence images)
@@ -203,6 +204,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_save_objective_position.clicked.connect(self.save_objective_stage_position)
         self.pushButton_go_to_saved_position.clicked.connect(
             lambda: self.move_absolute_objective_stage(self.objective_stage))
+
+        self.pushButton_mirror_on.clicked.connect(self.mirror_on)
+        self.checkBox_pattern_on.clicked.connect(self.pattern_on)
+        self.pushButton_pattern_next.clicked.connect(self.pattern_next)
 
     def disconnect(self):
         print('Running cleanup/teardown')
@@ -1021,6 +1026,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         except Exception as e:
             display_error_message(traceback.format_exc())
+
+    ############## Mirror methods ##############
+    def mirror_on(self):
+        print('Initialising mirror')
+        structured.single_line_pulse(10, self.mirror_pin)
+
+    def pattern_on(self):
+        structured.single_line_onoff(self.checkBox_pattern_on.isChecked(),
+                                     self.pattern_pin_on)
+
+    def pattern_next(self):
+        structured.single_line_pulse(10, self.pattern_pin)
 
 
 def _create_array_list(input_list, modality):
