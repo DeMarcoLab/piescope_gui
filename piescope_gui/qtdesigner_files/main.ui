@@ -1064,13 +1064,6 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_pattern_on">
-               <property name="text">
-                <string>Pattern On</string>
-               </property>
-              </widget>
-             </item>
              <item row="3" column="2" rowspan="2" colspan="3">
               <widget class="QPushButton" name="button_get_image_FM">
                <property name="sizePolicy">
@@ -1090,17 +1083,24 @@
                </property>
               </widget>
              </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_mirror_on">
-               <property name="text">
-                <string>Mirror On</string>
-               </property>
-              </widget>
-             </item>
              <item row="5" column="0" colspan="2">
               <widget class="QPushButton" name="pushButton_pattern_next">
                <property name="text">
                 <string>Pattern Next</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QCheckBox" name="checkBox_pattern_on">
+               <property name="text">
+                <string>Pattern On</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_mirror_on">
+               <property name="text">
+                <string>Turn Mirror On</string>
                </property>
               </widget>
              </item>
