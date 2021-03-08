@@ -21,6 +21,7 @@ import piescope.data
 import piescope.lm
 import piescope.fibsem
 import piescope.utils
+from piescope.lm import structured
 
 import piescope_gui.milling
 import piescope_gui.correlation.main as corr
