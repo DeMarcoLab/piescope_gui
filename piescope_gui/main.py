@@ -75,9 +75,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # self.laser_dict is a dictionary like: {"name": (power, exposure)}
         # with types {str: (int, int)}
         # Could refactor this out and rely only on self.lasers instead
-        self.mirror_pin = 'P25'
         self.pattern_pin = 'P27'
-        self.pattern_pin_on = 'P26'
+        self.pattern_pin_on = 'P25'
+        structured.single_line_onoff(False, 'P25')
         self.laser_dict = {}  # {"name": (power, exposure)}
         self.fibsem_image = []  # AdornedImage (for whatever is currently displayed in the FIBSEM side of the piescope GUI)
         self.array_list_FM = []  # list of 2D numpy arrays (how we open many images & use the slider for fluorescence images)
@@ -371,7 +371,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                                        "488nm": "laser488",
                                        "405nm": "laser405"}
             laser_name = WAVELENGTH_TO_LASERNAME[wavelength]
-            self.lasers[laser_name].laser_power = float(laser_power)
+            self.lasers[laser_name].laser_power = laser_power
 
             # Acquire image
             image = self.detector.camera_grab(exposure_time=exposure_time_microseconds, trigger_mode='hardware',
