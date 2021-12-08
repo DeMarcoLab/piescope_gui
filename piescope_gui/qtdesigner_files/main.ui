@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>1623</width>
-    <height>739</height>
+    <height>839</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+   <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -25,13 +25,19 @@
   <property name="maximumSize">
    <size>
     <width>1623</width>
-    <height>739</height>
+    <height>839</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>1</width>
+     <height>798</height>
+    </size>
+   </property>
    <property name="maximumSize">
     <size>
      <width>1623</width>
@@ -65,7 +71,7 @@
       <property name="maximumSize">
        <size>
         <width>1623</width>
-        <height>698</height>
+        <height>798</height>
        </size>
       </property>
       <property name="frameShape">
@@ -151,8 +157,8 @@
              <property name="verticalSpacing">
               <number>1</number>
              </property>
-             <item row="4" column="1">
-              <widget class="QLineEdit" name="lineEdit_slice_distance"/>
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="lineEdit_volume_height"/>
              </item>
              <item row="5" column="0">
               <widget class="QLabel" name="label_slice_number">
@@ -161,8 +167,68 @@
                </property>
               </widget>
              </item>
-             <item row="5" column="1">
-              <widget class="QLineEdit" name="lineEdit_volume_height"/>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="lineEdit_slice_distance"/>
+             </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QWidget" name="widget_laser2" native="true">
+               <layout class="QGridLayout" name="gridLayout_9">
+                <item row="0" column="1" rowspan="2">
+                 <widget class="QLabel" name="label_exposure_3">
+                  <property name="text">
+                   <string>Exposure (ms)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" rowspan="2">
+                 <widget class="QCheckBox" name="checkBox_laser2">
+                  <property name="layoutDirection">
+                   <enum>Qt::RightToLeft</enum>
+                  </property>
+                  <property name="text">
+                   <string>561nm</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="2" rowspan="2" colspan="2">
+                 <widget class="QLineEdit" name="lineEdit_exposure_2">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>1000</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="4">
+                 <widget class="QSlider" name="slider_laser2">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="4" rowspan="2">
+                 <widget class="QRadioButton" name="radioButton_561">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">live_group</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QDoubleSpinBox" name="spinBox_laser2">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </item>
              <item row="4" column="0">
               <widget class="QLabel" name="label_slice_distance">
@@ -171,16 +237,73 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
-              <widget class="QWidget" name="widget_laser3" native="true">
-               <layout class="QGridLayout" name="gridLayout_10">
+             <item row="0" column="0" colspan="2">
+              <widget class="QWidget" name="widget_laser1" native="true">
+               <layout class="QGridLayout" name="gridLayout_8">
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_exposure_2">
+                  <property name="text">
+                   <string>Exposure (ms)</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="checkBox_laser1">
+                  <property name="layoutDirection">
+                   <enum>Qt::RightToLeft</enum>
+                  </property>
+                  <property name="text">
+                   <string>640nm</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="0" column="2">
-                 <widget class="QLineEdit" name="lineEdit_exposure_3">
+                 <widget class="QLineEdit" name="lineEdit_exposure_1">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
                   <property name="text">
                    <string>1000</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <widget class="QRadioButton" name="radioButton_640">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">live_group</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="3">
+                 <widget class="QSlider" name="slider_laser1">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QDoubleSpinBox" name="spinBox_laser1">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QWidget" name="widget_laser3" native="true">
+               <layout class="QGridLayout" name="gridLayout_10">
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_exposure_4">
+                  <property name="text">
+                   <string>Exposure (ms)</string>
                   </property>
                  </widget>
                 </item>
@@ -194,27 +317,43 @@
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QSpinBox" name="spinBox_laser3">
+                <item row="0" column="2">
+                 <widget class="QLineEdit" name="lineEdit_exposure_3">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_exposure_4">
                   <property name="text">
-                   <string>Exposure (ms)</string>
+                   <string>1000</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="1" colspan="2">
+                <item row="0" column="3">
+                 <widget class="QRadioButton" name="radioButton_488">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">live_group</string>
+                  </attribute>
+                 </widget>
+                </item>
+                <item row="2" column="1" colspan="3">
                  <widget class="QSlider" name="slider_laser3">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QDoubleSpinBox" name="spinBox_laser3">
+                  <property name="enabled">
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -234,6 +373,13 @@
                   </property>
                  </widget>
                 </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="label_exposure_5">
+                  <property name="text">
+                   <string>Exposure (ms)</string>
+                  </property>
+                 </widget>
+                </item>
                 <item row="0" column="0">
                  <widget class="QCheckBox" name="checkBox_laser4">
                   <property name="layoutDirection">
@@ -244,21 +390,17 @@
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
-                 <widget class="QSpinBox" name="spinBox_laser4">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_exposure_5">
+                <item row="0" column="3">
+                 <widget class="QRadioButton" name="radioButton_405">
                   <property name="text">
-                   <string>Exposure (ms)</string>
+                   <string/>
                   </property>
+                  <attribute name="buttonGroup">
+                   <string notr="true">live_group</string>
+                  </attribute>
                  </widget>
                 </item>
-                <item row="1" column="1" colspan="2">
+                <item row="2" column="1" colspan="3">
                  <widget class="QSlider" name="slider_laser4">
                   <property name="enabled">
                    <bool>false</bool>
@@ -268,103 +410,10 @@
                   </property>
                  </widget>
                 </item>
-               </layout>
-              </widget>
-             </item>
-             <item row="0" column="0" colspan="2">
-              <widget class="QWidget" name="widget_laser1" native="true">
-               <layout class="QGridLayout" name="gridLayout_8">
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_exposure_2">
-                  <property name="text">
-                   <string>Exposure (ms)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1" colspan="4">
-                 <widget class="QSlider" name="slider_laser1">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="checkBox_laser1">
-                  <property name="layoutDirection">
-                   <enum>Qt::RightToLeft</enum>
-                  </property>
-                  <property name="text">
-                   <string>640nm</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QSpinBox" name="spinBox_laser1">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2" colspan="3">
-                 <widget class="QLineEdit" name="lineEdit_exposure_1">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="text">
-                   <string>1000</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item row="1" column="0" colspan="2">
-              <widget class="QWidget" name="widget_laser2" native="true">
-               <layout class="QGridLayout" name="gridLayout_9">
-                <item row="0" column="0">
-                 <widget class="QCheckBox" name="checkBox_laser2">
-                  <property name="layoutDirection">
-                   <enum>Qt::RightToLeft</enum>
-                  </property>
-                  <property name="text">
-                   <string>561nm</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="2" column="0">
-                 <widget class="QSpinBox" name="spinBox_laser2">
+                 <widget class="QDoubleSpinBox" name="spinBox_laser4">
                   <property name="enabled">
                    <bool>false</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QLineEdit" name="lineEdit_exposure_2">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="text">
-                   <string>1000</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QLabel" name="label_exposure_3">
-                  <property name="text">
-                   <string>Exposure (ms)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1" colspan="2">
-                 <widget class="QSlider" name="slider_laser2">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
                   </property>
                  </widget>
                 </item>
@@ -383,20 +432,87 @@
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
-             <property name="verticalSpacing">
-              <number>3</number>
-             </property>
-             <item row="11" column="1">
-              <widget class="QPushButton" name="pushButton_go_to_saved_position">
+             <item row="6" column="0" colspan="5">
+              <widget class="QPushButton" name="pushButton_save_objective_position">
                <property name="text">
-                <string>Go to saved position</string>
+                <string>Save Position</string>
                </property>
               </widget>
              </item>
-             <item row="2" column="0" colspan="2">
+             <item row="3" column="5" colspan="4">
+              <widget class="QPushButton" name="to_electron_microscope">
+               <property name="text">
+                <string>To Electron Microscope</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="5">
+              <widget class="QLabel" name="label_5">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Absolute Position (um)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0" colspan="5">
+              <widget class="QPushButton" name="pushButton_get_position">
+               <property name="text">
+                <string>Get Position</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="9">
+              <widget class="QPushButton" name="pushButton_volume">
+               <property name="text">
+                <string>Acquire Volume</string>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="5">
+              <widget class="QLabel" name="label_6">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Saved Position (um)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="9">
+              <widget class="QPushButton" name="connect_microscope">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Connect to microscope</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="5">
+              <widget class="QLabel" name="label_objective_stage_position">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="9">
               <widget class="QFrame" name="frame">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -408,10 +524,10 @@
                 <enum>QFrame::Raised</enum>
                </property>
                <layout class="QGridLayout" name="gridLayout_16">
-                <item row="2" column="1">
-                 <widget class="QToolButton" name="toolButton_correlation_output">
+                <item row="3" column="0" colspan="2">
+                 <widget class="QPushButton" name="pushButton_milling">
                   <property name="text">
-                   <string>...</string>
+                   <string>Milling</string>
                   </property>
                  </widget>
                 </item>
@@ -425,70 +541,24 @@
                 <item row="2" column="0">
                  <widget class="QLineEdit" name="correlation_output_path"/>
                 </item>
-                <item row="3" column="0" colspan="2">
-                 <widget class="QPushButton" name="pushButton_milling">
+                <item row="2" column="1">
+                 <widget class="QToolButton" name="toolButton_correlation_output">
                   <property name="text">
-                   <string>Milling</string>
+                   <string>...</string>
                   </property>
                  </widget>
                 </item>
                </layout>
               </widget>
              </item>
-             <item row="12" column="0">
-              <widget class="QPushButton" name="pushButton_get_position">
+             <item row="6" column="5" colspan="4">
+              <widget class="QPushButton" name="pushButton_go_to_saved_position">
                <property name="text">
-                <string>Get Position</string>
+                <string>Go to saved position</string>
                </property>
               </widget>
              </item>
-             <item row="12" column="1">
-              <widget class="QPushButton" name="pushButton_initialize_stage">
-               <property name="text">
-                <string>Initialise Stage</string>
-               </property>
-              </widget>
-             </item>
-             <item row="10" column="0">
-              <widget class="QLabel" name="label_6">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Saved Position (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="9" column="0">
-              <widget class="QLabel" name="label_5">
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Absolute Position (um)</string>
-               </property>
-              </widget>
-             </item>
-             <item row="15" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_relative"/>
-             </item>
-             <item row="1" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_volume">
-               <property name="text">
-                <string>Acquire Volume</string>
-               </property>
-               <property name="flat">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="10" column="1">
+             <item row="5" column="5">
               <widget class="QLabel" name="label_objective_stage_saved_position">
                <property name="minimumSize">
                 <size>
@@ -501,61 +571,51 @@
                </property>
               </widget>
              </item>
-             <item row="7" column="0">
+             <item row="7" column="5" colspan="4">
+              <widget class="QPushButton" name="pushButton_initialize_stage">
+               <property name="text">
+                <string>Initialise Stage</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="5">
               <widget class="QPushButton" name="to_light_microscope">
                <property name="text">
                 <string>To Light Microscope</string>
                </property>
               </widget>
              </item>
-             <item row="9" column="1">
-              <widget class="QLabel" name="label_objective_stage_position">
+             <item row="11" column="8">
+              <widget class="QToolButton" name="toolButton_positive">
                <property name="text">
-                <string/>
+                <string>&gt;</string>
                </property>
               </widget>
              </item>
-             <item row="11" column="0">
-              <widget class="QPushButton" name="pushButton_save_objective_position">
+             <item row="11" column="7">
+              <widget class="QToolButton" name="toolButton_negative">
                <property name="text">
-                <string>Save Position</string>
+                <string>&lt;</string>
                </property>
               </widget>
              </item>
-             <item row="6" column="0" colspan="2">
-              <widget class="QPushButton" name="connect_microscope">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Connect to microscope</string>
-               </property>
-              </widget>
+             <item row="11" column="4" colspan="3">
+              <widget class="QLineEdit" name="lineEdit_move_relative"/>
              </item>
-             <item row="15" column="0">
-              <widget class="QPushButton" name="pushButton_move_relative">
-               <property name="text">
-                <string>Move Relative (um)</string>
-               </property>
-              </widget>
+             <item row="8" column="4" colspan="5">
+              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
              </item>
-             <item row="14" column="0">
+             <item row="8" column="0" colspan="4">
               <widget class="QPushButton" name="pushButton_move_absolute">
                <property name="text">
                 <string>Move Absolute (um)</string>
                </property>
               </widget>
              </item>
-             <item row="14" column="1">
-              <widget class="QLineEdit" name="lineEdit_move_absolute"/>
-             </item>
-             <item row="7" column="1">
-              <widget class="QPushButton" name="to_electron_microscope">
+             <item row="11" column="0" colspan="4">
+              <widget class="QPushButton" name="pushButton_move_relative">
                <property name="text">
-                <string>To Electron Microscope</string>
+                <string>Move Relative (um)</string>
                </property>
               </widget>
              </item>
@@ -567,6 +627,12 @@
        </item>
        <item>
         <widget class="Line" name="line">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
@@ -629,140 +695,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="0" column="0">
-           <widget class="QFrame" name="frame_save_destination_FM">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_3">
-             <item row="1" column="1">
-              <widget class="QLabel" name="label_save_destination_FM">
-               <property name="text">
-                <string>Save Destination</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <spacer name="horizontalSpacer_8">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::MinimumExpanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="4" column="1" colspan="3">
-              <widget class="QLineEdit" name="lineEdit_save_filename_FM"/>
-             </item>
-             <item row="1" column="2">
-              <widget class="QCheckBox" name="checkBox_save_destination_FM">
-               <property name="minimumSize">
-                <size>
-                 <width>128</width>
-                 <height>17</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>128</width>
-                 <height>17</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Lock Save Destination</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="4">
-              <spacer name="horizontalSpacer_9">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::MinimumExpanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="2" column="3">
-              <widget class="QToolButton" name="button_save_destination_FM">
-               <property name="layoutDirection">
-                <enum>Qt::LeftToRight</enum>
-               </property>
-               <property name="text">
-                <string>...</string>
-               </property>
-               <property name="toolButtonStyle">
-                <enum>Qt::ToolButtonIconOnly</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLabel" name="label_save_filename_FM">
-               <property name="text">
-                <string>Save Filename</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1" colspan="2">
-              <widget class="QLineEdit" name="lineEdit_save_destination_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>480</width>
-                 <height>20</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>12356345</width>
-                 <height>345345</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1" colspan="3">
-              <widget class="QLabel" name="label_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>FM</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignCenter</set>
-               </property>
-               <property name="margin">
-                <number>6</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QFrame" name="frame_label_fluorescence">
@@ -875,6 +807,9 @@
                 <layout class="QHBoxLayout" name="layout_image_horizontal">
                  <item>
                   <widget class="QLabel" name="label_slider_FM">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="text">
                     <string>Stack Slider</string>
                    </property>
@@ -882,6 +817,9 @@
                  </item>
                  <item>
                   <spacer name="spacer_slider_FM">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -895,6 +833,9 @@
                  </item>
                  <item>
                   <widget class="QSpinBox" name="spinbox_slider_FM">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>37</width>
@@ -922,6 +863,9 @@
                </item>
                <item>
                 <widget class="QSlider" name="slider_stack_FM">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="minimum">
                   <number>1</number>
                  </property>
@@ -974,8 +918,151 @@
              <property name="spacing">
               <number>4</number>
              </property>
-             <item row="5" column="7">
+             <item row="5" column="0" colspan="2">
+              <widget class="QPushButton" name="pushButton_pattern_next">
+               <property name="text">
+                <string>Next Pattern</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QRadioButton" name="radioButton_widefield">
+               <property name="text">
+                <string>Widefield</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">widefield_sim</string>
+               </attribute>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QRadioButton" name="radioButton_sim">
+               <property name="text">
+                <string>SIM</string>
+               </property>
+               <attribute name="buttonGroup">
+                <string notr="true">widefield_sim</string>
+               </attribute>
+              </widget>
+             </item>
+             <item row="6" column="6">
+              <widget class="QLineEdit" name="lineEdit_exposure_basler">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>1000</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="4">
+              <widget class="QLabel" name="label">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>80</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Exposure (ms): </string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="3">
+              <widget class="QLineEdit" name="lineEdit_power_basler_2">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="2">
+              <widget class="QLabel" name="label_2">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>Power level:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2" rowspan="3" colspan="2">
+              <widget class="QPushButton" name="button_get_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Get Basler Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="4" rowspan="3" colspan="3">
+              <widget class="QPushButton" name="button_live_image_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>100</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Live Basler View</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="7">
+              <widget class="QLabel" name="label_angle">
+               <property name="minimumSize">
+                <size>
+                 <width>50</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Angle:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="7">
+              <widget class="QLabel" name="label_phase">
+               <property name="minimumSize">
+                <size>
+                 <width>50</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Phase:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0" colspan="2">
               <widget class="QComboBox" name="comboBox_laser_basler">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="editable">
                 <bool>false</bool>
                </property>
@@ -1004,103 +1091,172 @@
                </item>
               </widget>
              </item>
-             <item row="5" column="6">
-              <widget class="QLineEdit" name="lineEdit_exposure_basler">
+             <item row="5" column="7">
+              <widget class="QLabel" name="label_angle_max">
                <property name="text">
-                <string>1000</string>
+                <string>Max A:</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="5">
-              <widget class="QLabel" name="label">
+             <item row="6" column="7">
+              <widget class="QLabel" name="label_phase_max">
+               <property name="text">
+                <string>Max P:</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QFrame" name="frame_save_destination_FM">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
+            </property>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_3">
+             <item row="1" column="2">
+              <widget class="QCheckBox" name="checkBox_save_destination_FM">
+               <property name="minimumSize">
+                <size>
+                 <width>128</width>
+                 <height>17</height>
+                </size>
+               </property>
                <property name="maximumSize">
                 <size>
-                 <width>80</width>
-                 <height>16777215</height>
+                 <width>128</width>
+                 <height>17</height>
                 </size>
                </property>
                <property name="text">
-                <string>Exposure (ms): </string>
+                <string>Lock Save Destination</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="3">
-              <widget class="QLineEdit" name="lineEdit_power_basler_2">
+             <item row="2" column="0">
+              <spacer name="horizontalSpacer_8">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::MinimumExpanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>1</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="0" column="1" colspan="3">
+              <widget class="QLabel" name="label_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
-                <string>0</string>
+                <string>FM</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="margin">
+                <number>6</number>
                </property>
               </widget>
              </item>
-             <item row="3" column="7" rowspan="2">
+             <item row="5" column="1" colspan="3">
+              <widget class="QLineEdit" name="lineEdit_save_filename_FM"/>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLabel" name="label_save_filename_FM">
+               <property name="text">
+                <string>Save Filename</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="3">
+              <widget class="QToolButton" name="button_save_destination_FM">
+               <property name="layoutDirection">
+                <enum>Qt::LeftToRight</enum>
+               </property>
+               <property name="text">
+                <string>...</string>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonIconOnly</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="4">
+              <widget class="QPushButton" name="pushButton_save_FM">
+               <property name="text">
+                <string>Save Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLabel" name="label_save_destination_FM">
+               <property name="text">
+                <string>Save Destination</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1" colspan="2">
+              <widget class="QLineEdit" name="lineEdit_save_destination_FM">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>480</width>
+                 <height>20</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>12356345</width>
+                 <height>345345</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="4">
+              <spacer name="horizontalSpacer_9">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::MinimumExpanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>1</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="3" column="4">
+              <widget class="QCheckBox" name="checkBox_autoSave_FM">
+               <property name="text">
+                <string>Autosave</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="2">
               <widget class="QLabel" name="label_max_FM_value">
                <property name="text">
                 <string>Max Value: </string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="2">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Power level:</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="5" rowspan="2" colspan="2">
-              <widget class="QPushButton" name="button_live_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Live Basler View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2" rowspan="2" colspan="3">
-              <widget class="QPushButton" name="button_get_image_FM">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>100</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Get Basler Image</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_pattern_next">
-               <property name="text">
-                <string>Pattern Next</string>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0" colspan="2">
-              <widget class="QCheckBox" name="checkBox_pattern_on">
-               <property name="text">
-                <string>Pattern On</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0" colspan="2">
-              <widget class="QPushButton" name="pushButton_mirror_on">
-               <property name="text">
-                <string>Turn Mirror On</string>
                </property>
               </widget>
              </item>
@@ -1171,6 +1327,9 @@
                 <layout class="QHBoxLayout" name="layout_image_horizontal_2">
                  <item>
                   <widget class="QLabel" name="label_slider_2">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="text">
                     <string>Stack Slider</string>
                    </property>
@@ -1194,6 +1353,9 @@
                  </item>
                  <item>
                   <widget class="QSpinBox" name="spinbox_slider_FIBSEM">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="minimumSize">
                     <size>
                      <width>37</width>
@@ -1221,6 +1383,9 @@
                </item>
                <item>
                 <widget class="QSlider" name="slider_stack_FIBSEM">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -1470,6 +1635,20 @@
                </property>
                <property name="margin">
                 <number>6</number>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="5">
+              <widget class="QPushButton" name="pushButton_save_FIBSEM">
+               <property name="text">
+                <string>Save Image</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="5">
+              <widget class="QCheckBox" name="checkBox_autoSave_FIBSEM">
+               <property name="text">
+                <string>Autosave</string>
                </property>
               </widget>
              </item>
@@ -1795,8 +1974,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1508</x>
-     <y>585</y>
+     <x>1545</x>
+     <y>600</y>
     </hint>
     <hint type="destinationlabel">
      <x>1460</x>
@@ -1804,133 +1983,9 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>slider_laser1</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spinBox_laser1</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>104</x>
-     <y>97</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>64</x>
-     <y>103</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBox_laser1</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_laser1</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>64</x>
-     <y>107</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>213</x>
-     <y>111</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_laser2</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spinBox_laser2</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>129</x>
-     <y>170</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>71</x>
-     <y>171</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBox_laser2</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_laser2</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>51</x>
-     <y>183</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>204</x>
-     <y>180</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBox_laser3</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_laser3</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>58</x>
-     <y>237</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>101</x>
-     <y>240</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_laser3</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spinBox_laser3</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>189</x>
-     <y>247</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>47</x>
-     <y>252</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>spinBox_laser4</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>slider_laser4</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>54</x>
-     <y>317</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>108</x>
-     <y>313</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_laser4</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>spinBox_laser4</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>195</x>
-     <y>316</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>47</x>
-     <y>327</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="widefield_sim"/>
+  <buttongroup name="live_group"/>
+ </buttongroups>
 </ui>
