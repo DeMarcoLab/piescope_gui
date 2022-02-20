@@ -331,8 +331,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     ############## FIBSEM sample stage methods ##############
-    def move_to_light_microscope(self, x=+49.9515e-3,
-                                 y=-0.1445e-3):  # TODO: Alex wants one function
+    def move_to_light_microscope(self, x=+49.9092e-3,
+                                 y=-0.1143e-3):  # TODO: Alex wants one function
         # TODO: Stage shift in fluorescence
         # TODO: Stage shift checking for crashes (Functioning, make one func)
         if not self.liveCheck:
@@ -345,7 +345,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         else:
             print("Moved to light microscope.")
 
-    def move_to_electron_microscope(self, x=-49.9515e-3, y=+0.1445e-3):
+    def move_to_electron_microscope(self, x=-49.9092e-3, y=+0.1143e-3):
         if not self.liveCheck:
             print('Cannot move stage, live imaging currently running')
             return
