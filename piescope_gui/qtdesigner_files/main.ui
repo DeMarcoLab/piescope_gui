@@ -853,25 +853,6 @@
              </property>
             </spacer>
            </item>
-           <item row="1" column="2">
-            <widget class="QCheckBox" name="checkBox_save_destination_FM">
-             <property name="minimumSize">
-              <size>
-               <width>128</width>
-               <height>17</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>128</width>
-               <height>17</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Lock Save Destination</string>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="4">
             <spacer name="horizontalSpacer_9">
              <property name="orientation">
@@ -1363,25 +1344,6 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="3">
-            <widget class="QCheckBox" name="checkBox_save_destination_FIBSEM">
-             <property name="minimumSize">
-              <size>
-               <width>128</width>
-               <height>17</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>128</width>
-               <height>17</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Lock Save Destination</string>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="4">
             <widget class="QToolButton" name="button_save_destination_FIBSEM">
              <property name="layoutDirection">
@@ -1757,7 +1719,7 @@
      <x>0</x>
      <y>0</y>
      <width>1623</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1821,11 +1783,9 @@
   <tabstop>pushButton_correlation</tabstop>
   <tabstop>pushButton_milling</tabstop>
   <tabstop>lineEdit_save_destination_FM</tabstop>
-  <tabstop>checkBox_save_destination_FM</tabstop>
   <tabstop>button_save_destination_FM</tabstop>
   <tabstop>lineEdit_save_filename_FM</tabstop>
   <tabstop>lineEdit_save_destination_FIBSEM</tabstop>
-  <tabstop>checkBox_save_destination_FIBSEM</tabstop>
   <tabstop>button_save_destination_FIBSEM</tabstop>
   <tabstop>lineEdit_save_filename_FIBSEM</tabstop>
   <tabstop>button_get_image_FIB</tabstop>
