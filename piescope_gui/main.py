@@ -31,7 +31,6 @@ from piescope_gui.utils import display_error_message, timestamp
 # TODO: maybe make this a self.logger
 logger = logging.getLogger(__name__)
 
-
 # TODO: Settings file
 # filename = "Y:/Sergey/codes/liftout/protocol_liftout.yml"
 # with open(filename, "r") as f:
@@ -45,15 +44,17 @@ logger = logging.getLogger(__name__)
 # TODO: Movement using qimage
 
 
-
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
-    def __init__(self, ip_address="10.0.0.1", offline=False):
+    def __init__(self, ip_address="10.0.0.1", offline=True):
         super(GUIMainWindow, self).__init__()
         self.ip_address = ip_address
         self.offline = offline
 
         self.setupUi(self)
         self.setup_connections()
+
+        config_path = os.path.join(os.path.dirname(piescope.__file__), "config.yml")
+        self.config = piescope.utils.read_config(config_path)
 
         # setup hardware
         self.microscope = None
@@ -113,15 +114,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             None  # TODO: REMOVE. David not sure why these are strings.
         )
         self.current_image_FIBSEM = (
-            None # TODO: REMOVE. David not sure why these are strings.
+            None  # TODO: REMOVE. David not sure why these are strings.
         )
-        self.current_pixmap_FM = (
-            None
-        )  # TODO: should be None, not an empty list to start with. PixMap object (pyqt)
-        self.current_pixmap_FIBSEM = (
-            None
-        )  # TODO: should be None, not an empty list to start with. PixMap object (pyqt)
-
+        self.current_pixmap_FM = None  # TODO: should be None, not an empty list to start with. PixMap object (pyqt)
+        self.current_pixmap_FIBSEM = None  # TODO: should be None, not an empty list to start with. PixMap object (pyqt)
 
         self.pin_640 = "P03"
         self.pin_561 = "P02"
@@ -1426,63 +1422,7 @@ def _create_array_list(
         return array_list_MILLING
 
 
-@click.command()
-@click.option("--offline", default="True")
-def main(offline):
-    """Start the main `piescope_gui` graphical user interface.
-
-    To launch `piescope_gui` when connected to all the microscope hardware:
-    ```
-    piescope
-    ```
-    or...
-    ```
-    python piescope_gui/main.py
-    ```
-
-    To launch `piescope_gui` in offline mode for testing
-    (you will need an offline scripting version of AutoScript installed),
-    call `piescope_gui` using the `--offline=True` command line option:
-    ```
-    piescope --offline=True
-    ```
-    or...
-    ```
-    python piescope_gui/main.py --offline=True
-    ```
-
-    Parameters
-    ----------
-    offline : bool
-        Default value is False, which launches the `piescope_gui` & assumes
-        it's connected correctly to all the microscope hardware.
-        If offline is True, we launch `piescope_gui` using:
-        * The Basler offline emulator for the fluorescence detector.
-        * A mock patch for the SMARACT objective lens stage.
-        * AutoScript via "localhost" (requires offline scripting installation).
-    """
-    if offline.lower() == "false":
-        logging.basicConfig(level=logging.WARNING)
-        launch_gui(ip_address="10.0.0.1", offline=False)
-    elif offline.lower() == "true":
-        logging.basicConfig(level=logging.DEBUG)
-        with mock.patch.dict("os.environ", {"PYLON_CAMEMU": "1"}):
-            with mock.patch(
-                "piescope.lm.objective.StageController", autospec=True
-            ) as mock_objective:
-                instance = mock_objective.return_value
-                instance.current_position.return_value = 0
-
-                try:
-                    launch_gui(ip_address="localhost", offline=True)
-                except Exception:
-                    import pdb
-
-                    traceback.print_exc()
-                    pdb.set_trace()
-
-
-def launch_gui(ip_address="10.0.0.1", offline=False):
+def launch_gui(ip_address="10.0.0.1", offline=True):
     """Launch the `piescope_gui` main application window."""
     app = QtWidgets.QApplication([])
     qt_app = GUIMainWindow(ip_address=ip_address, offline=offline)
@@ -1491,5 +1431,14 @@ def launch_gui(ip_address="10.0.0.1", offline=False):
     sys.exit(app.exec_())
 
 
+# TODO: improve debugging
+def main(offline=True):
+    if offline:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARNING)
+    launch_gui(ip_address="10.0.0.1", offline=offline)
+
+
 if __name__ == "__main__":
-    main()
+    main(offline=True)
