@@ -2,6 +2,7 @@ import copy
 import logging
 import os
 import sys
+import this
 import threading
 import time
 import traceback
@@ -28,8 +29,6 @@ import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
-# TODO: maybe make this a self.logger
-logger = logging.getLogger(__name__)
 
 # TODO: Settings file
 # filename = "Y:/Sergey/codes/liftout/protocol_liftout.yml"
@@ -45,25 +44,35 @@ logger = logging.getLogger(__name__)
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
-    def __init__(self, ip_address="10.0.0.1", offline=True):
+    def __init__(self):
         super(GUIMainWindow, self).__init__()
-        self.ip_address = ip_address
-        self.offline = offline
-
-        self.setupUi(self)
-        self.setup_connections()
 
         config_path = os.path.join(os.path.dirname(piescope.__file__), "config.yml")
         self.config = piescope.utils.read_config(config_path)
 
+        self.ip_address = self.config["system"]["ip_address"]
+        self.offline = self.config["system"]["offline_mode"]
+
+        # TODO: improve debugging
+        self.logger = logging.getLogger(__name__)
+        if self.offline:
+            logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.WARNING)
+
+        self.setupUi(self)
+
+        self.setup_connections()
+
         # setup hardware
         self.microscope = None
+        self.laser_controller = None
+
         self.detector = None
         self.mirror_controller = None
         self.arduino = None
-        self.lasers = None
         self.objective_stage = None
-        self.initialise_hardware(offline=offline)
+        self.initialise_hardware(offline=self.offline)
 
         # TODO: remove this if possible (used in milling window)
         self.image_ion = None  # ion beam image (AdornedImage type)
@@ -138,17 +147,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # TODO: make laser_to_pin in detector.py consistent with this so defined in one place, protocol?
         # TODO: same with camera pin
 
-    def initialise_hardware(self, offline=False):
+    def initialise_hardware(self, offline=True):
         if offline is False:
-            self.lasers = piescope.lm.laser.initialise_lasers()
             self.detector = piescope.lm.detector.Basler()
             self.mirror_controller = mirror.PIController()
             self.arduino = arduino.Arduino()
             self.connect_to_fibsem_microscope(ip_address=self.ip_address)
             self.objective_stage = self.initialise_objective_stage()
-        elif offline is True:
-            self.connect_to_fibsem_microscope(ip_address="localhost")
-            return
+            self.laser_controller = piescope.lm.laser.LaserController(
+                settings=self.config
+            )
 
     def setup_connections(self):
         self.comboBox_resolution.currentTextChanged.connect(
@@ -352,7 +360,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     def update_fibsem_settings(self):
-        if not self.microscope:
+        if not self.microscope and not self.offline:
             self.connect_to_fibsem_microscope()
         try:
             from piescope import fibsem
@@ -758,13 +766,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             )
             return
         try:
-            logger.debug(
+            self.logger.debug(
                 "Absolute move the objective stage to position " "{}".format(position)
             )
             ans = stage.move_absolute(position)
             time.sleep(time_delay)
             new_position = stage.current_position()
-            logger.debug(
+            self.logger.debug(
                 "After absolute move, objective stage is now at "
                 "position: {}".format(new_position)
             )
@@ -799,11 +807,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             distance = -abs(distance)
 
         try:
-            logger.debug("Relative move the objective stage by " "{}".format(distance))
+            self.logger.debug("Relative move the objective stage by " "{}".format(distance))
             ans = stage.move_relative(distance)
             time.sleep(time_delay)
             new_position = stage.current_position()
-            logger.debug(
+            self.logger.debug(
                 "After relative move, objective stage is now at "
                 "position: {}".format(new_position)
             )
@@ -844,7 +852,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         print(f"Current laser exposure time: {self.current_laser_exposure/1e3}ms")
 
     def update_laser_dict(self, laser):
-        logger.debug("Updating laser dictionary")
+        self.logger.debug("Updating laser dictionary")
         try:
             assert laser == self.lasers[laser].NAME
             if laser == "laser640":
@@ -886,7 +894,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 if i.selected is True:
                     laser_dict[i.NAME] = (i.laser_power, i.exposure_time)
             self.laser_dict = laser_dict
-            logger.debug(self.laser_dict)
+            self.logger.debug(self.laser_dict)
 
             print("This is the laser dict: ")
             print(self.laser_dict)
@@ -1422,23 +1430,13 @@ def _create_array_list(
         return array_list_MILLING
 
 
-def launch_gui(ip_address="10.0.0.1", offline=True):
+def main():
     """Launch the `piescope_gui` main application window."""
     app = QtWidgets.QApplication([])
-    qt_app = GUIMainWindow(ip_address=ip_address, offline=offline)
+    qt_app = GUIMainWindow()
     app.aboutToQuit.connect(qt_app.disconnect)  # cleanup & teardown
     qt_app.show()
     sys.exit(app.exec_())
 
-
-# TODO: improve debugging
-def main(offline=True):
-    if offline:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-    launch_gui(ip_address="10.0.0.1", offline=offline)
-
-
 if __name__ == "__main__":
-    main(offline=True)
+    main()
