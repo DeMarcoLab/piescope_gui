@@ -146,7 +146,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.arduino = arduino.Arduino()
             self.connect_to_fibsem_microscope(ip_address=self.ip_address)
             self.objective_stage = self.initialise_objective_stage()
-        self.detector = piescope.lm.detector.Basler()
+            self.detector = piescope.lm.detector.Basler()
         self.laser_controller = piescope.lm.laser.LaserController(
             settings=self.config
         )
@@ -820,6 +820,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.laser_controller.current_laser = current_laser
             self.laser_controller.set_laser_power(current_laser,  float(selected_laser_info[1].text()))
             self.laser_controller.set_exposure_time(current_laser,  float(selected_laser_info[2].text()) * 1000)
+
+            print(current_laser)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -827,63 +829,39 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def update_laser_dict(self, laser):
         self.logger.debug("Updating laser dictionary")
         try:
-            assert laser == self.lasers[laser].NAME
-            if laser == "laser640":
-                laser_selected = self.checkBox_laser1.isChecked()
-                laser_power = int(self.spinBox_laser1.text())
-                exposure_time = int(self.lineEdit_exposure_1.text()) * 1000  # ms -> us
-                widget_spinbox = self.spinBox_laser1
-                widget_slider = self.slider_laser1
-                widget_textexposure = self.lineEdit_exposure_1
-            elif laser == "laser561":
-                laser_selected = self.checkBox_laser2.isChecked()
-                laser_power = int(self.spinBox_laser2.text())
-                exposure_time = int(self.lineEdit_exposure_2.text()) * 1000  # ms -> us
-                widget_spinbox = self.spinBox_laser2
-                widget_slider = self.slider_laser2
-                widget_textexposure = self.lineEdit_exposure_2
-            elif laser == "laser488":
-                laser_selected = self.checkBox_laser3.isChecked()
-                laser_power = int(self.spinBox_laser3.text())
-                exposure_time = int(self.lineEdit_exposure_3.text()) * 1000  # ms -> us
-                widget_spinbox = self.spinBox_laser3
-                widget_slider = self.slider_laser3
-                widget_textexposure = self.lineEdit_exposure_3
-            elif laser == "laser405":
-                laser_selected = self.checkBox_laser4.isChecked()
-                laser_power = int(self.spinBox_laser4.text())
-                exposure_time = int(self.lineEdit_exposure_4.text()) * 1000  # ms -> us
-                widget_spinbox = self.spinBox_laser4
-                widget_slider = self.slider_laser4
-                widget_textexposure = self.lineEdit_exposure_4
-            else:
-                raise ValueError("No Laser selected in laser_dict")
-            # Update laser object attributes
-            self.lasers[laser].selected = laser_selected
-            self.lasers[laser].laser_power = laser_power
-            self.lasers[laser].exposure_time = exposure_time
-            laser_dict = {}
-            for i in self.lasers.values():
-                if i.selected is True:
-                    laser_dict[i.NAME] = (i.laser_power, i.exposure_time)
-            self.laser_dict = laser_dict
-            self.logger.debug(self.laser_dict)
+                            # laser_selected, laser_power, exposure_time, widget_spinbox, widget_slider, widget_textexposure
+            LASER_INFO = {
+                "laser640": [self.checkBox_laser1, self.spinBox_laser1, self.lineEdit_exposure_1, self.spinBox_laser1, self.slider_laser1, self.lineEdit_exposure_1],
+                "laser561": [self.checkBox_laser2, self.spinBox_laser2, self.lineEdit_exposure_2, self.spinBox_laser2, self.slider_laser2, self.lineEdit_exposure_2],
+                "laser488": [self.checkBox_laser3, self.spinBox_laser3, self.lineEdit_exposure_3, self.spinBox_laser3, self.slider_laser3, self.lineEdit_exposure_3],
+                "laser405": [self.checkBox_laser4, self.spinBox_laser4, self.lineEdit_exposure_4, self.spinBox_laser4, self.slider_laser4, self.lineEdit_exposure_4]}
 
-            print("This is the laser dict: ")
-            print(self.laser_dict)
+            laser_selected = LASER_INFO[laser][0].isChecked()
+            laser_power = float(LASER_INFO[laser][1].text())
+            exposure_time = float(LASER_INFO[laser][2].text()) * 1000  # ms -> us
+            widget_spinbox = LASER_INFO[laser][3]
+            widget_slider = LASER_INFO[laser][4]
+            widget_textexposure = LASER_INFO[laser][5]
 
-            # Update current laser for single/live imaging
+
+            # Update current laser for single/live imaging and sttings
             self.update_current_laser(self.buttonGroup.checkedButton().objectName())
+            self.laser_controller.set_laser_power(self.laser_controller.lasers[laser], laser_power)
+            self.laser_controller.set_exposure_time(self.laser_controller.lasers[laser], exposure_time)
 
-            # Grey out laser contol widgets if laser checkbox is not selected
-            if laser_selected:
-                widget_slider.setEnabled(1)
-                widget_textexposure.setEnabled(1)
-                widget_spinbox.setEnabled(1)
-            else:
-                widget_slider.setEnabled(0)
-                widget_textexposure.setEnabled(0)
-                widget_spinbox.setEnabled(0)
+            widget_slider.setEnabled(laser_selected)
+            widget_textexposure.setEnabled(laser_selected)
+            widget_spinbox.setEnabled(laser_selected)
+
+            # TODO: use this structure
+            # def toggle_laser_control(on: bool, slider, textbox, spinbox):
+            #     slider.setEnabled(on)
+            #     textbox.setEnabled(on)
+            #     spinbox.setEnabled(on)
+
+            # # Grey out laser contol widgets if laser checkbox is not selected
+            # toggle_laser_control(laser_selected, widget_slider, widget_textexposure, widget_spinbox)
+
         except Exception as e:
             display_error_message(traceback.format_exc())
 
