@@ -1342,19 +1342,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(traceback.format_exc())
 
-    ############## Mirror methods ##############
-    def mirror_on(self):
-        print("Initialising mirror")
-        structured.single_line_pulse(10, self.mirror_pin)
-
-    def pattern_on(self):
-        structured.single_line_onoff(
-            self.checkBox_pattern_on.isChecked(), self.pattern_pin_on
-        )
-
-    def pattern_next(self):
-        structured.single_line_pulse(10, self.pattern_pin)
-
 
 def _create_array_list(
     input_list, modality
