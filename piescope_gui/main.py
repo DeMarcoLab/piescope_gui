@@ -2,7 +2,6 @@ import copy
 import logging
 import os
 import sys
-import this
 import threading
 import time
 import traceback
