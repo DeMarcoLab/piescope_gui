@@ -6,8 +6,6 @@ import threading
 import time
 import traceback
 
-import click
-import mock
 import numpy as np
 import piescope
 import piescope.data
