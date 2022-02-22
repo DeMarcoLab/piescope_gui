@@ -54,6 +54,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         # set up UI
         self.setupUi(self)
+        self.setWindowTitle("PIEScope User Interface Main Window")
 
         self.setup_connections()
 
@@ -71,7 +72,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.image_ion = None  # ion beam image (AdornedImage type)
 
         # Set up GUI variables
-        self.setWindowTitle("PIEScope User Interface Main Window")
 
         self.DEFAULT_PATH = os.path.normpath(os.path.expanduser("~/Pictures/PIESCOPE"))
         self.lineEdit_save_filename_FM.setText("Image")
@@ -101,7 +101,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # with types {str: (int, int)}
         # Could refactor this out and rely only on self.lasers instead
         self.current_laser_wavelength = "488nm"
-        self.current_laser_power = 1.0
+        self.current_laser_power = 0
         self.current_laser_exposure = 1e6
 
         self.laser_dict = {}  # {"name": (power, exposure)}
@@ -142,16 +142,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def initialise_hardware(self, offline=True):
         if offline is False:
-            self.detector = piescope.lm.detector.Basler()
             self.mirror_controller = mirror.PIController()
             self.arduino = arduino.Arduino()
             self.connect_to_fibsem_microscope(ip_address=self.ip_address)
             self.objective_stage = self.initialise_objective_stage()
-            self.laser_controller = piescope.lm.laser.LaserController(
-                settings=self.config
-            )
+        self.detector = piescope.lm.detector.Basler()
+        self.laser_controller = piescope.lm.laser.LaserController(
+            settings=self.config
+        )
 
     def setup_connections(self):
+
+
         self.comboBox_resolution.currentTextChanged.connect(
             lambda: self.update_fibsem_settings()
         )
@@ -249,10 +251,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             )
         )
 
-        # self.pushButton_save_FM.clicked.connect(lambda: self.save_image("FM"))
-        # self.pushButton_save_FIBSEM.clicked.connect(
-        #     lambda: self.save_image("FIBSEM"))
-
         self.pushButton_initialise_stage.clicked.connect(
             self.initialise_objective_stage
         )
@@ -305,8 +303,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.move_absolute_objective_stage(self.objective_stage)
         )
 
-        # self.pushButton_pattern_next.clicked.connect(lambda: self.arduino.send_volume_info(laser_dict=self.laser_dict))
-
         self.radioButton_Widefield.clicked.connect(
             lambda: self.mirror_controller.move_to(StagePosition.WIDEFIELD)
         )
@@ -324,10 +320,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_pattern_next.clicked.connect(
             lambda: self.mirror_controller.next_position()
         )
-
-        # self.pushButton_mirror_on.clicked.connect(self.mirror_on)
-        # self.checkBox_pattern_on.clicked.connect(self.pattern_on)
-        # self.pushButton_pattern_next.clicked.connect(self.pattern_next)
 
     def disconnect(self):
         print("Running cleanup/teardown")
@@ -372,7 +364,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self, x=+49.9092e-3, y=-0.1143e-3
     ):  # TODO: Alex wants one function
         # TODO: Stage shift in fluorescence
-        # TODO: Stage shift checking for crashes (Functioning, make one func)
         if not self.liveCheck:
             print("Cannot move stage, live imaging currently running")
             return
@@ -814,34 +805,24 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return new_position
 
     ############## Fluorescence laser methods ##############
-    def update_current_laser(self, selected_laser):
-        if selected_laser == "radioButton_640":
-            self.current_laser_wavelength = "640nm"
-            self.current_laser_power = int(self.spinBox_laser1.text())
-            self.current_laser_exposure = (
-                int(self.lineEdit_exposure_1.text()) * 1000
-            )  # us
-        elif selected_laser == "radioButton_561":
-            self.current_laser_wavelength = "561nm"
-            self.current_laser_power = int(self.spinBox_laser2.text())
-            self.current_laser_exposure = (
-                int(self.lineEdit_exposure_2.text()) * 1000
-            )  # us
-        elif selected_laser == "radioButton_488":
-            self.current_laser_wavelength = "488nm"
-            self.current_laser_power = int(self.spinBox_laser3.text())
-            self.current_laser_exposure = (
-                int(self.lineEdit_exposure_3.text()) * 1000
-            )  # us
-        elif selected_laser == "radioButton_405":
-            self.current_laser_wavelength = "405nm"
-            self.current_laser_power = int(self.spinBox_laser4.text())
-            self.current_laser_exposure = (
-                int(self.lineEdit_exposure_4.text()) * 1000
-            )  # us
-        print(f"Current laser wavelength: {self.current_laser_wavelength}")
-        print(f"Current laser power: {self.current_laser_power}%")
-        print(f"Current laser exposure time: {self.current_laser_exposure/1e3}ms")
+    # TODO: dataclass this
+    def update_current_laser(self, selected_button):
+        self.logger.debug("Updating current laser")
+        LASER_BUTTON_TO_POWER = {'radioButton_640': ['laser640', self.spinBox_laser1, self.lineEdit_exposure_1],
+                                'radioButton_561': ['laser561', self.spinBox_laser2, self.lineEdit_exposure_2],
+                                'radioButton_488': ['laser488', self.spinBox_laser3, self.lineEdit_exposure_3],
+                                'radioButton_405': ['laser405', self.spinBox_laser4, self.lineEdit_exposure_4]}
+
+        try:
+            selected_laser_info = LASER_BUTTON_TO_POWER[selected_button]
+            laser_name = selected_laser_info[0]
+            current_laser = self.laser_controller.lasers[laser_name]
+            self.laser_controller.current_laser = current_laser
+            self.laser_controller.set_laser_power(current_laser,  float(selected_laser_info[1].text()))
+            self.laser_controller.set_exposure_time(current_laser,  float(selected_laser_info[2].text()) * 1000)
+        except Exception as e:
+            display_error_message(traceback.format_exc())
+
 
     def update_laser_dict(self, laser):
         self.logger.debug("Updating laser dictionary")
