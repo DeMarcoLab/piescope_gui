@@ -22,7 +22,7 @@
 # # @pytest_fixture
 # # @mock.patch.object(piescope.lm.laser, 'connect_serial_port')
 # # def lasers(window):
-# #     window.lasers = piescope.lm.laser.initialize_lasers()
+# #     window.lasers = piescope.lm.laser.initialise_lasers()
 # #     assert len(window.lasers.keys()) == 4
 # #     return window.lasers
 
@@ -51,7 +51,7 @@
 #     ("laser405", 1.5),
 # ])
 # def test_update_laser_dict(window, laser_name, laser_power):
-#     window.lasers = piescope.lm.laser.initialize_lasers()
+#     window.lasers = piescope.lm.laser.initialise_lasers()
 #     assert len(window.lasers.keys()) == 4
 #     # hacky solution, set all lasers to the same power for the test
 #     window.slider_laser1.setValue(laser_power)

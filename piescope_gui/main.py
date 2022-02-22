@@ -27,14 +27,6 @@ import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
 
-# TODO: Settings file
-# filename = "Y:/Sergey/codes/liftout/protocol_liftout.yml"
-# with open(filename, "r") as f:
-# self.settings = None
-#     import yaml
-#     self.settings = yaml.safe_load(f)
-#     print(self.settings)
-
 # TODO: Zoom function for qimage
 # TODO: Slider as double
 # TODO: Movement using qimage
@@ -44,19 +36,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):
         super(GUIMainWindow, self).__init__()
 
+        # read config file
         config_path = os.path.join(os.path.dirname(piescope.__file__), "config.yml")
         self.config = piescope.utils.read_config(config_path)
 
+        # set ip_address and offline_mode
         self.ip_address = self.config["system"]["ip_address"]
         self.offline = self.config["system"]["offline_mode"]
 
         # TODO: improve debugging
+        # set up logging
         self.logger = logging.getLogger(__name__)
         if self.offline:
             logging.basicConfig(level=logging.DEBUG)
         else:
             logging.basicConfig(level=logging.WARNING)
 
+        # set up UI
         self.setupUi(self)
 
         self.setup_connections()
@@ -253,12 +249,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             )
         )
 
-        # TODO: fix 'initialise' 'initialize' inconsistency
         # self.pushButton_save_FM.clicked.connect(lambda: self.save_image("FM"))
         # self.pushButton_save_FIBSEM.clicked.connect(
         #     lambda: self.save_image("FIBSEM"))
 
-        self.pushButton_initialize_stage.clicked.connect(
+        self.pushButton_initialise_stage.clicked.connect(
             self.initialise_objective_stage
         )
         self.pushButton_move_absolute.clicked.connect(
@@ -351,7 +346,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             from piescope import fibsem
 
-            self.microscope = piescope.fibsem.initialize(ip_address=ip_address)
+            self.microscope = piescope.fibsem.initialise(ip_address=ip_address)
             self.camera_settings = self.update_fibsem_settings()
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -710,7 +705,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     ############## Fluorescence objective lens stage methods ##############
     def initialise_objective_stage(self, time_delay=0.3, testing=False):
-        """Initialize the fluorescence objective lens stage."""
+        """initialise the fluorescence objective lens stage."""
         if self.objective_stage is not None:
             logging.warning("The objective lens stage is already initizliaed.")
             return self.objective_stage
