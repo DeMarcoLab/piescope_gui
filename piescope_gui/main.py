@@ -18,14 +18,15 @@ import skimage.color
 import skimage.io
 import skimage.util
 from piescope.lm import arduino, mirror, structured
+from piescope.lm.laser import Laser, LaserController
 from piescope.lm.mirror import StageMode, StagePosition
+from piescope.utils import TriggerMode, Modality
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import piescope_gui.correlation.main as corr
 import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
-
 
 # TODO: Zoom function for qimage
 # TODO: Slider as double
@@ -43,6 +44,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # set ip_address and offline_mode
         self.ip_address = self.config["system"]["ip_address"]
         self.offline = self.config["system"]["offline_mode"]
+        self.trigger_mode = self.config['imaging']['lm']['trigger_mode']
+        self.live_imaging_running = False
 
         # TODO: improve debugging
         # set up logging
@@ -146,13 +149,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.arduino = arduino.Arduino()
             self.connect_to_fibsem_microscope(ip_address=self.ip_address)
             self.objective_stage = self.initialise_objective_stage()
-            self.detector = piescope.lm.detector.Basler()
-        self.laser_controller = piescope.lm.laser.LaserController(
-            settings=self.config
-        )
+        self.detector = piescope.lm.detector.Basler()
+        self.laser_controller = LaserController(settings=self.config)
 
     def setup_connections(self):
-
 
         self.comboBox_resolution.currentTextChanged.connect(
             lambda: self.update_fibsem_settings()
@@ -238,9 +238,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.button_get_image_FM.clicked.connect(
             lambda: self.fluorescence_image(
-                self.current_laser_wavelength,
-                self.current_laser_exposure,
-                self.current_laser_power,
+                laser = self.laser_controller.current_laser,
+                settings = self.config,
             )
         )
         self.button_live_image_FM.clicked.connect(
@@ -474,8 +473,45 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.image_ion = copy.deepcopy(self.fibsem_image)
             return self.fibsem_image
 
-    ############## Fluorescence detector methods ##############
     def fluorescence_image(
+        self,
+        laser: Laser,
+        settings: dict,
+    ):
+        # check if live imaging is possible
+        # TODO: add self.live_imaging_running checks for other actions (volume etc)
+        if self.live_imaging_running:
+            print("Can't take image, live imaging currently running")
+            return
+
+        image = self.detector.camera_grab(
+            laser=laser,
+            settings=settings
+        )
+
+        metadata = {
+                "exposure_time": str(laser.exposure_time),
+                "laser_name": str(laser.name),
+                "laser_power": str(laser.power),
+                "timestamp": timestamp(),
+        }
+
+        # save image
+        if settings["imaging"]["lm"]['autosave'] is True:
+            save_filename = os.path.join(self.save_destination_FM,
+                "F_" + self.lineEdit_save_filename_FM.text() + ".tif",
+            )
+            piescope.utils.save_image(image, save_filename, metadata=metadata)
+            self.logger.log(logging.DEBUG, "Saved: {}".format(save_filename))
+
+        # self.update_display(modality="FM", image=image)
+
+
+
+
+
+    ############## Fluorescence detector methods ##############
+    def fluorescence_image2(
         self,
         wavelength,
         exposure_time,
@@ -790,7 +826,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             distance = -abs(distance)
 
         try:
-            self.logger.debug("Relative move the objective stage by " "{}".format(distance))
+            self.logger.debug(
+                "Relative move the objective stage by " "{}".format(distance)
+            )
             ans = stage.move_relative(distance)
             time.sleep(time_delay)
             new_position = stage.current_position()
@@ -808,33 +846,83 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     # TODO: dataclass this
     def update_current_laser(self, selected_button):
         self.logger.debug("Updating current laser")
-        LASER_BUTTON_TO_POWER = {'radioButton_640': ['laser640', self.spinBox_laser1, self.lineEdit_exposure_1],
-                                'radioButton_561': ['laser561', self.spinBox_laser2, self.lineEdit_exposure_2],
-                                'radioButton_488': ['laser488', self.spinBox_laser3, self.lineEdit_exposure_3],
-                                'radioButton_405': ['laser405', self.spinBox_laser4, self.lineEdit_exposure_4]}
+        LASER_BUTTON_TO_POWER = {
+            "radioButton_640": [
+                "laser640",
+                self.spinBox_laser1,
+                self.lineEdit_exposure_1,
+            ],
+            "radioButton_561": [
+                "laser561",
+                self.spinBox_laser2,
+                self.lineEdit_exposure_2,
+            ],
+            "radioButton_488": [
+                "laser488",
+                self.spinBox_laser3,
+                self.lineEdit_exposure_3,
+            ],
+            "radioButton_405": [
+                "laser405",
+                self.spinBox_laser4,
+                self.lineEdit_exposure_4,
+            ],
+        }
 
         try:
             selected_laser_info = LASER_BUTTON_TO_POWER[selected_button]
             laser_name = selected_laser_info[0]
             current_laser = self.laser_controller.lasers[laser_name]
             self.laser_controller.current_laser = current_laser
-            self.laser_controller.set_laser_power(current_laser,  float(selected_laser_info[1].text()))
-            self.laser_controller.set_exposure_time(current_laser,  float(selected_laser_info[2].text()) * 1000)
+            self.laser_controller.set_laser_power(
+                current_laser, float(selected_laser_info[1].text())
+            )
+            self.laser_controller.set_exposure_time(
+                current_laser, float(selected_laser_info[2].text()) * 1000
+            )
 
             print(current_laser)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
-
     def update_laser_dict(self, laser):
         self.logger.debug("Updating laser dictionary")
         try:
-                            # laser_selected, laser_power, exposure_time, widget_spinbox, widget_slider, widget_textexposure
+            # laser_selected, laser_power, exposure_time, widget_spinbox, widget_slider, widget_textexposure
             LASER_INFO = {
-                "laser640": [self.checkBox_laser1, self.spinBox_laser1, self.lineEdit_exposure_1, self.spinBox_laser1, self.slider_laser1, self.lineEdit_exposure_1],
-                "laser561": [self.checkBox_laser2, self.spinBox_laser2, self.lineEdit_exposure_2, self.spinBox_laser2, self.slider_laser2, self.lineEdit_exposure_2],
-                "laser488": [self.checkBox_laser3, self.spinBox_laser3, self.lineEdit_exposure_3, self.spinBox_laser3, self.slider_laser3, self.lineEdit_exposure_3],
-                "laser405": [self.checkBox_laser4, self.spinBox_laser4, self.lineEdit_exposure_4, self.spinBox_laser4, self.slider_laser4, self.lineEdit_exposure_4]}
+                "laser640": [
+                    self.checkBox_laser1,
+                    self.spinBox_laser1,
+                    self.lineEdit_exposure_1,
+                    self.spinBox_laser1,
+                    self.slider_laser1,
+                    self.lineEdit_exposure_1,
+                ],
+                "laser561": [
+                    self.checkBox_laser2,
+                    self.spinBox_laser2,
+                    self.lineEdit_exposure_2,
+                    self.spinBox_laser2,
+                    self.slider_laser2,
+                    self.lineEdit_exposure_2,
+                ],
+                "laser488": [
+                    self.checkBox_laser3,
+                    self.spinBox_laser3,
+                    self.lineEdit_exposure_3,
+                    self.spinBox_laser3,
+                    self.slider_laser3,
+                    self.lineEdit_exposure_3,
+                ],
+                "laser405": [
+                    self.checkBox_laser4,
+                    self.spinBox_laser4,
+                    self.lineEdit_exposure_4,
+                    self.spinBox_laser4,
+                    self.slider_laser4,
+                    self.lineEdit_exposure_4,
+                ],
+            }
 
             laser_selected = LASER_INFO[laser][0].isChecked()
             laser_power = float(LASER_INFO[laser][1].text())
@@ -843,11 +931,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             widget_slider = LASER_INFO[laser][4]
             widget_textexposure = LASER_INFO[laser][5]
 
-
             # Update current laser for single/live imaging and sttings
             self.update_current_laser(self.buttonGroup.checkedButton().objectName())
-            self.laser_controller.set_laser_power(self.laser_controller.lasers[laser], laser_power)
-            self.laser_controller.set_exposure_time(self.laser_controller.lasers[laser], exposure_time)
+            self.laser_controller.set_laser_power(
+                self.laser_controller.lasers[laser], laser_power
+            )
+            self.laser_controller.set_exposure_time(
+                self.laser_controller.lasers[laser], exposure_time
+            )
 
             widget_slider.setEnabled(laser_selected)
             widget_textexposure.setEnabled(laser_selected)
@@ -971,6 +1062,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         except Exception as e:
             display_error_message(traceback.format_exc())
+
+    # def update_display(self, modality: Modality = )
+
 
     def update_display(self, modality):
         """Update the GUI display with the current image"""
@@ -1322,7 +1416,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 display_error_message("Please select a filename. No image is selected.")
                 return
 
-            from autoscript_sdb_microscope_client.structures import AdornedImage
+            from autoscript_sdb_microscope_client.structures import \
+                AdornedImage
 
             adorned_image = AdornedImage()
             adorned_image = adorned_image.load(filename)
@@ -1375,6 +1470,7 @@ def main():
     app.aboutToQuit.connect(qt_app.disconnect)  # cleanup & teardown
     qt_app.show()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()
