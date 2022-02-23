@@ -77,6 +77,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # Set up GUI variables
 
         self.DEFAULT_PATH = os.path.normpath(os.path.expanduser("~/Pictures/PIESCOPE"))
+        self.save_destination_FM = self.DEFAULT_PATH
+        self.save_destination_FIBSEM = self.DEFAULT_PATH
+        self.save_destination_correlation = self.DEFAULT_PATH
+
         self.lineEdit_save_filename_FM.setText("Image")
         self.lineEdit_save_destination_FM.setText(self.DEFAULT_PATH)
 
@@ -111,10 +115,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.fibsem_image = (
             []
         )  # AdornedImage (for whatever is currently displayed in the FIBSEM side of the piescope GUI)
-        self.array_list_FM = (
+        self.image_light = (
             []
         )  # list of 2D numpy arrays (how we open many images & use the slider for fluorescence images)
-        self.array_list_FIBSEM = []  # TODO: REMOVE # list of AdornedImages ? probably ?
+        self.image_FIBSEM = []  # TODO: REMOVE # list of AdornedImages ? probably ?
         self.current_image_FM = (
             None  # TODO: REMOVE. David not sure why these are strings.
         )
@@ -161,9 +165,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.update_fibsem_settings()
         )
 
-        self.actionOpen_FM_Image.triggered.connect(lambda: self.open_images("FM"))
+        self.actionOpen_FM_Image.triggered.connect(lambda: self.open_images(Modality.Light))
         self.actionOpen_FIBSEM_Image.triggered.connect(
-            lambda: self.open_images("FIBSEM")
+            lambda: self.open_images(Modality.Ion)
         )
 
         self.actionSave_FM_Image.triggered.connect(lambda: self.save_image("FM"))
@@ -394,7 +398,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.microscope, self.camera_settings
                 )
             # TODO: Do we really need skimage img_as_ubyte? Display only?
-            self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
+            self.image_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
             # save image
             save_filename = os.path.join(
                 self.save_destination_FIBSEM,
@@ -414,7 +418,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_last_FIB_image(self):
         try:
             self.fibsem_image = piescope.fibsem.last_ion_image(self.microscope)
-            self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
+            self.image_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -430,10 +434,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.microscope, self.camera_settings
             )
             # TODO: should this be copied? Should it be skimage img_as_ubyte?
-            self.array_list_FIBSEM = np.copy(self.fibsem_image.data)
+            self.image_FIBSEM = np.copy(self.fibsem_image.data)
             # TODO: Inconsistent median filtering for display - should be in update_display('FIBSEM'), if anything.
             # Also consider correlation and milling window displays
-            self.array_list_FIBSEM = ndi.median_filter(self.array_list_FIBSEM, 2)
+            self.image_FIBSEM = ndi.median_filter(self.image_FIBSEM, 2)
             # save image
             save_filename = os.path.join(
                 self.save_destination_FIBSEM,
@@ -453,8 +457,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_last_SEM_image(self):
         try:
             self.fibsem_image = piescope.fibsem.last_electron_image(self.microscope)
-            self.array_list_FIBSEM = self.fibsem_image.data
-            self.array_list_FIBSEM = skimage.util.img_as_ubyte(self.array_list_FIBSEM)
+            self.image_FIBSEM = self.fibsem_image.data
+            self.image_FIBSEM = skimage.util.img_as_ubyte(self.image_FIBSEM)
             self.update_display("FIBSEM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -582,7 +586,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 piescope.utils.save_image(image, save_filename, metadata=meta)
                 print("Saved: {}".format(save_filename))
             # Update GUI
-            self.array_list_FM = image
+            self.image_light = image
             self.update_display("FM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -602,7 +606,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         #     return
         #
         # #TODO: remove self.image_lm?  Or at least make consistent with FM
-        # self.array_list_FM = stack_rgb
+        # self.image_light = stack_rgb
         #
         # save_filename = os.path.join(
         #     self.save_destination_FM,
@@ -666,7 +670,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 laser_pins=self.pins,
             )
             # Update GUI
-            self.array_list_FM = image
+            self.image_light = image
             self.update_display("FM")
             # Update filename (if you want to save this image later)
             save_filename = os.path.join(
@@ -957,26 +961,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     ############## Image methods ##############
-    def open_images(self, modality):
+    def open_images(self, modality: Modality):
         """Open image files and display the first"""
         try:
-            if modality == "FM":
-                [open_string, ext] = QtWidgets.QFileDialog.getOpenFileNames(
-                    self, "Open File", filter="Images (*.bmp *.tif *.tiff *.jpg)"
-                )
 
-                if open_string:
-                    self.array_list_FM = _create_array_list(open_string, "FM")
-                    self.update_display("FM")
+            adorned = False if modality == Modality.Light else True
 
-            elif modality == "FIBSEM":
-                [path_string, ext] = QtWidgets.QFileDialog.getOpenFileNames(
-                    self, "Open File", filter="Images (*.bmp *.tif *.tiff *.jpg)"
-                )
+            filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Open Milling Image", filter="Images (*.bmp *.tif *.tiff *.jpg)"
+            )
 
-                if path_string:
-                    self.array_list_FIBSEM = _create_array_list(path_string, "FIBSEM")
-                    self.update_display("FIBSEM")
+            image = piescope.utils.load_image(filename, adorned)
+
+            if modality == Modality.Light:
+                self.image_light = image
+                old_mod = "FM"
+            else:
+                self.image_FIBSEM = image
+                old_mod = "FIBSEM"
+            
+            self.update_display(old_mod)
+
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -985,7 +990,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             if modality == "FM":
                 if self.current_image_FM is not None:
-                    display_image = self.array_list_FM
+                    display_image = self.image_light
                     [save_base, ext] = os.path.splitext(
                         self.lineEdit_save_filename_FM.text()
                     )
@@ -1070,7 +1075,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         """Update the GUI display with the current image"""
         try:
             if modality == "FM":
-                image_array = self.array_list_FM
+                image_array = self.image_light
                 FM_max = image_array.max()
                 self.label_max_FM_value.setText("Max value: " + str(FM_max))
 
@@ -1101,7 +1106,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 image_array = skimage.util.img_as_ubyte(
                     piescope.utils.rgb_image(image_array)
                 )
-                self.array_list_FM = image_array
+                self.image_light = image_array
 
                 image_array_crosshair = np.copy(image_array)
                 xshape = image_array_crosshair.shape[0]
@@ -1133,7 +1138,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.label_image_FM.setPixmap(self.current_pixmap_FM)
 
             elif modality == "FIBSEM":
-                image_array = self.array_list_FIBSEM
+                image_array = self.image_FIBSEM
 
                 # Ensure image for display is RGB
                 if image_array.ndim >= 4:
@@ -1338,7 +1343,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 print("Saved: {}".format(save_filename_max_intensity))
             # Update display
             rgb = piescope.utils.rgb_image(max_intensity)
-            self.array_list_FM = rgb
+            self.image_light = rgb
             self.update_display("FM")
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -1346,11 +1351,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def correlateim(self):
         tempfile = "C:"
         try:
-            fluorescence_image = self.array_list_FM
+            fluorescence_image = self.image_light
 
             if fluorescence_image == [] or fluorescence_image == "":
                 raise ValueError("No first image selected")
-            fibsem_image = self.array_list_FIBSEM
+            fibsem_image = self.image_FIBSEM
             if fibsem_image == [] or fibsem_image == "":
                 raise ValueError("No second image selected")
 
@@ -1406,29 +1411,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def milling(self):
         try:
+
             filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open Milling Image", filter="Images (*.bmp *.tif *.tiff *.jpg)"
             )
 
-            if filename:
-                image = _create_array_list(filename, "MILLING")
-            else:
-                display_error_message("Please select a filename. No image is selected.")
-                return
-
-            from autoscript_sdb_microscope_client.structures import \
-                AdornedImage
-
-            adorned_image = AdornedImage()
-            adorned_image = adorned_image.load(filename)
-            try:
-                adorned_image.metadata.binary_result.pixel_size.x
-            except AttributeError:
-                display_error_message(
-                    "Please acquire a new ion beam image. "
-                    "The selected image is not an ion beam image including pixel size metadata."
-                )
-                return
+            adorned_image = piescope.utils.load_image(filename)
 
             piescope_gui.milling.open_milling_window(
                 self, adorned_image.data, adorned_image
