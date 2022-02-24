@@ -19,7 +19,7 @@ def main_window(qtbot, monkeypatch):
     monkeypatch.setenv("PYLON_CAMEMU", "1")
     with mock.patch.object(main.GUIMainWindow, 'connect_to_fibsem_microscope'):
         with mock.patch('piescope.lm.laser.connect_serial_port'):
-            new_window = main.GUIMainWindow(offline=True)
+            new_window = main.GUIMainWindow(online=False)
             qtbot.add_widget(new_window)
             yield new_window
             new_window.disconnect()

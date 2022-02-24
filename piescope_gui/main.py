@@ -46,19 +46,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         config_path = os.path.join(os.path.dirname(piescope.__file__), "config.yml")
         self.config = piescope.utils.read_config(config_path)
 
-        # set ip_address and offline_mode
+        # set ip_address and online status
         self.ip_address = self.config["system"]["ip_address"]
-        self.offline = self.config["system"]["offline_mode"]
+        self.online = self.config["system"]["online"]
         self.trigger_mode = self.config['imaging']['lm']['trigger_mode']
         self.live_imaging_running = False
 
         # TODO: improve debugging
         # set up logging
         self.logger = logging.getLogger(__name__)
-        if self.offline:
-            logging.basicConfig(level=logging.DEBUG)
-        else:
+        if self.online:
             logging.basicConfig(level=logging.WARNING)
+        else:
+            logging.basicConfig(level=logging.DEBUG)
 
         # set up UI
         self.setupUi(self)
@@ -74,7 +74,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.mirror_controller = None
         self.arduino = None
         self.objective_stage = None
-        self.initialise_hardware(offline=self.offline)
+        self.initialise_hardware(online=self.online)
 
         # TODO: remove this if possible (used in milling window)
         self.image_ion = None  # ion beam image (AdornedImage type)
@@ -140,7 +140,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pins = [self.pin_640, self.pin_561, self.pin_488, self.pin_405]
 
-        if not self.offline:
+        if self.online:
             structured.single_line_onoff(onoff=False, pin=self.pin_640)
             structured.single_line_onoff(onoff=False, pin=self.pin_561)
             structured.single_line_onoff(onoff=False, pin=self.pin_488)
@@ -157,23 +157,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.figure_FIBSEM = None
         self.initialise_image_frames()
 
-    def initialise_hardware(self, offline=True):
-        if offline is False:
+    def initialise_hardware(self, online=False):
+        if online:
             self.mirror_controller = mirror.PIController()
             self.arduino = arduino.Arduino()
             self.objective_stage = self.initialise_objective_stage()
-            self.detector = Basler(setting=self.config)
+            self.detector = Basler(settings=self.config)
             self.laser_controller = LaserController(settings=self.config)
         self.connect_to_fibsem_microscope(ip_address=self.ip_address)
 
     def setup_connections(self):
-
-        self.comboBox_resolution.currentTextChanged.connect(
-            lambda: self.update_fibsem_settings()
-        )
-        self.lineEdit_dwell_time.textChanged.connect(
-            lambda: self.update_fibsem_settings()
-        )
 
         self.actionOpen_FM_Image.triggered.connect(lambda: self.open_images(Modality.Light))
         self.actionOpen_FIBSEM_Image.triggered.connect(
@@ -195,144 +188,152 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.fill_destination("correlation")
         )
 
-        self.checkBox_laser1.clicked.connect(lambda: self.update_laser_dict("laser640"))
-        self.checkBox_laser2.clicked.connect(lambda: self.update_laser_dict("laser561"))
-        self.checkBox_laser3.clicked.connect(lambda: self.update_laser_dict("laser488"))
-        self.checkBox_laser4.clicked.connect(lambda: self.update_laser_dict("laser405"))
+        if self.online:
 
-        self.slider_laser1.valueChanged.connect(
-            lambda: self.update_laser_dict("laser640")
-        )
-        self.slider_laser2.valueChanged.connect(
-            lambda: self.update_laser_dict("laser561")
-        )
-        self.slider_laser3.valueChanged.connect(
-            lambda: self.update_laser_dict("laser488")
-        )
-        self.slider_laser4.valueChanged.connect(
-            lambda: self.update_laser_dict("laser405")
-        )
-
-        self.spinBox_laser1.valueChanged.connect(
-            lambda: self.update_laser_dict("laser640")
-        )
-        self.spinBox_laser2.valueChanged.connect(
-            lambda: self.update_laser_dict("laser561")
-        )
-        self.spinBox_laser3.valueChanged.connect(
-            lambda: self.update_laser_dict("laser488")
-        )
-        self.spinBox_laser4.valueChanged.connect(
-            lambda: self.update_laser_dict("laser405")
-        )
-
-        self.lineEdit_exposure_1.textChanged.connect(
-            lambda: self.update_laser_dict("laser640")
-        )
-        self.lineEdit_exposure_2.textChanged.connect(
-            lambda: self.update_laser_dict("laser561")
-        )
-        self.lineEdit_exposure_3.textChanged.connect(
-            lambda: self.update_laser_dict("laser488")
-        )
-        self.lineEdit_exposure_4.textChanged.connect(
-            lambda: self.update_laser_dict("laser405")
-        )
-
-        self.button_get_image_FIB.clicked.connect(lambda: self.get_FIB_image())
-        self.button_get_image_SEM.clicked.connect(lambda: self.get_SEM_image())
-        self.button_last_image_FIB.clicked.connect(lambda: self.get_last_FIB_image())
-        self.button_last_image_SEM.clicked.connect(lambda: self.get_last_SEM_image())
-
-        self.buttonGroup.buttonClicked.connect(
-            lambda: self.update_current_laser(
-                self.buttonGroup.checkedButton().objectName()
+            self.comboBox_resolution.currentTextChanged.connect(
+                lambda: self.update_fibsem_settings()
             )
-        )
-
-        self.button_get_image_FM.clicked.connect(
-            lambda: self.fluorescence_image(
-                laser = self.laser_controller.current_laser,
-                settings = self.config,
+            self.lineEdit_dwell_time.textChanged.connect(
+                lambda: self.update_fibsem_settings()
             )
-        )
-        self.button_live_image_FM.clicked.connect(
-            lambda: self.fluorescence_live_imaging(
-                self.current_laser_wavelength,
-                self.current_laser_exposure,
-                self.current_laser_power,
+
+
+            self.checkBox_laser1.clicked.connect(lambda: self.update_laser_dict("laser640"))
+            self.checkBox_laser2.clicked.connect(lambda: self.update_laser_dict("laser561"))
+            self.checkBox_laser3.clicked.connect(lambda: self.update_laser_dict("laser488"))
+            self.checkBox_laser4.clicked.connect(lambda: self.update_laser_dict("laser405"))
+
+            self.slider_laser1.valueChanged.connect(
+                lambda: self.update_laser_dict("laser640")
             )
-        )
-
-        self.pushButton_initialise_stage.clicked.connect(
-            self.initialise_objective_stage
-        )
-        self.pushButton_move_absolute.clicked.connect(
-            lambda: self.move_absolute_objective_stage(
-                self.objective_stage, self.lineEdit_move_absolute.text()
+            self.slider_laser2.valueChanged.connect(
+                lambda: self.update_laser_dict("laser561")
             )
-        )
-        self.pushButton_move_relative.clicked.connect(
-            lambda: self.move_relative_objective_stage(
-                self.objective_stage, self.lineEdit_move_relative.text()
+            self.slider_laser3.valueChanged.connect(
+                lambda: self.update_laser_dict("laser488")
             )
-        )
-        self.toolButton_negative.clicked.connect(
-            lambda: self.move_relative_objective_stage(
-                self.objective_stage,
-                self.lineEdit_move_relative.text(),
-                direction="negative",
+            self.slider_laser4.valueChanged.connect(
+                lambda: self.update_laser_dict("laser405")
             )
-        )
-        self.toolButton_positive.clicked.connect(
-            lambda: self.move_relative_objective_stage(
-                self.objective_stage,
-                self.lineEdit_move_relative.text(),
-                direction="positive",
+
+            self.spinBox_laser1.valueChanged.connect(
+                lambda: self.update_laser_dict("laser640")
             )
-        )
+            self.spinBox_laser2.valueChanged.connect(
+                lambda: self.update_laser_dict("laser561")
+            )
+            self.spinBox_laser3.valueChanged.connect(
+                lambda: self.update_laser_dict("laser488")
+            )
+            self.spinBox_laser4.valueChanged.connect(
+                lambda: self.update_laser_dict("laser405")
+            )
 
-        self.connect_microscope.clicked.connect(
-            lambda: self.connect_to_fibsem_microscope(ip_address=self.ip_address)
-        )
-        self.to_light_microscope.clicked.connect(
-            lambda: self.move_to_light_microscope()
-        )
-        self.to_electron_microscope.clicked.connect(
-            lambda: self.move_to_electron_microscope()
-        )
+            self.lineEdit_exposure_1.textChanged.connect(
+                lambda: self.update_laser_dict("laser640")
+            )
+            self.lineEdit_exposure_2.textChanged.connect(
+                lambda: self.update_laser_dict("laser561")
+            )
+            self.lineEdit_exposure_3.textChanged.connect(
+                lambda: self.update_laser_dict("laser488")
+            )
+            self.lineEdit_exposure_4.textChanged.connect(
+                lambda: self.update_laser_dict("laser405")
+            )
 
-        self.pushButton_volume.clicked.connect(
-            lambda: self.acquire_volume(mode=self.mirror_controller.get_mode())
-        )
-        self.pushButton_correlation.clicked.connect(lambda: self.correlateim())
-        self.pushButton_milling.clicked.connect(lambda: self.milling())
+            self.button_get_image_FIB.clicked.connect(lambda: self.get_FIB_image())
+            self.button_get_image_SEM.clicked.connect(lambda: self.get_SEM_image())
+            self.button_last_image_FIB.clicked.connect(lambda: self.get_last_FIB_image())
+            self.button_last_image_SEM.clicked.connect(lambda: self.get_last_SEM_image())
 
-        self.pushButton_get_position.clicked.connect(self.objective_stage_position)
-        self.pushButton_save_objective_position.clicked.connect(
-            self.save_objective_stage_position
-        )
-        self.pushButton_go_to_saved_position.clicked.connect(
-            lambda: self.move_absolute_objective_stage(self.objective_stage)
-        )
+            self.buttonGroup.buttonClicked.connect(
+                lambda: self.update_current_laser(
+                    self.buttonGroup.checkedButton().objectName()
+                )
+            )
 
-        self.radioButton_Widefield.clicked.connect(
-            lambda: self.mirror_controller.move_to(StagePosition.WIDEFIELD)
-        )
-        self.radioButton_Widefield.clicked.connect(
-            lambda: self.mirror_controller.set_mode(StageMode.WIDEFIELD)
-        )
+            self.button_get_image_FM.clicked.connect(
+                lambda: self.fluorescence_image(
+                    laser = self.laser_controller.current_laser,
+                    settings = self.config,
+                )
+            )
+            self.button_live_image_FM.clicked.connect(
+                lambda: self.fluorescence_live_imaging(
+                    self.laser_controller.current_laser,
+                )
+            )
 
-        self.radioButton_SIM.clicked.connect(
-            lambda: self.mirror_controller.move_to(StagePosition.SIXTY)
-        )
-        self.radioButton_SIM.clicked.connect(
-            lambda: self.mirror_controller.set_mode(StageMode.SIM)
-        )
+            self.pushButton_initialise_stage.clicked.connect(
+                self.initialise_objective_stage
+            )
+            self.pushButton_move_absolute.clicked.connect(
+                lambda: self.move_absolute_objective_stage(
+                    self.objective_stage, self.lineEdit_move_absolute.text()
+                )
+            )
+            self.pushButton_move_relative.clicked.connect(
+                lambda: self.move_relative_objective_stage(
+                    self.objective_stage, self.lineEdit_move_relative.text()
+                )
+            )
+            self.toolButton_negative.clicked.connect(
+                lambda: self.move_relative_objective_stage(
+                    self.objective_stage,
+                    self.lineEdit_move_relative.text(),
+                    direction="negative",
+                )
+            )
+            self.toolButton_positive.clicked.connect(
+                lambda: self.move_relative_objective_stage(
+                    self.objective_stage,
+                    self.lineEdit_move_relative.text(),
+                    direction="positive",
+                )
+            )
 
-        self.pushButton_pattern_next.clicked.connect(
-            lambda: self.mirror_controller.next_position()
-        )
+            self.connect_microscope.clicked.connect(
+                lambda: self.connect_to_fibsem_microscope(ip_address=self.ip_address)
+            )
+            self.to_light_microscope.clicked.connect(
+                lambda: self.move_to_light_microscope()
+            )
+            self.to_electron_microscope.clicked.connect(
+                lambda: self.move_to_electron_microscope()
+            )
+
+            self.pushButton_volume.clicked.connect(
+                lambda: self.acquire_volume(mode=self.mirror_controller.get_mode())
+            )
+            self.pushButton_correlation.clicked.connect(lambda: self.correlateim())
+            self.pushButton_milling.clicked.connect(lambda: self.milling())
+
+            self.pushButton_get_position.clicked.connect(self.objective_stage_position)
+            self.pushButton_save_objective_position.clicked.connect(
+                self.save_objective_stage_position
+            )
+            self.pushButton_go_to_saved_position.clicked.connect(
+                lambda: self.move_absolute_objective_stage(self.objective_stage)
+            )
+
+            self.radioButton_Widefield.clicked.connect(
+                lambda: self.mirror_controller.move_to(StagePosition.WIDEFIELD)
+            )
+            self.radioButton_Widefield.clicked.connect(
+                lambda: self.mirror_controller.set_mode(StageMode.WIDEFIELD)
+            )
+
+            self.radioButton_SIM.clicked.connect(
+                lambda: self.mirror_controller.move_to(StagePosition.SIXTY)
+            )
+            self.radioButton_SIM.clicked.connect(
+                lambda: self.mirror_controller.set_mode(StageMode.SIM)
+            )
+
+            self.pushButton_pattern_next.clicked.connect(
+                lambda: self.mirror_controller.next_position()
+            )
 
     def initialise_image_frames(self):
         self.figure_FM = plt.figure()
@@ -363,7 +364,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         print("Running cleanup/teardown")
         logging.debug("Running cleanup/teardown")
         # Change values in qtdesigner_files\main.py
-        if self.objective_stage is not None and self.offline is False:
+        if self.objective_stage is not None and self.online:
             # Return objective lens stage to the "out" position and disconnect.
             self.move_absolute_objective_stage(self.objective_stage, position=-1000)
             self.objective_stage.disconnect()
@@ -382,7 +383,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     def update_fibsem_settings(self):
-        if not self.microscope and not self.offline:
+        if not self.microscope and self.online:
             self.connect_to_fibsem_microscope()
         try:
             from piescope import fibsem
@@ -517,6 +518,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         laser: Laser,
         settings: dict,
     ):
+        if self.laser_controller is None:
+            display_error_message('Not connect to lasers')
+            return
+
         # check if live imaging is possible
         # TODO: add self.live_imaging_running checks for other actions (volume etc)
         if self.live_imaging_running:
@@ -551,92 +556,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             piescope.utils.save_image(image, save_filename, metadata=metadata)
             self.logger.log(logging.DEBUG, "Saved: {}".format(save_filename))
 
-        # self.update_display(modality="FM", image=image)
+        self.image_light = image
+
+        self.update_display(modality=Modality.Light, settings=self.config)
 
 
-
-
-
-    ############## Fluorescence detector methods ##############
-    def fluorescence_image2(
-        self,
-        wavelength,
-        exposure_time,
-        laser_power,
-        color="rgb",
-        autosave=True,
-        trigger_mode="hardware",
-        livecheck=False,
-    ):
-        """Acquire a single fluorescence image, at a single wavelength..
-
-        Parameters
-        ----------
-        wavelength : str
-            Laser wavelength. Can be '640nm', '561nm', '488nm', or '405nm'.
-        exposure_time : float (or string resolving to float)
-            Exposure time in microseconds us
-        laser_power : float
-            Laser power to use in live imaging.
-        autosave : bool, optional
-            Whether to save images automatically, by default True
-
-        Returns
-        -------
-        numpy ndarray
-            Fluorescence image array.
-        """
-
-        # Checks
-        if livecheck:
-            if not self.liveCheck:
-                print("Can't take image, live imaging currently running")
-                return
-
-        try:
-            # Setup
-            exposure_time_microseconds = float(exposure_time)  # us
-            WAVELENGTH_TO_LASERNAME = {
-                "640nm": "laser640",
-                "561nm": "laser561",
-                "488nm": "laser488",
-                "405nm": "laser405",
-            }
-            laser_name = WAVELENGTH_TO_LASERNAME[wavelength]
-            self.lasers[laser_name].laser_power = laser_power
-
-            # Acquire image
-            image = self.detector.camera_grab(
-                exposure_time=exposure_time_microseconds,
-                trigger_mode=trigger_mode,
-                laser_name=laser_name,
-                laser_pins=self.pins,
-            )
-            meta = {
-                "exposure_time": str(exposure_time),
-                "laser_name": str(laser_name),
-                "laser_power": str(laser_power),
-                "timestamp": timestamp(),
-            }
-            # self.lasers[laser_name].emission_off()
-
-            # Save image
-            save_filename = os.path.join(
-                self.save_destination_FM,
-                "F_" + self.lineEdit_save_filename_FM.text() + ".tif",
-            )
-            if autosave is True:
-                piescope.utils.save_image(image, save_filename, metadata=meta)
-                print("Saved: {}".format(save_filename))
-            # Update GUI
-            self.image_light = image
-            self.update_display(modality=Modality.Light, settings=self.config)
-        except Exception as e:
-            display_error_message(traceback.format_exc())
-        else:
-            print("Fluorescence image acquired.")
-            return image
-
+    # ############## Fluorescence detector methods ##############
         # from old RGB - probably shows how do it well
         #     # normalisation from 0-255 -> 0-1
         #     stack_rgb = stack_rgb / 255  # for weighting
@@ -682,121 +607,26 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             self.update_display(modality=Modality.Light, settings=self.config)
 
-    def live_imaging_worker2(
-        self,
-        stop_event,
-        laser_name,
-        laser_power,
-        exposure_time,
-        image_frame_interval=None,
-    ):
-        """Worker function for live imaging thread.
+            if settings['imaging']['lm']['camera']['image_frame_interval'] is not None:
+                stop_event.wait(settings['imaging']['lm']['camera']['image_frame_interval'])
 
-        Parameters
-        ----------
-        stop_event : threading.Event()
-            Signal to terminate the thread.
-        laser_name : str
-            Name of laser to use in live imaging.
-            Available values are "laser640", "laser561", "laser488", "laser405"
-        laser_power : float
-            Laser power to use in live imaging.
-        exposure_time : float
-            Exposure time, in microseconds (us).
-        image_frame_interval : float, optional
-            Waiting period between acquisition of live imaging frames.
-            By default, None. This means live images will be acquired as fast
-            as possible. Note the laser stays on even if imaging is paused.
-        """
-        # TODO: Can you allow changing which laser is on during live imaging?
-        # Setup
-        print("Live imaging mode running...")
-        exposure_time_microseconds = float(exposure_time)  # us
-        self.liveCheck = False
-        self.button_live_image_FM.setDown(True)
-        self.lasers[laser_name].laser_power = float(laser_power)
-        # self.lasers[laser_name].emission_on()
-
-        # Running live imaging
-        while not stop_event.isSet():
-            # Take image
-            image = self.detector.camera_grab(
-                exposure_time=exposure_time_microseconds,
-                trigger_mode="hardware",
-                laser_name=laser_name,
-                laser_pins=self.pins,
-            )
-            # Update GUI
-            self.image_light = image
-            self.update_display(modality=Modality.Light, settings=self.config)
-            # Update filename (if you want to save this image later)
-            save_filename = os.path.join(
-                self.save_destination_FM,
-                "F_" + self.lineEdit_save_filename_FM.text() + ".tif",
-            )
-            # Pause between frames if desired (the laser will remain on)
-            if image_frame_interval is not None:
-                stop_event.wait(image_frame_interval)
-        # Teardown / cleanup
-        print("Stopping live imaging mode.")
-        # self.lasers[laser_name].emission_off()
         self.detector.camera.Close()
-        self.liveCheck = True
+        self.live_imaging_running = False
         self.button_live_image_FM.setDown(False)
 
+
+
+  
     def fluorescence_live_imaging(self, laser: Laser):
-        if not self.live_imaging_running:
-            self.stop_event = threading.Event()
-            self._thread = threading.Thread(
-                target=self.live_imaging_worker,
-                args=(
-                    self.stop_event,
-                    laser_name,
-                    laser_power,
-                    exposure_time,  # in ms, converted to us in function
-                    image_frame_interval,
-                ),
-            )
-            self._thread.start()
-
-
-    def fluorescence_live_imaging2(
-        self, wavelength, exposure_time, laser_power, image_frame_interval=None
-    ):
-        """Fluorescence live imaging.
-
-        Parameters
-        ----------
-        wavelength : str
-            Which laser wavelength to use for live imaging.
-            Available values are: "640nm", "561nm", "488nm", or "405nm".
-        exposure_time : float
-            Exposure time, in microseconds (us).
-        laser_power : float
-            Laser power to use for live imaging.
-        image_frame_interval : float, optional
-            Waiting period between acquisition of live imaging frames.
-            By default, None. This means live images will be acquired as fast
-            as possible. Note the laser stays on even if imaging is paused.
-        """
+        config = self.config.copy()
         try:
-            WAVELENGTH_TO_LASERNAME = {
-                "640nm": "laser640",
-                "561nm": "laser561",
-                "488nm": "laser488",
-                "405nm": "laser405",
-            }
-            laser_name = WAVELENGTH_TO_LASERNAME[wavelength]
-            if self.liveCheck is True:
+            if not self.live_imaging_running:
                 self.stop_event = threading.Event()
                 self._thread = threading.Thread(
                     target=self.live_imaging_worker,
-                    args=(
-                        self.stop_event,
-                        laser_name,
-                        laser_power,
-                        exposure_time,  # in ms, converted to us in function
-                        image_frame_interval,
+                    args=(laser,
+                    self.stop_event,
+                    config
                     ),
                 )
                 self._thread.start()
@@ -1187,12 +1017,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             # TODO: can this be moved to after all image modifications (probably)
             plt.axis('off')
-            if self.canvas_FM:
-                self.label_image_FM.layout().removeWidget(self.canvas_FM)
-                self.label_image_FM.layout().removeWidget(self.toolbar_FM)
-                self.canvas_FM.deleteLater()
-                self.toolbar_FM.deleteLater()
-            self.canvas_FM = _FigureCanvas(self.figure_FM)
+            # if self.canvas_FM:
+            #     self.label_image_FM.layout().removeWidget(self.canvas_FM)
+            #     self.label_image_FM.layout().removeWidget(self.toolbar_FM)
+            #     self.canvas_FM.deleteLater()
+            #     self.toolbar_FM.deleteLater()
+            if self.canvas_FM is None:
+                self.canvas_FM = _FigureCanvas(self.figure_FM)
 
             self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(event))
 
@@ -1217,7 +1048,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             ax_FM.patches = []
             for patch in crosshair.__dataclass_fields__:
                 ax_FM.add_patch(getattr(crosshair, patch))
-            self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+            if self.toolbar_FM is None:
+                self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
             self.label_image_FM.layout().addWidget(self.toolbar_FM)
             self.label_image_FM.layout().addWidget(self.canvas_FM)
             ax_FM.get_xaxis().set_visible(False)
