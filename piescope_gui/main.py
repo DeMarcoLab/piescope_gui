@@ -17,18 +17,23 @@ import scipy.ndimage as ndi
 import skimage.color
 import skimage.io
 import skimage.util
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as _FigureCanvas
+from matplotlib.backends.backend_qt5agg import \
+    NavigationToolbar2QT as _NavigationToolbar
 from piescope.lm import arduino, mirror, structured
+from piescope.lm.detector import Basler
 from piescope.lm.laser import Laser, LaserController
 from piescope.lm.mirror import StageMode, StagePosition
-from piescope.utils import TriggerMode, Modality
+from piescope.utils import Modality, TriggerMode
 from PyQt5 import QtCore, QtGui, QtWidgets
+from matplotlib import pyplot as plt
 
 import piescope_gui.correlation.main as corr
 import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
-# TODO: Zoom function for qimage
 # TODO: Slider as double
 # TODO: Movement using qimage
 
@@ -147,14 +152,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # TODO: make laser_to_pin in detector.py consistent with this so defined in one place, protocol?
         # TODO: same with camera pin
 
+        # set up imaging frames
+        self.figure_FM = None
+        self.figure_FIBSEM = None
+        self.initialise_image_frames()
+
     def initialise_hardware(self, offline=True):
         if offline is False:
             self.mirror_controller = mirror.PIController()
             self.arduino = arduino.Arduino()
-            self.connect_to_fibsem_microscope(ip_address=self.ip_address)
             self.objective_stage = self.initialise_objective_stage()
-        self.detector = piescope.lm.detector.Basler()
-        self.laser_controller = LaserController(settings=self.config)
+            self.detector = Basler(setting=self.config)
+            self.laser_controller = LaserController(settings=self.config)
+        self.connect_to_fibsem_microscope(ip_address=self.ip_address)
 
     def setup_connections(self):
 
@@ -324,6 +334,31 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.mirror_controller.next_position()
         )
 
+    def initialise_image_frames(self):
+        self.figure_FM = plt.figure()
+        plt.axis('off')
+        plt.tight_layout()
+        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
+        self.canvas_FM = _FigureCanvas(self.figure_FM)
+        self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+
+        self.label_image_FM.setLayout(QtWidgets.QVBoxLayout())
+        self.label_image_FM.layout().addWidget(self.toolbar_FM)
+        self.label_image_FM.layout().addWidget(self.canvas_FM)
+
+        self.figure_FIBSEM = plt.figure()
+        plt.axis('off')
+        plt.tight_layout()
+        plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
+        self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
+        self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
+
+        self.label_image_FIBSEM.setLayout(QtWidgets.QVBoxLayout())
+        self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
+        self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
+
+
+
     def disconnect(self):
         print("Running cleanup/teardown")
         logging.debug("Running cleanup/teardown")
@@ -408,7 +443,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 piescope.utils.save_image(self.fibsem_image, save_filename)
                 print("Saved: {}".format(save_filename))
             # Update display
-            self.update_display("FIBSEM")
+            self.update_display(modality=Modality.Ion, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
@@ -419,7 +454,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             self.fibsem_image = piescope.fibsem.last_ion_image(self.microscope)
             self.image_FIBSEM = skimage.util.img_as_ubyte(self.fibsem_image.data)
-            self.update_display("FIBSEM")
+            self.update_display(modality=Modality.Ion, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
@@ -447,7 +482,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 piescope.utils.save_image(self.fibsem_image, save_filename)
                 print("Saved: {}".format(save_filename))
             # update display
-            self.update_display("FIBSEM")
+            self.update_display(modality=Modality.Ion, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
@@ -459,7 +494,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.fibsem_image = piescope.fibsem.last_electron_image(self.microscope)
             self.image_FIBSEM = self.fibsem_image.data
             self.image_FIBSEM = skimage.util.img_as_ubyte(self.image_FIBSEM)
-            self.update_display("FIBSEM")
+            self.update_display(modality=Modality.Ion, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
@@ -488,10 +523,18 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             print("Can't take image, live imaging currently running")
             return
 
+        # manually turn on laser if software mode
+        if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+            self.laser_controller.emission_on(laser)
+
         image = self.detector.camera_grab(
             laser=laser,
             settings=settings
         )
+
+        # manually turn off laser if software mode
+        if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+           self.laser_controller.emission_off(laser)
 
         metadata = {
                 "exposure_time": str(laser.exposure_time),
@@ -587,7 +630,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 print("Saved: {}".format(save_filename))
             # Update GUI
             self.image_light = image
-            self.update_display("FM")
+            self.update_display(modality=Modality.Light, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
@@ -613,7 +656,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         #     'F_' + self.lineEdit_save_filename_FM.text() + '.tif')
         # self.string_list_FM = [save_filename]
         # self.slider_stack_FM.setValue(1)
-        # self.update_display("FM")
+        # self.update_display(modality=Modality.Light, settings=self.config)
         # self.lm_metadata = {'laser_dict': str(laser_dict),
         #                     'timestamp': timestamp()}
         # # if autosave is True:
@@ -625,7 +668,21 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # # shape: (Channels, Patterns, X, Y)
         # return stack
 
-    def live_imaging_worker(
+    def live_imaging_worker(self, laser: Laser, stop_event: threading.Event, settings: dict):
+        self.live_imaging_running = True
+        self.button_live_image_FM.setDown(True)
+
+        while not stop_event.isSet():
+            if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+                self.laser_controller.emission_on(laser)
+            self.image_light = self.detector.camera_grab(laser=laser, settings=self.config
+            )
+            if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+                self.laser_controller.emission_off(laser)
+
+            self.update_display(modality=Modality.Light, settings=self.config)
+
+    def live_imaging_worker2(
         self,
         stop_event,
         laser_name,
@@ -671,7 +728,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             )
             # Update GUI
             self.image_light = image
-            self.update_display("FM")
+            self.update_display(modality=Modality.Light, settings=self.config)
             # Update filename (if you want to save this image later)
             save_filename = os.path.join(
                 self.save_destination_FM,
@@ -687,7 +744,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.liveCheck = True
         self.button_live_image_FM.setDown(False)
 
-    def fluorescence_live_imaging(
+    def fluorescence_live_imaging(self, laser: Laser):
+        if not self.live_imaging_running:
+            self.stop_event = threading.Event()
+            self._thread = threading.Thread(
+                target=self.live_imaging_worker,
+                args=(
+                    self.stop_event,
+                    laser_name,
+                    laser_power,
+                    exposure_time,  # in ms, converted to us in function
+                    image_frame_interval,
+                ),
+            )
+            self._thread.start()
+
+
+    def fluorescence_live_imaging2(
         self, wavelength, exposure_time, laser_power, image_frame_interval=None
     ):
         """Fluorescence live imaging.
@@ -979,8 +1052,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             else:
                 self.image_FIBSEM = image
                 old_mod = "FIBSEM"
-            
-            self.update_display(old_mod)
+
+            self.update_display(modality, settings=self.config)
 
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -1068,10 +1141,136 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(traceback.format_exc())
 
-    # def update_display(self, modality: Modality = )
+    def update_display(self, modality: Modality, settings: dict):
+        if modality == Modality.Light:
+
+            max_value = self.image_light.max()
+            self.label_max_FM_value.setText(f"Max value: {str(max_value)}")
+
+            # copy the current light image to modify and check shape etc.
+            image = self.image_light
+
+            # raise error if image shape has too many dimensions
+            if image.ndim >= 4:
+                msg = (
+                        "Please select a 2D image for display.\n"
+                        + "Image shape here is {}".format(image.shape)
+                    )
+                logging.warning(msg)
+                display_error_message(msg)
+                return
+
+            # if the image is 3 dimensional, it is probably and RGB of shape (XYC)
+            if image.ndim == 3:
+                # if the final dimension of the image is not RGB, shape might be (CXY)
+                if image.shape[-1] != 3:
+                    # shift the first dimension to the final dimension (XYC)
+                    image = np.moveaxis(image, 0, -1)
+                    # if the final dimension of the image is still not RGB (CXY)
+                    if image.shape[-1] != 3:
+                        msg = (
+                            "Please select a 2D image with no more than 3 color channels for display.\n"
+                            + "Image shape here is {}".format(image.shape)
+                        )
+                        logging.warning(msg)
+                        display_error_message(msg)
+                        return
+
+            # after modifications, if any, convert to rgb image
+            self.image_light = skimage.util.img_as_ubyte(
+                    piescope.utils.rgb_image(image)
+                )
+
+            # make a copy of the rgb to display with crosshair
+            # TODO: move this later in the process
+            crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
+
+            # TODO: can this be moved to after all image modifications (probably)
+            plt.axis('off')
+            if self.canvas_FM:
+                self.label_image_FM.layout().removeWidget(self.canvas_FM)
+                self.label_image_FM.layout().removeWidget(self.toolbar_FM)
+                self.canvas_FM.deleteLater()
+                self.toolbar_FM.deleteLater()
+            self.canvas_FM = _FigureCanvas(self.figure_FM)
+
+            self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(event))
+
+            # TODO: uint8 conversion here?
+            # if type(self.image_light) == np.ndarray:
+            #     image = self.image_light.astype(np.uint8)
+            # else:
+            #     image = self.image_light.data.astype(np.uint8)
+
+            if settings['imaging']['lm']['filter_strength'] > 0:
+                image = ndi.median_filter(image, size=int(settings['imaging']['lm']['filter_strength']))
+
+            # TODO: check if this has any effect, as everything should be RGB by this point for light
+            # TODO: check usefulness of this for FIBSEM images, as it is from liftout
+            if image.ndim != 3:
+                image = np.stack((image,) * 3, axis=-1)
+
+            self.figure_FM.clear()
+            self.figure_FM.patch.set_facecolor((240/255, 240/255, 240/255))
+            ax_FM = self.figure_FM.add_subplot(111)
+            ax_FM.set_title(' ')
+            ax_FM.patches = []
+            for patch in crosshair.__dataclass_fields__:
+                ax_FM.add_patch(getattr(crosshair, patch))
+            self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+            self.label_image_FM.layout().addWidget(self.toolbar_FM)
+            self.label_image_FM.layout().addWidget(self.canvas_FM)
+            ax_FM.get_xaxis().set_visible(False)
+            ax_FM.get_yaxis().set_visible(False)
+            ax_FM.imshow(image)
+            # FIBSEM is image.data
+            self.canvas_FM.draw()
+
+        else:
+            image = self.image_FIBSEM.data
+
+            # make a copy of the rgb to display with crosshair
+            # TODO: move this later in the process
+            crosshair = piescope.utils.create_crosshair(self.image_FIBSEM, self.config)
+
+            # TODO: can this be moved to after all image modifications (probably)
+            plt.axis('off')
+            if self.canvas_FIBSEM:
+                self.label_image_FIBSEM.layout().removeWidget(self.canvas_FIBSEM)
+                self.label_image_FIBSEM.layout().removeWidget(self.toolbar_FIBSEM)
+                self.canvas_FIBSEM.deleteLater()
+                self.toolbar_FIBSEM.deleteLater()
+            self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
+
+            self.canvas_FIBSEM.mpl_connect('button_press_event', lambda event: self.on_gui_click(event))
+
+            # TODO: uint8 conversion here?
+            # if type(self.image_light) == np.ndarray:
+            #     image = self.image_light.astype(np.uint8)
+            # else:
+            #     image = self.image_light.data.astype(np.uint8)
+
+            if settings['imaging']['ib']['filter_strength'] > 0:
+                image = ndi.median_filter(image, size=int(settings['imaging']['ib']['filter_strength']))
+
+            self.figure_FIBSEM.clear()
+            self.figure_FIBSEM.patch.set_facecolor((240/255, 240/255, 240/255))
+            ax_FIBSEM = self.figure_FIBSEM.add_subplot(111)
+            ax_FIBSEM.set_title(' ')
+            ax_FIBSEM.patches = []
+            for patch in crosshair.__dataclass_fields__:
+                ax_FIBSEM.add_patch(getattr(crosshair, patch))
+            self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
+            self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
+            self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
+            ax_FIBSEM.get_xaxis().set_visible(False)
+            ax_FIBSEM.get_yaxis().set_visible(False)
+            ax_FIBSEM.imshow(image, cmap='gray')
+            self.canvas_FIBSEM.draw()
 
 
-    def update_display(self, modality):
+
+    def update_display2(self, modality):
         """Update the GUI display with the current image"""
         try:
             if modality == "FM":
@@ -1344,7 +1543,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # Update display
             rgb = piescope.utils.rgb_image(max_intensity)
             self.image_light = rgb
-            self.update_display("FM")
+            self.update_display(modality=Modality.Light, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
