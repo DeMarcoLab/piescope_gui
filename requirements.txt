@@ -1,5 +1,4 @@
-click
-matplotlib>=3.0.0
+matplotlib==3.0.2
 pyqt5
 qimage2ndarray
 scikit-image>=0.15.0
