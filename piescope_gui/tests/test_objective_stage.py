@@ -25,8 +25,8 @@ def window(qtbot, monkeypatch):
 @mock.patch.object(main.piescope.lm.objective.StageController, 'current_position')
 @mock.patch.object(main.piescope.lm.objective.StageController, 'recv')
 @mock.patch.object(main.piescope.lm.objective.StageController, 'sendall')
-def test_initialize_objective_stage(mock_sendall, mock_recv, mock_pos, window):
-    result = window.initialize_objective_stage(testing=True)
+def test_initialise_objective_stage(mock_sendall, mock_recv, mock_pos, window):
+    result = window.initialise_objective_stage(testing=True)
     assert isinstance(result, main.piescope.lm.objective.StageController)
     result_label = window.label_objective_stage_position.text()
     assert result_label == 'Unknown'
