@@ -11,13 +11,13 @@ def parse_requirements_file(filename):
 
 
 INST_DEPENDENCIES = parse_requirements_file("requirements.txt")
-TEST_DEPENDENCIES = parse_requirements_file("requirements-dev.txt")
 
 setup(
     name='piescope_gui',
     version=__version__,
     description="A PyQt5 GUI application",
-    author="DeMarco Lab",
+    author="David Dierickx (DeMarco Lab)",
+    author_email="David.Dierickx1@monash.edu",
     url='https://github.com/DeMarcoLab/piescope_gui',
     packages=find_packages(),
     package_data={'piescope_gui.images': ['*.png']},
@@ -29,8 +29,6 @@ setup(
     install_requires=INST_DEPENDENCIES,
     zip_safe=False,
     classifiers=[
-        'Programming Language :: Python :: 3.6',
-    ],
-    test_suite='tests',
-    tests_require=TEST_DEPENDENCIES
+        'Programming Language :: Python :: 3.7',
+    ]
 )

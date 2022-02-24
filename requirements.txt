@@ -3,3 +3,15 @@ pyqt5
 qimage2ndarray
 scikit-image>=0.15.0
 scipy
+
+# dev
+autopep8
+coverage
+coveralls
+ipython
+pylint
+pytest
+pytest-cov
+pytest-faulthandler
+pytest-mock
+pytest-qt
