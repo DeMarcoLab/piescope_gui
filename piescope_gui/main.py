@@ -636,7 +636,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.stop_event.set()
         except Exception as e:
             display_error_message(traceback.format_exc())
-
     ############## Fluorescence objective lens stage methods ##############
     def initialise_objective_stage(self, time_delay=0.3, testing=False):
         """initialise the fluorescence objective lens stage."""
@@ -1006,10 +1005,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_error_message(msg)
                         return
 
-            # after modifications, if any, convert to rgb image
-            self.image_light = skimage.util.img_as_ubyte(
-                    piescope.utils.rgb_image(image)
-                )
+            # # after modifications, if any, convert to rgb image
+            # self.image_light = skimage.util.img_as_ubyte(
+            #         piescope.utils.rgb_image(image)
+            #     )
 
             # make a copy of the rgb to display with crosshair
             # TODO: move this later in the process
@@ -1040,6 +1039,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # TODO: check usefulness of this for FIBSEM images, as it is from liftout
             if image.ndim != 3:
                 image = np.stack((image,) * 3, axis=-1)
+
+        # after modifications, if any, convert to rgb image
+            self.image_light = skimage.util.img_as_ubyte(
+                    piescope.utils.rgb_image(image)
+                )
+
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor((240/255, 240/255, 240/255))
