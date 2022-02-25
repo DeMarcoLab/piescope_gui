@@ -140,7 +140,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pins = [self.pin_640, self.pin_561, self.pin_488, self.pin_405]
 
-        if self.online:
+        if self.online and 0:
             structured.single_line_onoff(onoff=False, pin=self.pin_640)
             structured.single_line_onoff(onoff=False, pin=self.pin_561)
             structured.single_line_onoff(onoff=False, pin=self.pin_488)
@@ -158,13 +158,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.initialise_image_frames()
 
     def initialise_hardware(self, online=False):
+        self.connect_to_fibsem_microscope(ip_address=self.ip_address)
         if online:
+            self.detector = Basler(settings=self.config)
+            self.laser_controller = LaserController(settings=self.config)
+        else:
             self.mirror_controller = mirror.PIController()
             self.arduino = arduino.Arduino()
             self.objective_stage = self.initialise_objective_stage()
-            self.detector = Basler(settings=self.config)
-            self.laser_controller = LaserController(settings=self.config)
-        self.connect_to_fibsem_microscope(ip_address=self.ip_address)
 
     def setup_connections(self):
 
@@ -525,6 +526,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # check if live imaging is possible
         # TODO: add self.live_imaging_running checks for other actions (volume etc)
         if self.live_imaging_running:
+            self.button_live_image_FM.setDown(True)
             print("Can't take image, live imaging currently running")
             return
 
@@ -611,16 +613,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 stop_event.wait(settings['imaging']['lm']['camera']['image_frame_interval'])
 
         self.detector.camera.Close()
-        self.live_imaging_running = False
         self.button_live_image_FM.setDown(False)
+        self.live_imaging_running = False
 
 
 
-  
+
     def fluorescence_live_imaging(self, laser: Laser):
         config = self.config.copy()
         try:
             if not self.live_imaging_running:
+                self.live_imaging_running = True
                 self.stop_event = threading.Event()
                 self._thread = threading.Thread(
                     target=self.live_imaging_worker,
@@ -1006,11 +1009,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_error_message(msg)
                         return
 
-            # after modifications, if any, convert to rgb image
-            self.image_light = skimage.util.img_as_ubyte(
-                    piescope.utils.rgb_image(image)
-                )
-
             # make a copy of the rgb to display with crosshair
             # TODO: move this later in the process
             crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
@@ -1025,7 +1023,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if self.canvas_FM is None:
                 self.canvas_FM = _FigureCanvas(self.figure_FM)
 
-            self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(event))
+            # self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(event))
 
             # TODO: uint8 conversion here?
             # if type(self.image_light) == np.ndarray:
@@ -1038,8 +1036,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             # TODO: check if this has any effect, as everything should be RGB by this point for light
             # TODO: check usefulness of this for FIBSEM images, as it is from liftout
-            if image.ndim != 3:
+            if image.ndim == 3:
                 image = np.stack((image,) * 3, axis=-1)
+
+            # after modifications, if any, convert to rgb image
+            self.image_light = skimage.util.img_as_ubyte(
+                    piescope.utils.rgb_image(image)
+                )
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor((240/255, 240/255, 240/255))
@@ -1054,7 +1057,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.label_image_FM.layout().addWidget(self.canvas_FM)
             ax_FM.get_xaxis().set_visible(False)
             ax_FM.get_yaxis().set_visible(False)
-            ax_FM.imshow(image)
+            ax_FM.imshow(image, cmap=str(self.comboBox_cmap.currentText()))
             # FIBSEM is image.data
             self.canvas_FM.draw()
 
