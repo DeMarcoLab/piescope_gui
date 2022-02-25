@@ -140,7 +140,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.pins = [self.pin_640, self.pin_561, self.pin_488, self.pin_405]
 
-        if self.online and 0:
+        if self.online:
             structured.single_line_onoff(onoff=False, pin=self.pin_640)
             structured.single_line_onoff(onoff=False, pin=self.pin_561)
             structured.single_line_onoff(onoff=False, pin=self.pin_488)
@@ -162,7 +162,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if online:
             self.detector = Basler(settings=self.config)
             self.laser_controller = LaserController(settings=self.config)
-        else:
             self.mirror_controller = mirror.PIController()
             self.arduino = arduino.Arduino()
             self.objective_stage = self.initialise_objective_stage()
@@ -387,8 +386,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if not self.microscope and self.online:
             self.connect_to_fibsem_microscope()
         try:
-            from piescope import fibsem
-
             dwell_time = float(self.lineEdit_dwell_time.text()) * 1.0e-6
             resolution = self.comboBox_resolution.currentText()
             fibsem_settings = piescope.fibsem.update_camera_settings(
