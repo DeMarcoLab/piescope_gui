@@ -43,7 +43,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>1611</width>
+      <width>1625</width>
       <height>698</height>
      </rect>
     </property>
@@ -146,7 +146,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser1">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -156,7 +156,7 @@
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_1">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -176,7 +176,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser1">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -189,7 +189,7 @@
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_2">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -206,7 +206,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser2">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -236,7 +236,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser2">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -249,7 +249,7 @@
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_3">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -276,7 +276,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser3">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -299,7 +299,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser3">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -329,7 +329,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser4">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -339,7 +339,7 @@
            <item row="1" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_4">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -359,7 +359,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser4">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -374,7 +374,27 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QFormLayout" name="formLayout_2">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Slice Distance (nm)</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="lineEdit_slice_distance">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="lineEdit_volume_height"/>
+           </item>
            <item row="0" column="0" colspan="2">
             <widget class="QLabel" name="label_volume_title">
              <property name="sizePolicy">
@@ -394,37 +414,14 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEdit_slice_distance">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Volume Height (nm)</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="0">
-            <widget class="QComboBox" name="comboBox_2">
-             <property name="sizeAdjustPolicy">
-              <enum>QComboBox::AdjustToContents</enum>
-             </property>
-             <item>
-              <property name="text">
-               <string>Total Volume Height (nm)</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>+/- Volume Height (nm)</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="lineEdit_volume_height"/>
-           </item>
-           <item row="5" column="0" colspan="2">
+           <item row="3" column="0" colspan="2">
             <widget class="QPushButton" name="pushButton_volume">
              <property name="text">
               <string>Acquire Volume</string>
@@ -432,38 +429,6 @@
              <property name="flat">
               <bool>false</bool>
              </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QComboBox" name="comboBox">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::LeftToRight</enum>
-             </property>
-             <property name="insertPolicy">
-              <enum>QComboBox::InsertAtBottom</enum>
-             </property>
-             <property name="sizeAdjustPolicy">
-              <enum>QComboBox::AdjustToContents</enum>
-             </property>
-             <property name="minimumContentsLength">
-              <number>23</number>
-             </property>
-             <item>
-              <property name="text">
-               <string>Slice Distance (nm)</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Slice Number </string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>
@@ -1769,7 +1734,7 @@
      <x>0</x>
      <y>0</y>
      <width>1623</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
