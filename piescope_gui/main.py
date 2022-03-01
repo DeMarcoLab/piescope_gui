@@ -1,6 +1,3 @@
-from ast import Mod
-import copy
-from distutils.command.config import config
 import logging
 import os
 import sys
@@ -10,15 +7,11 @@ import traceback
 
 import numpy as np
 import piescope
-import piescope.data
 import piescope.fibsem
 import piescope.lm
 import piescope.utils
-import qimage2ndarray
 import scipy.ndimage as ndi
-import skimage.color
-import skimage.io
-import skimage.util
+from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import \
     FigureCanvasQTAgg as _FigureCanvas
 from matplotlib.backends.backend_qt5agg import \
@@ -29,7 +22,6 @@ from piescope.lm.laser import Laser, LaserController
 from piescope.lm.mirror import ImagingType, StagePosition
 from piescope.utils import Modality, TriggerMode
 from PyQt5 import QtCore, QtGui, QtWidgets
-from matplotlib import pyplot as plt
 
 import piescope_gui.correlation.main as corr
 import piescope_gui.milling
@@ -37,101 +29,19 @@ import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
 # TODO: Slider as double
-# TODO: Movement using qimage
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):
         super(GUIMainWindow, self).__init__()
 
-        # read config file
-        config_path = os.path.join(
-            os.path.dirname(piescope.__file__), "config.yml")
-        self.config = piescope.utils.read_config(config_path)
-
-        # set ip_address and online status
-        self.ip_address = self.config["system"]["ip_address"]
-        self.online = self.config["system"]["online"]
-        self.trigger_mode = self.config['imaging']['lm']['trigger_mode']
-        self.live_imaging_running = False
-
-        # TODO: improve debugging
-        # set up logging
-        self.logger = logging.getLogger(__name__)
-        if self.online:
-            logging.basicConfig(level=logging.WARNING)
-        else:
-            logging.basicConfig(level=logging.DEBUG)
-
-        # set up UI
-        self.setupUi(self)
-        self.setWindowTitle("PIEScope User Interface Main Window")
-
+        self.setupUi(MainGui=self)
+        self.read_config_file()
+        self.setup_logging()
+        self.initialise_hardware()
         self.setup_connections()
-
-        # setup hardware
-        self.microscope = None
-        self.laser_controller = None
-
-        self.detector = None
-        self.mirror_controller = None
-        self.arduino = None
-        self.objective_stage = None
-        self.initialise_hardware(online=self.online)
-
-        # TODO: remove this if possible (used in milling window)
-        self.image_ion = None  # ion beam image (AdornedImage type)
-
-        # Set up GUI variables
-
-        self.DEFAULT_PATH = os.path.normpath(
-            os.path.expanduser("~/Pictures/PIESCOPE"))
-        self.save_destination_FM = self.DEFAULT_PATH
-        self.save_destination_FIBSEM = self.DEFAULT_PATH
-        self.save_destination_correlation = self.DEFAULT_PATH
-
-        self.lineEdit_save_filename_FM.setText("Image")
-        self.lineEdit_save_destination_FM.setText(self.DEFAULT_PATH)
-
-        self.lineEdit_save_filename_FIBSEM.setText("Image")
-        self.lineEdit_save_destination_FIBSEM.setText(self.DEFAULT_PATH)
-
-        self.correlation_output_path.setText(self.DEFAULT_PATH)
-
-        self.label_objective_stage_position.setText("Unknown")
-        self.comboBox_resolution.setCurrentIndex(1)  # resolution "1536x1024"
-
-        # colour scaling dict for 4-channel RGB display
-        self.colour_dict = {
-            "laser640": (148 / 255, 43 / 255, 35 / 255),
-            "laser561": (255 / 255, 143 / 255, 51 / 255),
-            "laser488": (0 / 255, 255 / 255, 0 / 255),
-            "laser405": (0 / 255, 0 / 255, 255 / 255),
-        }
-
-        # self.liveCheck is True when ready to start live imaging,
-        # and False while live imaging is running:
-        self.liveCheck = True
-
-        # self.laser_dict is a dictionary like: {"name": (power, exposure)}
-        # with types {str: (int, int)}
-        # Could refactor this out and rely only on self.lasers instead
-        self.current_laser_wavelength = "488nm"
-        self.current_laser_power = 0
-        self.current_laser_exposure = 1e6
-
-        self.laser_dict = {}  # {"name": (power, exposure)}
-        self.image_ion = (
-            []
-        )  # AdornedImage (for whatever is currently displayed in the FIBSEM side of the piescope GUI)
-        self.image_light = (
-            []
-        )  # list of 2D numpy arrays (how we open many images & use the slider for fluorescence images)
-        self.image_ion = []  # TODO: REMOVE # list of AdornedImages ? probably ?
-        # TODO: should be None, not an empty list to start with. PixMap object (pyqt)
-        self.current_pixmap_FM = None
-        # TODO: should be None, not an empty list to start with. PixMap object (pyqt)
-        self.current_pixmap_FIBSEM = None
+        self.setup_initial_values()
+        self.initialise_image_frames()
 
         self.pin_640 = "P03"
         self.pin_561 = "P02"
@@ -153,14 +63,74 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # TODO: make laser_to_pin in detector.py consistent with this so defined in one place, protocol?
         # TODO: same with camera pin
 
-        # set up imaging frames
-        self.figure_FM = None
-        self.figure_FIBSEM = None
-        self.initialise_image_frames()
+    def setup_initial_values(self):
+        self.live_imaging_running = False
+        self.image_light = None
+        self.image_ion = None
 
-    def initialise_hardware(self, online=False):
+        self.lineEdit_save_filename_FM.setText("Fluorescence Image")
+        self.lineEdit_save_filename_FIBSEM.setText("FIBSEM Image")
+        self.label_objective_stage_position.setText("Unknown")
+
+        self.save_destination_FM = self.logging_path
+        self.save_destination_FIBSEM = self.logging_path
+        self.save_destination_correlation = self.logging_path
+        self.lineEdit_save_destination_FM.setText(self.logging_path)
+        self.lineEdit_save_destination_FIBSEM.setText(self.logging_path)
+        self.correlation_output_path.setText(self.logging_path)
+
+        self.comboBox_resolution.setCurrentIndex(1)  # resolution "1536x1024"
+
+    def read_config_file(self):
+        # read config file
+        config_path = os.path.join(
+            os.path.dirname(piescope.__file__), "config.yml")
+        self.config = piescope.utils.read_config(config_path)
+
+        # set ip_address and online status
+        self.ip_address = self.config["system"]["ip_address"]
+        self.online = self.config["system"]["online"]
+        self.trigger_mode = self.config['imaging']['lm']['trigger_mode']
+
+    def setup_logging(self):
+        start_time = piescope_gui.utils.timestamp()
+        self.logging_path = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), "log", start_time)
+        if not os.path.isdir(self.logging_path):
+            os.makedirs(self.logging_path)
+
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        formatter = logging.Formatter(" %(asctime)s %(levelname)s %(message)s")
+
+        # set handler formatting and levels
+        file_handler = logging.FileHandler(f'{self.logging_path}/log.log')
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(level=logging.INFO)
+
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        if self.online:
+            stream_handler.setLevel(level=logging.INFO)
+        else:
+            stream_handler.setLevel(level=logging.DEBUG)
+
+        # add the handlers
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(stream_handler)
+
+    def initialise_hardware(self):
+        # setup hardware
+        self.microscope = None
+        self.laser_controller = None
+        self.detector = None
+        self.mirror_controller = None
+        self.arduino = None
+        self.objective_stage = None
+
         self.connect_to_fibsem_microscope(ip_address=self.ip_address)
-        if online:
+
+        if self.online:
             self.detector = Basler(settings=self.config)
             self.laser_controller = LaserController(settings=self.config)
             self.mirror_controller = mirror.PIController()
@@ -373,6 +343,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FM = _FigureCanvas(self.figure_FM)
         self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+        self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(
+            event, modality=Modality.Light))
 
         self.label_image_FM.setLayout(QtWidgets.QVBoxLayout())
         self.label_image_FM.layout().addWidget(self.toolbar_FM)
@@ -405,8 +377,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def connect_to_fibsem_microscope(self, ip_address="10.0.0.1"):
         """Connect to the FIBSEM microscope."""
         try:
-            from piescope import fibsem
-
             self.microscope = piescope.fibsem.initialise(ip_address=ip_address)
             self.camera_settings = self.update_fibsem_settings()
         except Exception as e:
@@ -518,9 +488,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.image_ion = piescope.fibsem.last_ion_image(self.microscope)
         except Exception as e:
             display_error_message(traceback.format_exc())
-        else:
-            self.image_ion = copy.deepcopy(self.image_ion)
-            return self.image_ion
 
     def fluorescence_image(
         self,
@@ -649,7 +616,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.radioButton_561.setEnabled(True)
                 self.radioButton_488.setEnabled(True)
                 self.radioButton_405.setEnabled(True)
-
                 self.stop_event.set()
         except (KeyboardInterrupt, SystemExit):
 
@@ -993,10 +959,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 display_error_message(msg)
                 return
 
-            # if the image is 3 dimensional, it is probably and RGB of shape (XYC)
+            # if the image is 3 dimensional, it is probably an RGB of shape (XYC)
             if image.ndim == 3:
                 # if the final dimension of the image is not RGB, shape might be (CXY)
-                if image.shape[-1] != 3:
+                if image.shape[-1] > 3:
                     # shift the first dimension to the final dimension (XYC)
                     image = np.moveaxis(image, 0, -1)
                     # if the final dimension of the image is still not RGB (CXY)
@@ -1013,25 +979,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # TODO: move this later in the process
             crosshair = piescope.utils.create_crosshair(
                 self.image_light, self.config)
-
-            # TODO: can this be moved to after all image modifications (probably)
-            plt.axis('off')
-            if self.canvas_FM:
-                self.label_image_FM.layout().removeWidget(self.canvas_FM)
-                self.canvas_FM.deleteLater()
-            self.canvas_FM = _FigureCanvas(self.figure_FM)
-
-            self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(
-                event, modality=Modality.Light))
-
             if settings['imaging']['lm']['filter_strength'] > 0:
                 image = ndi.median_filter(image, size=int(
                     settings['imaging']['lm']['filter_strength']))
-
-            # after modifications, if any, convert to rgb image
-            self.image_light = skimage.util.img_as_ubyte(
-                piescope.utils.rgb_image(image)
-            )
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor((240/255, 240/255, 240/255))
@@ -1107,7 +1057,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             x, y = piescope_gui.utils.pixel_to_realspace_coordinate(
                 [event.xdata, event.ydata], image, pixel_size)
 
-            from autoscript_sdb_microscope_client.structures import StagePosition
+            from autoscript_sdb_microscope_client.structures import \
+                StagePosition
             x_move = StagePosition(x=x, y=0, z=0)
             y_move = StagePosition(x=0, y=y, z=0)
             #TODO: CHECK
@@ -1219,7 +1170,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             arduino=self.arduino,
             settings=self.config
         )
-
         print("VOLUME: ", volume.shape)
 
         meta = {
@@ -1230,14 +1180,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         }
 
         max_intensity = piescope.utils.max_intensity_projection(volume)
-
         print("MAX INTENSITY", max_intensity.shape)
+
+        colour_dict = []
+        for laser in self.laser_controller.lasers.values():
+            if laser.volume_enabled:
+                colour_dict.append(laser.colour)
+
+        print(colour_dict)
+
+        rgb = piescope.utils.rgb_image(
+            max_intensity, colour_dict=colour_dict)
+        self.image_light = rgb
+
         if self.config['imaging']['volume']['autosave']:
+            # save full volume
             save_filename = os.path.join(
                 self.save_destination_FM,
                 "Volume_" + self.lineEdit_save_filename_FM.text() + ".tif",)
             piescope.utils.save_image(volume, save_filename, metadata=meta)
             print("Saved: {}".format(save_filename))
+
             # Save maximum intensity projection
             save_filename_max_intensity = os.path.join(
                 self.save_destination_FM,
@@ -1247,71 +1210,23 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 max_intensity, save_filename_max_intensity, metadata=meta
             )
             print("Saved: {}".format(save_filename_max_intensity))
-            # Update display
-            rgb = piescope.utils.rgb_image(max_intensity)
-            self.image_light = rgb
-            self.update_display(modality=Modality.Light, settings=self.config)
+
+            # Save maximum intensity rgb
+            save_filename_rgb = os.path.join(
+                self.save_destination_FM,
+                "RGB_" + self.lineEdit_save_filename_FM.text() + ".tif",
+            )
+            piescope.utils.save_image(
+                rgb, save_filename_rgb, metadata=meta
+            )
+            print("Saved: {}".format(save_filename_rgb))
+
+        # Update display
+        self.update_display(modality=Modality.Light, settings=self.config)
 
     def acquire_volume2(self, mode=ImagingType.WIDEFIELD, autosave=True):
         print("Acquiring fluorescence volume image...")
         try:  # TODO: shorten the amount of calls under the try, or at least split
-
-            # laser_dict = self.laser_dict
-            # if laser_dict == {}:
-            #     display_error_message("Please select up to four lasers.")
-            #     return
-            # if len(laser_dict) > 4:
-            #     display_error_message("Please select a maximum of 4 lasers.")
-            #     return
-
-            # try:
-            #     volume_height = int(self.lineEdit_volume_height.text())
-            # except ValueError:
-            #     display_error_message(
-            #         "Volume height must be a positive integer")
-            #     return
-            # else:
-            #     if volume_height <= 0:
-            #         display_error_message(
-            #             "Volume height must be a positive integer")
-            #         return
-
-            # try:
-            #     z_slice_distance = int(self.lineEdit_slice_distance.text())
-            # except ValueError:
-            #     display_error_message(
-            #         "Slice distance must be a positive integer")
-            #     return
-            # else:
-            #     if z_slice_distance <= 0:
-            #         display_error_message(
-            #             "Slice distance must be a positive integer")
-            #         return
-            # num_z_slices = round(volume_height / z_slice_distance) + 1
-
-            if mode == ImagingType.WIDEFIELD:
-                mode = "widefield"
-            else:
-                mode = "sim"
-
-            volume = piescope.lm.volume.volume_acquisition(
-                self.laser_dict,
-                num_z_slices,
-                z_slice_distance,
-                mode=mode,
-                detector=self.detector,
-                lasers=self.lasers,
-                objective_stage=self.objective_stage,
-                mirror_controller=self.mirror_controller,
-                arduino=self.arduino,
-                laser_pins=self.pins,
-            )
-            meta = {
-                "z_slice_distance": str(z_slice_distance),
-                "num_z_slices": str(num_z_slices),
-                "laser_dict": str(laser_dict),
-                "volume_height": str(volume_height),
-            }
             max_intensity = piescope.utils.max_intensity_projection(volume)
             if autosave is True:
                 # # from old ssaving of MIP, RAW, RGB, might be useful
@@ -1473,31 +1388,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         except Exception as e:
             display_error_message(traceback.format_exc())
-
-
-def _create_array_list(
-    input_list, modality
-):  # TODO: remove this, array_list no longer required
-    if modality == "FM":
-        if len(input_list) > 1:
-            array_list_FM = skimage.io.imread_collection(
-                input_list, conserve_memory=True
-            )
-        else:
-            array_list_FM = skimage.io.imread(input_list[0])
-        return array_list_FM
-    elif modality == "FIBSEM":
-        if len(input_list) > 1:
-            array_list_FIBSEM = skimage.io.imread_collection(input_list)
-        else:
-            array_list_FIBSEM = skimage.io.imread(input_list[0])
-        return array_list_FIBSEM
-    elif modality == "MILLING":
-        if len(input_list) > 1:
-            array_list_MILLING = skimage.io.imread_collection(input_list)
-        else:
-            array_list_MILLING = skimage.io.imread(input_list[0])
-        return array_list_MILLING
 
 
 def main():

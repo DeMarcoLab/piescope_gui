@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>PIEScope User Interface Main Window</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="maximumSize">

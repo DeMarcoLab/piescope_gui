@@ -2,7 +2,7 @@
 docs/_build
 
 # Logging
-logs/*
+piescope_gui/log/*
 !logs/.gitkeep
 
 # Testing and coverage

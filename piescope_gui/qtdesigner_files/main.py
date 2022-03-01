@@ -833,7 +833,7 @@ class Ui_MainGui(object):
 
     def retranslateUi(self, MainGui):
         _translate = QtCore.QCoreApplication.translate
-        MainGui.setWindowTitle(_translate("MainGui", "MainWindow"))
+        MainGui.setWindowTitle(_translate("MainGui", "PIEScope User Interface Main Window"))
         self.label_exposure_8.setText(_translate("MainGui", "Exposure (ms)"))
         self.lineEdit_exposure_1.setText(_translate("MainGui", "1000"))
         self.checkBox_laser1.setText(_translate("MainGui", "640nm"))
