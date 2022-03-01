@@ -43,26 +43,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.setup_initial_values()
         self.initialise_image_frames()
 
-        self.pin_640 = "P03"
-        self.pin_561 = "P02"
-        self.pin_488 = "P01"
-        self.pin_405 = "P00"
-
-        self.pins = [self.pin_640, self.pin_561, self.pin_488, self.pin_405]
-
-        if self.online:
-            structured.single_line_onoff(onoff=False, pin=self.pin_640)
-            structured.single_line_onoff(onoff=False, pin=self.pin_561)
-            structured.single_line_onoff(onoff=False, pin=self.pin_488)
-            structured.single_line_onoff(onoff=False, pin=self.pin_405)
-            structured.single_line_onoff(onoff=False, pin="P04")
-            # PO4 IS OBJECTIVE READY PIN
-
-        # structured.single_line_onoff(onoff=False, pin='P13')
-        # structured.single_line_onoff(onoff=False, pin='P27')
-        # TODO: make laser_to_pin in detector.py consistent with this so defined in one place, protocol?
-        # TODO: same with camera pin
-
     def setup_initial_values(self):
         self.live_imaging_running = False
         self.image_light = None
@@ -120,7 +100,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.logger.addHandler(stream_handler)
 
     def initialise_hardware(self):
-        # setup hardware
         self.microscope = None
         self.laser_controller = None
         self.detector = None
@@ -132,10 +111,32 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         if self.online:
             self.detector = Basler(settings=self.config)
-            self.laser_controller = LaserController(settings=self.config)
-            self.mirror_controller = mirror.PIController()
+            
+            # connection to the laser controller
+            try:
+                self.laser_controller = LaserController(settings=self.config)
+                for laser in self.laser_controller.lasers.values():
+                    try:
+                        structured.single_line_onoff(onoff=False, pin=laser.pin)
+                    except:
+                        display_error_message()
+            except: 
+                display_error_message('Could not connect to laser controller')
+
             self.arduino = arduino.Arduino()
             self.objective_stage = self.initialise_objective_stage()
+
+
+            self.mirror_controller = mirror.PIController()
+
+            structured.single_line_onoff(onoff=False, pin="P04")
+            # PO4 IS OBJECTIVE READY PIN
+
+            # structured.single_line_onoff(onoff=False, pin='P13')
+            # structured.single_line_onoff(onoff=False, pin='P27')
+
+
+
 
     # TODO: hardware dependent connections
 
@@ -536,38 +537,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.image_light = image
 
         self.update_display(modality=Modality.Light, settings=self.config)
-
-    # ############## Fluorescence detector methods ##############
-        # from old RGB - probably shows how do it well
-        #     # normalisation from 0-255 -> 0-1
-        #     stack_rgb = stack_rgb / 255  # for weighting
-        #
-        # elif color == "rgb":
-        #     stack_rgb = stack_mip
-        #
-        # else:
-        #     print('Invalid display colour')
-        #     return
-        #
-        # #TODO: remove self.image_lm?  Or at least make consistent with FM
-        # self.image_light = stack_rgb
-        #
-        # save_filename = os.path.join(
-        #     self.save_destination_FM,
-        #     'F_' + self.lineEdit_save_filename_FM.text() + '.tif')
-        # self.string_list_FM = [save_filename]
-        # self.slider_stack_FM.setValue(1)
-        # self.update_display(modality=Modality.Light, settings=self.config)
-        # self.lm_metadata = {'laser_dict': str(laser_dict),
-        #                     'timestamp': timestamp()}
-        # # if autosave is True:
-        # #     piescope.utils.save_image(image, save_filename, metadata=self.lm_metadata)
-        # #     print("Saved: {}".format(save_filename))
-        # # Update GUI
-        #
-        # # return unaltered stack for volume/saving purposes
-        # # shape: (Channels, Patterns, X, Y)
-        # return stack
 
     def live_imaging_worker(self, laser: Laser, stop_event: threading.Event, settings: dict):
         self.live_imaging_running = True
