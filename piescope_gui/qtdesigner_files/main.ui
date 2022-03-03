@@ -128,6 +128,9 @@
           <layout class="QGridLayout" name="gridLayout_24">
            <item row="0" column="3">
             <widget class="QRadioButton" name="radioButton_640">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -146,7 +149,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser1">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -156,7 +159,7 @@
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_1">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -165,6 +168,9 @@
            </item>
            <item row="0" column="0">
             <widget class="QCheckBox" name="checkBox_laser1">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="layoutDirection">
               <enum>Qt::RightToLeft</enum>
              </property>
@@ -176,7 +182,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser1">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -189,7 +195,7 @@
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_2">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -206,7 +212,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser2">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -215,6 +221,9 @@
            </item>
            <item row="0" column="0">
             <widget class="QCheckBox" name="checkBox_laser2">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="layoutDirection">
               <enum>Qt::RightToLeft</enum>
              </property>
@@ -225,6 +234,9 @@
            </item>
            <item row="0" column="3">
             <widget class="QRadioButton" name="radioButton_561">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -236,7 +248,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser2">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -249,7 +261,7 @@
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_3">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -258,6 +270,9 @@
            </item>
            <item row="0" column="0">
             <widget class="QCheckBox" name="checkBox_laser3">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="layoutDirection">
               <enum>Qt::RightToLeft</enum>
              </property>
@@ -276,7 +291,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser3">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -285,6 +300,9 @@
            </item>
            <item row="0" column="3">
             <widget class="QRadioButton" name="radioButton_488">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -299,7 +317,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser3">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -318,6 +336,9 @@
            </item>
            <item row="1" column="3">
             <widget class="QRadioButton" name="radioButton_405">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string/>
              </property>
@@ -329,7 +350,7 @@
            <item row="2" column="1" colspan="2">
             <widget class="QSlider" name="slider_laser4">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
@@ -339,7 +360,7 @@
            <item row="1" column="2">
             <widget class="QLineEdit" name="lineEdit_exposure_4">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="text">
               <string>1000</string>
@@ -348,6 +369,9 @@
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="checkBox_laser4">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="layoutDirection">
               <enum>Qt::RightToLeft</enum>
              </property>
@@ -359,7 +383,7 @@
            <item row="2" column="0">
             <widget class="QSpinBox" name="spinBox_laser4">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -423,6 +447,9 @@
            </item>
            <item row="3" column="0" colspan="2">
             <widget class="QPushButton" name="pushButton_volume">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Acquire Volume</string>
              </property>
@@ -470,6 +497,9 @@
                </property>
                <item row="5" column="1">
                 <widget class="QToolButton" name="toolButton_negative">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -502,6 +532,9 @@
                </item>
                <item row="1" column="1" colspan="3">
                 <widget class="QPushButton" name="pushButton_move_absolute">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
                   <string>Move Absolute (um)</string>
                  </property>
@@ -512,16 +545,26 @@
                </item>
                <item row="4" column="1" colspan="3">
                 <widget class="QPushButton" name="pushButton_move_relative">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
                   <string>Move Relative (um)</string>
                  </property>
                 </widget>
                </item>
                <item row="5" column="2">
-                <widget class="QLineEdit" name="lineEdit_move_relative"/>
+                <widget class="QLineEdit" name="lineEdit_move_relative">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                </widget>
                </item>
                <item row="5" column="3">
                 <widget class="QToolButton" name="toolButton_positive">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="minimumSize">
                   <size>
                    <width>22</width>
@@ -572,6 +615,9 @@
                </property>
                <item row="2" column="0">
                 <widget class="QPushButton" name="pushButton_save_objective_position">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
                   <string>Save Position</string>
                  </property>
@@ -598,6 +644,9 @@
                </item>
                <item row="2" column="1">
                 <widget class="QPushButton" name="pushButton_go_to_saved_position">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
                   <string>Go to saved position</string>
                  </property>
@@ -612,6 +661,9 @@
                </item>
                <item row="3" column="0">
                 <widget class="QPushButton" name="pushButton_get_position">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
                   <string>Get Position</string>
                  </property>
@@ -703,6 +755,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="to_light_microscope">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
@@ -716,6 +771,9 @@
                </item>
                <item>
                 <widget class="QPushButton" name="to_electron_microscope">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
@@ -1048,6 +1106,9 @@
                  </property>
                  <item>
                   <widget class="QPushButton" name="button_get_image_FM">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                      <horstretch>0</horstretch>
@@ -1067,6 +1128,9 @@
                  </item>
                  <item>
                   <widget class="QPushButton" name="button_live_image_FM">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                      <horstretch>0</horstretch>
@@ -1110,6 +1174,9 @@
                     </property>
                     <item row="1" column="1" alignment="Qt::AlignHCenter">
                      <widget class="QRadioButton" name="radioButton_SIM">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
                       <property name="text">
                        <string>SIM</string>
                       </property>
@@ -1117,6 +1184,9 @@
                     </item>
                     <item row="3" column="0" colspan="2">
                      <widget class="QPushButton" name="pushButton_pattern_next">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Maximum">
                         <horstretch>0</horstretch>
@@ -1149,6 +1219,9 @@
                     </item>
                     <item row="1" column="0" alignment="Qt::AlignHCenter">
                      <widget class="QRadioButton" name="radioButton_Widefield">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                         <horstretch>0</horstretch>
@@ -1165,6 +1238,9 @@
                     </item>
                     <item row="0" column="0" colspan="2">
                      <widget class="QComboBox" name="comboBox_cmap">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
                       <item>
                        <property name="text">
                         <string>gray</string>
@@ -1496,6 +1572,9 @@
               </property>
               <item row="0" column="0">
                <widget class="QPushButton" name="button_get_image_FIB">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                   <horstretch>0</horstretch>
@@ -1509,6 +1588,9 @@
               </item>
               <item row="0" column="1">
                <widget class="QPushButton" name="button_get_image_SEM">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
                   <horstretch>0</horstretch>
@@ -1522,6 +1604,9 @@
               </item>
               <item row="1" column="0">
                <widget class="QPushButton" name="button_last_image_FIB">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                   <horstretch>0</horstretch>
@@ -1535,6 +1620,9 @@
               </item>
               <item row="1" column="1">
                <widget class="QPushButton" name="button_last_image_SEM">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                   <horstretch>0</horstretch>
@@ -1671,6 +1759,9 @@
               </item>
               <item>
                <widget class="QLineEdit" name="lineEdit_dwell_time">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -1690,6 +1781,9 @@
               </item>
               <item>
                <widget class="QCheckBox" name="checkBox_Autocontrast">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -1710,6 +1804,9 @@
               </item>
               <item>
                <widget class="QComboBox" name="comboBox_resolution">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -1762,7 +1859,7 @@
      <x>0</x>
      <y>0</y>
      <width>1623</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

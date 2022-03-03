@@ -12,10 +12,10 @@ import piescope.lm
 import piescope.utils
 import scipy.ndimage as ndi
 from matplotlib import pyplot as plt
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as _FigureCanvas
-from matplotlib.backends.backend_qt5agg import \
-    NavigationToolbar2QT as _NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as _FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    NavigationToolbar2QT as _NavigationToolbar,
+)
 from piescope.lm import arduino, mirror, structured
 from piescope.lm.detector import Basler
 from piescope.lm.laser import Laser, LaserController
@@ -34,14 +34,14 @@ from piescope_gui.utils import display_error_message, timestamp
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self):
         super(GUIMainWindow, self).__init__()
-
         self.setupUi(MainGui=self)
         self.read_config_file()
         self.setup_logging()
-        self.initialise_hardware()
-        self.setup_connections()
         self.setup_initial_values()
         self.initialise_image_frames()
+        self.setup_connections()
+        self.initialise_hardware()
+        self.update_connections()
 
     def setup_initial_values(self):
         self.live_imaging_running = False
@@ -63,19 +63,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def read_config_file(self):
         # read config file
-        config_path = os.path.join(
-            os.path.dirname(piescope.__file__), "config.yml")
+        config_path = os.path.join(os.path.dirname(piescope.__file__), "config.yml")
         self.config = piescope.utils.read_config(config_path)
 
         # set ip_address and online status
         self.ip_address = self.config["system"]["ip_address"]
         self.online = self.config["system"]["online"]
-        self.trigger_mode = self.config['imaging']['lm']['trigger_mode']
+        self.trigger_mode = self.config["imaging"]["lm"]["trigger_mode"]
 
     def setup_logging(self):
         start_time = piescope_gui.utils.timestamp()
-        self.logging_path = os.path.join(os.path.dirname(
-            os.path.abspath(__file__)), "log", start_time)
+        self.logging_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "log", start_time
+        )
         if not os.path.isdir(self.logging_path):
             os.makedirs(self.logging_path)
 
@@ -84,7 +84,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         formatter = logging.Formatter(" %(asctime)s %(levelname)s %(message)s")
 
         # set handler formatting and levels
-        file_handler = logging.FileHandler(f'{self.logging_path}/log.log')
+        file_handler = logging.FileHandler(f"{self.logging_path}/log.log")
         file_handler.setFormatter(formatter)
         file_handler.setLevel(level=logging.INFO)
 
@@ -101,55 +101,197 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def initialise_hardware(self):
         self.microscope = None
-        self.laser_controller = None
         self.detector = None
+        self.laser_controller = None
+        self.objective_stage = None
         self.mirror_controller = None
         self.arduino = None
-        self.objective_stage = None
-
-        self.connect_to_fibsem_microscope(ip_address=self.ip_address)
 
         if self.online:
-            self.detector = Basler(settings=self.config)
-            
-            # connection to the laser controller
-            try:
-                self.laser_controller = LaserController(settings=self.config)
-                for laser in self.laser_controller.lasers.values():
-                    try:
-                        structured.single_line_onoff(onoff=False, pin=laser.pin)
-                    except:
-                        display_error_message()
-            except: 
-                display_error_message('Could not connect to laser controller')
-
-            self.arduino = arduino.Arduino()
-            self.objective_stage = self.initialise_objective_stage()
-
-
-            self.mirror_controller = mirror.PIController()
-
-            structured.single_line_onoff(onoff=False, pin="P04")
-            # PO4 IS OBJECTIVE READY PIN
-
+            self.connect_to_fibsem_microscope()
+            self.connect_to_basler_detector()
+            self.connect_to_laser_controller()
+            self.connect_to_objective_controller()
+            # self.connect_to_mirror_controller()
+            self.connect_to_arduino()
+            # TODO: Figure out these pins
             # structured.single_line_onoff(onoff=False, pin='P13')
             # structured.single_line_onoff(onoff=False, pin='P27')
 
-
-
-
     # TODO: hardware dependent connections
 
-    def setup_connections(self):
+    def update_microscope_connections(self):
 
+        if self.microscope:
+            self.comboBox_resolution.setEnabled(True)
+            self.lineEdit_dwell_time.setEnabled(True)
+            self.button_get_image_FIB.setEnabled(True)
+            self.button_get_image_SEM.setEnabled(True)
+            self.button_last_image_FIB.setEnabled(True)
+            self.button_last_image_SEM.setEnabled(True)
+            self.to_light_microscope.setEnabled(True)
+            self.to_electron_microscope.setEnabled(True)
+            self.pushButton_milling.setEnabled(True)
+
+            self.comboBox_resolution.currentTextChanged.connect(
+                lambda: self.update_fibsem_settings()
+            )
+            self.lineEdit_dwell_time.textChanged.connect(
+                lambda: self.update_fibsem_settings()
+            )
+
+            self.button_get_image_FIB.clicked.connect(lambda: self.get_FIB_image())
+            self.button_get_image_SEM.clicked.connect(lambda: self.get_SEM_image())
+            self.button_last_image_FIB.clicked.connect(
+                lambda: self.get_last_FIB_image()
+            )
+            self.button_last_image_SEM.clicked.connect(
+                lambda: self.get_last_SEM_image()
+            )
+
+            self.to_light_microscope.clicked.connect(
+                lambda: self.move_to_light_microscope()
+            )
+            self.to_electron_microscope.clicked.connect(
+                lambda: self.move_to_electron_microscope()
+            )
+
+            self.pushButton_milling.clicked.connect(lambda: self.milling())
+
+        else:
+            self.comboBox_resolution.setEnabled(False)
+            self.lineEdit_dwell_time.setEnabled(False)
+            self.button_get_image_FIB.setEnabled(False)
+            self.button_get_image_SEM.setEnabled(False)
+            self.button_last_image_FIB.setEnabled(False)
+            self.button_last_image_SEM.setEnabled(False)
+            self.to_light_microscope.setEnabled(False)
+            self.to_electron_microscope.setEnabled(False)
+            self.pushButton_milling.setEnabled(False)
+
+    def update_connections(self):
+        self.update_microscope_connections()
+        self.update_laser_connections()
+
+    def update_laser_connections(self):
+        if self.laser_controller and not self.checkBox_laser1.isEnabled:
+            self.checkBox_laser1.setEnabled(True)
+            self.checkBox_laser2.setEnabled(True)
+            self.checkBox_laser3.setEnabled(True)
+            self.checkBox_laser4.setEnabled(True)
+            self.slider_laser1.setEnabled(True)
+            self.slider_laser2.setEnabled(True)
+            self.slider_laser3.setEnabled(True)
+            self.slider_laser4.setEnabled(True)
+            self.spinBox_laser1.setEnabled(True)
+            self.spinBox_laser2.setEnabled(True)
+            self.spinBox_laser3.setEnabled(True)
+            self.spinBox_laser4.setEnabled(True)
+            self.lineEdit_exposure_1.setEnabled(True)
+            self.lineEdit_exposure_2.setEnabled(True)
+            self.lineEdit_exposure_3.setEnabled(True)
+            self.lineEdit_exposure_4.setEnabled(True)
+            self.buttonGroup.setEnabled(True)
+
+            self.checkBox_laser1.clicked.connect(
+                lambda: self.update_volume_lasers(
+                    laser_name="laser640", enabled=self.checkBox_laser1.isChecked()
+                )
+            )
+            self.checkBox_laser2.clicked.connect(
+                lambda: self.update_volume_lasers(
+                    laser_name="laser561", enabled=self.checkBox_laser2.isChecked()
+                )
+            )
+            self.checkBox_laser3.clicked.connect(
+                lambda: self.update_volume_lasers(
+                    laser_name="laser488", enabled=self.checkBox_laser3.isChecked()
+                )
+            )
+            self.checkBox_laser4.clicked.connect(
+                lambda: self.update_volume_lasers(
+                    laser_name="laser405", enabled=self.checkBox_laser4.isChecked()
+                )
+            )
+
+            self.slider_laser1.valueChanged.connect(
+                lambda: self.update_lasers("laser640")
+            )
+            self.slider_laser2.valueChanged.connect(
+                lambda: self.update_lasers("laser561")
+            )
+            self.slider_laser3.valueChanged.connect(
+                lambda: self.update_lasers("laser488")
+            )
+            self.slider_laser4.valueChanged.connect(
+                lambda: self.update_lasers("laser405")
+            )
+
+            self.spinBox_laser1.valueChanged.connect(
+                lambda: self.update_lasers("laser640")
+            )
+            self.spinBox_laser2.valueChanged.connect(
+                lambda: self.update_lasers("laser561")
+            )
+            self.spinBox_laser3.valueChanged.connect(
+                lambda: self.update_lasers("laser488")
+            )
+            self.spinBox_laser4.valueChanged.connect(
+                lambda: self.update_lasers("laser405")
+            )
+
+
+            self.lineEdit_exposure_1.textChanged.connect(
+                lambda: self.update_lasers("laser640")
+            )
+            self.lineEdit_exposure_2.textChanged.connect(
+                lambda: self.update_lasers("laser561")
+            )
+            self.lineEdit_exposure_3.textChanged.connect(
+                lambda: self.update_lasers("laser488")
+            )
+            self.lineEdit_exposure_4.textChanged.connect(
+                lambda: self.update_lasers("laser405")
+            )
+
+            self.buttonGroup.buttonClicked.connect(
+                lambda: self.update_current_laser(
+                    self.buttonGroup.checkedButton().objectName()
+                )
+            )
+
+        if self.laser_controller and self.detector and not self.button_get_image_FIB.isEnabled():
+            self.button_get_image_FM.clicked.connect(
+                lambda: self.fluorescence_image(
+                    laser=self.laser_controller.current_laser, settings=self.config,
+                )
+            )
+            self.button_live_image_FM.clicked.connect(
+                lambda: self.fluorescence_live_imaging(
+                    self.laser_controller.current_laser,
+                )
+            )
+            self.button_get_image_FM.clicked.connect(
+                lambda: self.fluorescence_image(
+                    laser=self.laser_controller.current_laser, settings=self.config,
+                )
+            )
+            self.button_live_image_FM.clicked.connect(
+                lambda: self.fluorescence_live_imaging(
+                    self.laser_controller.current_laser,
+                )
+            )
+
+
+    def setup_connections(self):
         self.actionOpen_FM_Image.triggered.connect(
-            lambda: self.open_images(Modality.Light))
+            lambda: self.open_images(Modality.Light)
+        )
         self.actionOpen_FIBSEM_Image.triggered.connect(
             lambda: self.open_images(Modality.Ion)
         )
 
-        self.actionSave_FM_Image.triggered.connect(
-            lambda: self.save_image("FM"))
+        self.actionSave_FM_Image.triggered.connect(lambda: self.save_image("FM"))
         self.actionSave_FIBSEM_Image.triggered.connect(
             lambda: self.save_image("FIBSEM")
         )
@@ -165,102 +307,21 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         )
 
         self.comboBox_cmap.currentTextChanged.connect(
-            lambda: self.update_display(modality=Modality.Light, settings=self.config
-                                        )
+            lambda: self.update_display(modality=Modality.Light, settings=self.config)
         )
 
         self.pushButton_load_FM.clicked.connect(
-            lambda: self.open_images(Modality.Light))
+            lambda: self.open_images(Modality.Light)
+        )
         self.pushButton_load_FIBSEM.clicked.connect(
-            lambda: self.open_images(Modality.Ion))
+            lambda: self.open_images(Modality.Ion)
+        )
 
-        self.pushButton_save_FM.clicked.connect(lambda: self.save_image('FM'))
-        self.pushButton_save_FIBSEM.clicked.connect(
-            lambda: self.save_image('FIBSEM'))
+        self.pushButton_save_FM.clicked.connect(lambda: self.save_image("FM"))
+        self.pushButton_save_FIBSEM.clicked.connect(lambda: self.save_image("FIBSEM"))
 
         if self.online:
 
-            self.comboBox_resolution.currentTextChanged.connect(
-                lambda: self.update_fibsem_settings()
-            )
-            self.lineEdit_dwell_time.textChanged.connect(
-                lambda: self.update_fibsem_settings()
-            )
-
-            self.checkBox_laser1.clicked.connect(lambda: self.update_volume_lasers(
-                laser_name="laser640", enabled=self.checkBox_laser1.isChecked()))
-            self.checkBox_laser2.clicked.connect(lambda: self.update_volume_lasers(
-                laser_name="laser561", enabled=self.checkBox_laser2.isChecked()))
-            self.checkBox_laser3.clicked.connect(lambda: self.update_volume_lasers(
-                laser_name="laser488", enabled=self.checkBox_laser3.isChecked()))
-            self.checkBox_laser4.clicked.connect(lambda: self.update_volume_lasers(
-                laser_name="laser405", enabled=self.checkBox_laser4.isChecked()))
-
-            self.slider_laser1.valueChanged.connect(
-                lambda: self.update_laser_dict("laser640")
-            )
-            self.slider_laser2.valueChanged.connect(
-                lambda: self.update_laser_dict("laser561")
-            )
-            self.slider_laser3.valueChanged.connect(
-                lambda: self.update_laser_dict("laser488")
-            )
-            self.slider_laser4.valueChanged.connect(
-                lambda: self.update_laser_dict("laser405")
-            )
-
-            self.spinBox_laser1.valueChanged.connect(
-                lambda: self.update_laser_dict("laser640")
-            )
-            self.spinBox_laser2.valueChanged.connect(
-                lambda: self.update_laser_dict("laser561")
-            )
-            self.spinBox_laser3.valueChanged.connect(
-                lambda: self.update_laser_dict("laser488")
-            )
-            self.spinBox_laser4.valueChanged.connect(
-                lambda: self.update_laser_dict("laser405")
-            )
-
-            self.lineEdit_exposure_1.textChanged.connect(
-                lambda: self.update_laser_dict("laser640")
-            )
-            self.lineEdit_exposure_2.textChanged.connect(
-                lambda: self.update_laser_dict("laser561")
-            )
-            self.lineEdit_exposure_3.textChanged.connect(
-                lambda: self.update_laser_dict("laser488")
-            )
-            self.lineEdit_exposure_4.textChanged.connect(
-                lambda: self.update_laser_dict("laser405")
-            )
-
-            self.button_get_image_FIB.clicked.connect(
-                lambda: self.get_FIB_image())
-            self.button_get_image_SEM.clicked.connect(
-                lambda: self.get_SEM_image())
-            self.button_last_image_FIB.clicked.connect(
-                lambda: self.get_last_FIB_image())
-            self.button_last_image_SEM.clicked.connect(
-                lambda: self.get_last_SEM_image())
-
-            self.buttonGroup.buttonClicked.connect(
-                lambda: self.update_current_laser(
-                    self.buttonGroup.checkedButton().objectName()
-                )
-            )
-
-            self.button_get_image_FM.clicked.connect(
-                lambda: self.fluorescence_image(
-                    laser=self.laser_controller.current_laser,
-                    settings=self.config,
-                )
-            )
-            self.button_live_image_FM.clicked.connect(
-                lambda: self.fluorescence_live_imaging(
-                    self.laser_controller.current_laser,
-                )
-            )
 
             self.pushButton_initialise_stage.clicked.connect(
                 self.initialise_objective_stage
@@ -291,32 +352,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             )
 
             self.connect_microscope.clicked.connect(
-                lambda: self.connect_to_fibsem_microscope(
-                    ip_address=self.ip_address)
-            )
-            self.to_light_microscope.clicked.connect(
-                lambda: self.move_to_light_microscope()
-            )
-            self.to_electron_microscope.clicked.connect(
-                lambda: self.move_to_electron_microscope()
+                lambda: self.connect_to_fibsem_microscope(ip_address=self.ip_address)
             )
 
             self.pushButton_volume.clicked.connect(
                 lambda: self.acquire_volume(
-                    imaging_mode=self.mirror_controller.get_mode())
+                    imaging_mode=self.mirror_controller.get_mode()
+                )
             )
-            self.pushButton_correlation.clicked.connect(
-                lambda: self.correlateim())
-            self.pushButton_milling.clicked.connect(lambda: self.milling())
+            self.pushButton_correlation.clicked.connect(lambda: self.correlateim())
 
-            self.pushButton_get_position.clicked.connect(
-                self.objective_stage_position)
+            self.pushButton_get_position.clicked.connect(self.objective_stage_position)
             self.pushButton_save_objective_position.clicked.connect(
                 self.save_objective_stage_position
             )
             self.pushButton_go_to_saved_position.clicked.connect(
-                lambda: self.move_absolute_objective_stage(
-                    self.objective_stage)
+                lambda: self.move_absolute_objective_stage(self.objective_stage)
             )
 
             self.radioButton_Widefield.clicked.connect(
@@ -339,20 +390,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def initialise_image_frames(self):
         self.figure_FM = plt.figure()
-        plt.axis('off')
+        plt.axis("off")
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FM = _FigureCanvas(self.figure_FM)
         self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
-        self.canvas_FM.mpl_connect('button_press_event', lambda event: self.on_gui_click(
-            event, modality=Modality.Light))
+        self.canvas_FM.mpl_connect(
+            "button_press_event",
+            lambda event: self.on_gui_click(event, modality=Modality.Light),
+        )
 
         self.label_image_FM.setLayout(QtWidgets.QVBoxLayout())
         self.label_image_FM.layout().addWidget(self.toolbar_FM)
         self.label_image_FM.layout().addWidget(self.canvas_FM)
 
         self.figure_FIBSEM = plt.figure()
-        plt.axis('off')
+        plt.axis("off")
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
@@ -368,20 +421,84 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # Change values in qtdesigner_files\main.py
         if self.objective_stage is not None and self.online:
             # Return objective lens stage to the "out" position and disconnect.
-            self.move_absolute_objective_stage(
-                self.objective_stage, position=-1000)
+            self.move_absolute_objective_stage(self.objective_stage, position=-1000)
             self.objective_stage.disconnect()
         if self.microscope is not None:
             self.microscope.disconnect()
 
+    def connect_to_arduino(self):
+        try:
+            self.arduino = arduino.Arduino()
+        except:
+            display_error_message(
+                f"Unable to connect to Arduino. <br><br>{traceback.format_exc()}"
+            )
+
+    def connect_to_mirror_controller(self):
+        try:
+            self.mirror_controller = mirror.PIController()
+        except:
+            display_error_message(
+                f"Unable to connect to mirror controller. <br><br>{traceback.format_exc()}"
+            )
+
+    def connect_to_objective_controller(self):
+        try:
+            self.objective_stage = self.initialise_objective_stage()
+            try:
+                structured.single_line_onoff(
+                    onoff=False, pin=self.config["lm_objective"]["pin"]
+                )
+            except:
+                display_error_message(
+                    f"Unable to connect to niqadmx device. <br><br>{traceback.format_exc()}"
+                )
+        except:
+            display_error_message(
+                f"Unable to connect to lm objective controller. <br><br>{traceback.format_exc()}"
+            )
+
+    def connect_to_laser_controller(self):
+        try:
+            self.laser_controller = LaserController(settings=self.config)
+            try:
+                for laser in self.laser_controller.lasers.values():
+                    structured.single_line_onoff(onoff=False, pin=laser.pin)
+            except:
+                display_error_message(
+                    f"Unable to connect to niqadmx device. <br><br>{traceback.format_exc()}"
+                )
+        except:
+            display_error_message(
+                f"Unable to connect to laser controller. <br><br>{traceback.format_exc()}"
+            )
+
+    def connect_to_basler_detector(self):
+        try:
+            self.detector = Basler(settings=self.config)
+            try:
+                structured.single_line_onoff(
+                    onoff=False, pin=self.config["imaging"]["lm"]["camera"]["pin"]
+                )
+            except:
+                display_error_message(
+                    f"Unable to connect to niqadmx device. <br><br>{traceback.format_exc()}"
+                )
+        except:
+            display_error_message(
+                f"Unable to connect to Basler device. <br><br>{traceback.format_exc()}"
+            )
+
     ############## FIBSEM microscope methods ##############
-    def connect_to_fibsem_microscope(self, ip_address="10.0.0.1"):
+    def connect_to_fibsem_microscope(self):
         """Connect to the FIBSEM microscope."""
         try:
-            self.microscope = piescope.fibsem.initialise(ip_address=ip_address)
+            self.microscope = piescope.fibsem.initialise(ip_address=self.ip_address)
             self.camera_settings = self.update_fibsem_settings()
         except Exception as e:
-            display_error_message(traceback.format_exc())
+            display_error_message(
+                f"Unable to connect to the FIB-SEM. <br><br>{traceback.format_exc()}"
+            )
 
     def update_fibsem_settings(self):
         if not self.microscope and self.online:
@@ -395,7 +512,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.camera_settings = fibsem_settings
             return fibsem_settings
         except Exception as e:
-            display_error_message(traceback.format_exc())
+            display_error_message(
+                f"Unable to update FIB-SEM settings {traceback.format_exc()}"
+            )
 
     ############## FIBSEM sample stage methods ##############
     def move_to_light_microscope(
@@ -476,8 +595,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def get_last_SEM_image(self):
         try:
-            self.image_ion = piescope.fibsem.last_electron_image(
-                self.microscope)
+            self.image_ion = piescope.fibsem.last_electron_image(self.microscope)
             self.update_display(modality=Modality.Ion, settings=self.config)
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -491,12 +609,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message(traceback.format_exc())
 
     def fluorescence_image(
-        self,
-        laser: Laser,
-        settings: dict,
+        self, laser: Laser, settings: dict,
     ):
         if self.laser_controller is None:
-            display_error_message('Not connect to lasers')
+            display_error_message("Not connect to lasers")
             return
 
         # check if live imaging is possible
@@ -507,16 +623,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return
 
         # manually turn on laser if software mode
-        if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+        if settings["imaging"]["lm"]["trigger_mode"] == TriggerMode.Software:
             self.laser_controller.emission_on(laser)
 
-        image = self.detector.camera_grab(
-            laser=laser,
-            settings=settings
-        )
+        image = self.detector.camera_grab(laser=laser, settings=settings)
 
         # manually turn off laser if software mode
-        if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+        if settings["imaging"]["lm"]["trigger_mode"] == TriggerMode.Software:
             self.laser_controller.emission_off(laser)
 
         metadata = {
@@ -527,10 +640,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         }
 
         # save image
-        if settings["imaging"]["lm"]['autosave'] is True:
-            save_filename = os.path.join(self.save_destination_FM,
-                                         "F_" + self.lineEdit_save_filename_FM.text() + ".tif",
-                                         )
+        if settings["imaging"]["lm"]["autosave"] is True:
+            save_filename = os.path.join(
+                self.save_destination_FM,
+                "F_" + self.lineEdit_save_filename_FM.text() + ".tif",
+            )
             piescope.utils.save_image(image, save_filename, metadata=metadata)
             self.logger.log(logging.DEBUG, "Saved: {}".format(save_filename))
 
@@ -538,23 +652,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.update_display(modality=Modality.Light, settings=self.config)
 
-    def live_imaging_worker(self, laser: Laser, stop_event: threading.Event, settings: dict):
+    def live_imaging_worker(
+        self, laser: Laser, stop_event: threading.Event, settings: dict
+    ):
         self.live_imaging_running = True
         self.button_live_image_FM.setDown(True)
 
         while not stop_event.isSet():
-            if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+            if settings["imaging"]["lm"]["trigger_mode"] == TriggerMode.Software:
                 self.laser_controller.emission_on(laser)
-            self.image_light = self.detector.camera_grab(laser=laser, settings=self.config
-                                                         )
-            if settings['imaging']['lm']['trigger_mode'] == TriggerMode.Software:
+            self.image_light = self.detector.camera_grab(
+                laser=laser, settings=self.config
+            )
+            if settings["imaging"]["lm"]["trigger_mode"] == TriggerMode.Software:
                 self.laser_controller.emission_off(laser)
 
             self.update_display(modality=Modality.Light, settings=self.config)
 
-            if settings['imaging']['lm']['camera']['image_frame_interval'] is not None:
-                stop_event.wait(settings['imaging']['lm']
-                                ['camera']['image_frame_interval'])
+            if settings["imaging"]["lm"]["camera"]["image_frame_interval"] is not None:
+                stop_event.wait(
+                    settings["imaging"]["lm"]["camera"]["image_frame_interval"]
+                )
 
         self.detector.camera.Close()
         self.button_live_image_FM.setDown(False)
@@ -574,10 +692,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.stop_event = threading.Event()
                 self._thread = threading.Thread(
                     target=self.live_imaging_worker,
-                    args=(laser,
-                          self.stop_event,
-                          config
-                          ),
+                    args=(laser, self.stop_event, config),
                 )
                 self._thread.start()
             else:
@@ -596,12 +711,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         except Exception as e:
             display_error_message(traceback.format_exc())
+
     ############## Fluorescence objective lens stage methods ##############
 
     def initialise_objective_stage(self, time_delay=0.3, testing=False):
         """initialise the fluorescence objective lens stage."""
         if self.objective_stage is not None:
-            logging.warning("The objective lens stage is already initizliaed.")
+            logging.warning("The objective lens stage is already initialised.")
             return self.objective_stage
         else:
             try:
@@ -609,7 +725,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.objective_stage = stage
                 stage.initialise_system_parameters()
             except Exception as e:
-                display_error_message(traceback.format_exc())
+                display_error_message(
+                    f"Unable to connect to objective stage. <br><br>{traceback.format_exc()}"
+                )
             else:
                 return stage
 
@@ -653,8 +771,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return
         try:
             self.logger.debug(
-                "Absolute move the objective stage to position " "{}".format(
-                    position)
+                "Absolute move the objective stage to position " "{}".format(position)
             )
             ans = stage.move_absolute(position)
             time.sleep(time_delay)
@@ -666,8 +783,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
-            self.label_objective_stage_position.setText(
-                str(float(new_position) / 1000))
+            self.label_objective_stage_position.setText(str(float(new_position) / 1000))
             return new_position
 
     def move_relative_objective_stage(
@@ -708,8 +824,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
-            self.label_objective_stage_position.setText(
-                str(float(new_position) / 1000))
+            self.label_objective_stage_position.setText(str(float(new_position) / 1000))
             return new_position
 
     ############## Fluorescence laser methods ##############
@@ -759,36 +874,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.laser_controller.lasers[laser_name].volume_enabled = enabled
         print(self.laser_controller.lasers)
 
-    def update_laser_dict(self, laser: Laser):
+    def update_lasers(self, laser: Laser):
         self.logger.debug("Updating laser dictionary")
         try:
             # laser_selected, laser_power, exposure_time, widget_spinbox, widget_slider, widget_textexposure
             LASER_INFO = {
-                "laser640": [
-                    self.spinBox_laser1,
-                    self.lineEdit_exposure_1,
-                ],
-                "laser561": [
-                    self.spinBox_laser2,
-                    self.lineEdit_exposure_2,
-                ],
-                "laser488": [
-                    self.spinBox_laser3,
-                    self.lineEdit_exposure_3,
-                ],
-                "laser405": [
-                    self.spinBox_laser4,
-                    self.lineEdit_exposure_4,
-                ],
+                "laser640": [self.spinBox_laser1, self.lineEdit_exposure_1,],
+                "laser561": [self.spinBox_laser2, self.lineEdit_exposure_2,],
+                "laser488": [self.spinBox_laser3, self.lineEdit_exposure_3,],
+                "laser405": [self.spinBox_laser4, self.lineEdit_exposure_4,],
             }
 
             laser_power = float(LASER_INFO[laser][0].text())
-            exposure_time = float(
-                LASER_INFO[laser][1].text()) * 1000  # ms -> us
+            exposure_time = float(LASER_INFO[laser][1].text()) * 1000  # ms -> us
 
             # Update current laser for single/live imaging and sttings
-            self.update_current_laser(
-                self.buttonGroup.checkedButton().objectName())
+            self.update_current_laser(self.buttonGroup.checkedButton().objectName())
             self.laser_controller.set_laser_power(
                 self.laser_controller.lasers[laser], laser_power
             )
@@ -839,8 +940,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         + save_base
                         + ".tif"
                     )
-                    dir_exists = os.path.isdir(
-                        self.lineEdit_save_destination_FM.text())
+                    dir_exists = os.path.isdir(self.lineEdit_save_destination_FM.text())
                     if not dir_exists:
                         os.makedirs(self.lineEdit_save_destination_FM.text())
                         piescope.utils.save_image(display_image, dest)
@@ -881,8 +981,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         self.lineEdit_save_destination_FIBSEM.text()
                     )
                     if not dir_exists:
-                        os.makedirs(
-                            self.lineEdit_save_destination_FIBSEM.text())
+                        os.makedirs(self.lineEdit_save_destination_FIBSEM.text())
                         piescope.utils.save_image(display_image, dest)
                     else:
                         exists = os.path.isfile(dest)
@@ -946,16 +1045,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             # make a copy of the rgb to display with crosshair
             # TODO: move this later in the process
-            crosshair = piescope.utils.create_crosshair(
-                self.image_light, self.config)
-            if settings['imaging']['lm']['filter_strength'] > 0:
-                image = ndi.median_filter(image, size=int(
-                    settings['imaging']['lm']['filter_strength']))
+            crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
+            if settings["imaging"]["lm"]["filter_strength"] > 0:
+                image = ndi.median_filter(
+                    image, size=int(settings["imaging"]["lm"]["filter_strength"])
+                )
 
             self.figure_FM.clear()
-            self.figure_FM.patch.set_facecolor((240/255, 240/255, 240/255))
+            self.figure_FM.patch.set_facecolor((240 / 255, 240 / 255, 240 / 255))
             ax_FM = self.figure_FM.add_subplot(111)
-            ax_FM.set_title('Light Microscope')
+            ax_FM.set_title("Light Microscope")
             ax_FM.patches = []
             for patch in crosshair.__dataclass_fields__:
                 ax_FM.add_patch(getattr(crosshair, patch))
@@ -974,11 +1073,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             # make a copy of the rgb to display with crosshair
             # TODO: move this later in the process
-            crosshair = piescope.utils.create_crosshair(
-                self.image_ion, self.config)
+            crosshair = piescope.utils.create_crosshair(self.image_ion, self.config)
 
             # TODO: can this be moved to after all image modifications (probably)
-            plt.axis('off')
+            plt.axis("off")
             if self.canvas_FIBSEM:
                 self.label_image_FIBSEM.layout().removeWidget(self.canvas_FIBSEM)
                 self.label_image_FIBSEM.layout().removeWidget(self.toolbar_FIBSEM)
@@ -987,16 +1085,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
 
             self.canvas_FIBSEM.mpl_connect(
-                'button_press_event', lambda event: self.on_gui_click(event, modality=Modality.Ion))
+                "button_press_event",
+                lambda event: self.on_gui_click(event, modality=Modality.Ion),
+            )
 
-            if settings['imaging']['ib']['filter_strength'] > 0:
-                image = ndi.median_filter(image, size=int(
-                    settings['imaging']['ib']['filter_strength']))
+            if settings["imaging"]["ib"]["filter_strength"] > 0:
+                image = ndi.median_filter(
+                    image, size=int(settings["imaging"]["ib"]["filter_strength"])
+                )
 
             self.figure_FIBSEM.clear()
-            self.figure_FIBSEM.patch.set_facecolor((240/255, 240/255, 240/255))
+            self.figure_FIBSEM.patch.set_facecolor((240 / 255, 240 / 255, 240 / 255))
             ax_FIBSEM = self.figure_FIBSEM.add_subplot(111)
-            ax_FIBSEM.set_title('FIBSEM')
+            ax_FIBSEM.set_title("FIBSEM")
             ax_FIBSEM.patches = []
             for patch in crosshair.__dataclass_fields__:
                 ax_FIBSEM.add_patch(getattr(crosshair, patch))
@@ -1005,7 +1106,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
             ax_FIBSEM.get_xaxis().set_visible(False)
             ax_FIBSEM.get_yaxis().set_visible(False)
-            ax_FIBSEM.imshow(image, cmap='gray')
+            ax_FIBSEM.imshow(image, cmap="gray")
             self.canvas_FIBSEM.draw()
 
     # TODO: reorder functions to make more sense
@@ -1013,30 +1114,35 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # don't allow double click functionality while zooming or panning, only stopping active window
         if modality == Modality.Light:
             image = self.image_light
-            pixel_size = self.config['imaging']['lm']['camera']['pixel_size']
-            if self.toolbar_FM._active == 'ZOOM' or self.toolbar_FM._active == 'PAN':
+            pixel_size = self.config["imaging"]["lm"]["camera"]["pixel_size"]
+            if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
                 return
         else:
             image = self.image_ion
             pixel_size = image.metadata.binary_result.pixel_size.x
-            if self.toolbar_FIBSEM._active == 'ZOOM' or self.toolbar_FIBSEM._active == 'PAN':
+            if (
+                self.toolbar_FIBSEM._active == "ZOOM"
+                or self.toolbar_FIBSEM._active == "PAN"
+            ):
                 return
 
         if event.button == 1 and event.dblclick:
             x, y = piescope_gui.utils.pixel_to_realspace_coordinate(
-                [event.xdata, event.ydata], image, pixel_size)
+                [event.xdata, event.ydata], image, pixel_size
+            )
 
-            from autoscript_sdb_microscope_client.structures import \
-                StagePosition
+            from autoscript_sdb_microscope_client.structures import StagePosition
+
             x_move = StagePosition(x=x, y=0, z=0)
             y_move = StagePosition(x=0, y=y, z=0)
-            #TODO: CHECK
+            # TODO: CHECK
             yz_move = piescope.fibsem.y_corrected_stage_movement(
                 y,
                 stage_tilt=self.microscope.specimen.stage.current_position.t,
-                settings=self.config)
+                settings=self.config,
+            )
 
-            if self.config['imaging']['ib']['pretilt'] != 0:
+            if self.config["imaging"]["ib"]["pretilt"] != 0:
                 y_move = yz_move
 
             self.microscope.specimen.stage.relative_move(x_move)
@@ -1044,13 +1150,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             if modality == Modality.Light:
                 self.fluorescence_image(
-                    laser=self.laser_controller.current_laser, settings=self.config)
-                self.update_display(modality=Modality.Light,
-                                    settings=self.config)
+                    laser=self.laser_controller.current_laser, settings=self.config
+                )
+                self.update_display(modality=Modality.Light, settings=self.config)
             else:
                 self.get_FIB_image(autosave=False)
-                self.update_display(modality=Modality.Ion,
-                                    settings=self.config)
+                self.update_display(modality=Modality.Ion, settings=self.config)
 
     def fill_destination(self, modality):
         """Fills the destination box with the text from the directory"""
@@ -1070,8 +1175,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             elif modality == "FIBSEM":
                 if not self.checkBox_save_destination_FIBSEM.isChecked():
                     self.save_destination_FIBSEM = directory_path
-                    self.lineEdit_save_destination_FIBSEM.setText(
-                        directory_path)
+                    self.lineEdit_save_destination_FIBSEM.setText(directory_path)
                     return directory_path
             elif modality == "correlation":
                 self.save_destination_correlation = directory_path
@@ -1085,19 +1189,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def acquire_volume(self, imaging_mode: ImagingType = ImagingType.WIDEFIELD):
 
         if self.detector is None:
-            display_error_message('No detector available')
+            display_error_message("No detector available")
             return
         if self.laser_controller is None:
-            display_error_message('No laser controller connected')
+            display_error_message("No laser controller connected")
             return
         if self.laser_controller.lasers is None:
-            display_error_message('No lasers found for laser controller')
+            display_error_message("No lasers found for laser controller")
             return
         if self.objective_stage is None:
-            display_error_message('Objective stage is not connected')
+            display_error_message("Objective stage is not connected")
             return
         if self.mirror_controller is None:
-            display_error_message('Mirror controller is not connected.')
+            display_error_message("Mirror controller is not connected.")
             return
 
         # TODO: helper function
@@ -1105,26 +1209,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             volume_height = int(self.lineEdit_volume_height.text())
         except ValueError:
-            display_error_message(
-                "Volume height must be a positive integer")
+            display_error_message("Volume height must be a positive integer")
             return
         else:
             if volume_height <= 0:
-                display_error_message(
-                    "Volume height must be a positive integer")
+                display_error_message("Volume height must be a positive integer")
                 return
 
         # make sure z_slice_distance is a positive integer
         try:
             z_slice_distance = int(self.lineEdit_slice_distance.text())
         except ValueError:
-            display_error_message(
-                "Slice distance must be a positive integer")
+            display_error_message("Slice distance must be a positive integer")
             return
         else:
             if z_slice_distance <= 0:
-                display_error_message(
-                    "Slice distance must be a positive integer")
+                display_error_message("Slice distance must be a positive integer")
                 return
         num_z_slices = int(round(volume_height / z_slice_distance) + 1)
 
@@ -1137,7 +1237,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             objective_stage=self.objective_stage,
             detector=self.detector,
             arduino=self.arduino,
-            settings=self.config
+            settings=self.config,
         )
         print("VOLUME: ", volume.shape)
 
@@ -1158,15 +1258,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         print(colour_dict)
 
-        rgb = piescope.utils.rgb_image(
-            max_intensity, colour_dict=colour_dict)
+        rgb = piescope.utils.rgb_image(max_intensity, colour_dict=colour_dict)
         self.image_light = rgb
 
-        if self.config['imaging']['volume']['autosave']:
+        if self.config["imaging"]["volume"]["autosave"]:
             # save full volume
             save_filename = os.path.join(
                 self.save_destination_FM,
-                "Volume_" + self.lineEdit_save_filename_FM.text() + ".tif",)
+                "Volume_" + self.lineEdit_save_filename_FM.text() + ".tif",
+            )
             piescope.utils.save_image(volume, save_filename, metadata=meta)
             print("Saved: {}".format(save_filename))
 
@@ -1185,9 +1285,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.save_destination_FM,
                 "RGB_" + self.lineEdit_save_filename_FM.text() + ".tif",
             )
-            piescope.utils.save_image(
-                rgb, save_filename_rgb, metadata=meta
-            )
+            piescope.utils.save_image(rgb, save_filename_rgb, metadata=meta)
             print("Saved: {}".format(save_filename_rgb))
 
         # Update display
@@ -1306,8 +1404,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 copy_count = copy_count + 1
 
             tempfile = (
-                output_filename + image_ext + "_" +
-                str(copy_count) + "temp_.tiff"
+                output_filename + image_ext + "_" + str(copy_count) + "temp_.tiff"
             )
             open(tempfile, "w+")
 
