@@ -87,6 +87,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.image_light = None
         self.image_ion = None
 
+        # threading event used to start/stop live imaging
+        self.stop_event = None
+
         self.lineEdit_save_filename_FM.setText("Fluorescence Image")
         self.lineEdit_save_filename_FIBSEM.setText("FIBSEM Image")
         self.label_objective_stage_position.setText("Unknown")
@@ -269,46 +272,34 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.radioButton_640.setEnabled(True)
             self.pushButton_correlation.setEnabled(True)
             
-            self.checkBox_laser1.clicked.connect(
-                lambda: self.update_volume_lasers(
-                    laser_name="laser640", 
-                    enabled=self.checkBox_laser1.isChecked()))
-            self.checkBox_laser2.clicked.connect(
-                lambda: self.update_volume_lasers(
-                    laser_name="laser561", 
-                    enabled=self.checkBox_laser2.isChecked()))
-            self.checkBox_laser3.clicked.connect(
-                lambda: self.update_volume_lasers(
-                    laser_name="laser488", 
-                    enabled=self.checkBox_laser3.isChecked()))
-            self.checkBox_laser4.clicked.connect(
-                lambda: self.update_volume_lasers(
-                    laser_name="laser405", 
-                    enabled=self.checkBox_laser4.isChecked()))
+            self.checkBox_laser1.clicked.connect(lambda: self.update_lasers(self.laser_controller.lasers["laser640"]))
+            self.checkBox_laser2.clicked.connect(lambda: self.update_lasers(self.laser_controller.lasers["laser561"]))
+            self.checkBox_laser3.clicked.connect(lambda: self.update_lasers(self.laser_controller.lasers["laser488"]))
+            self.checkBox_laser4.clicked.connect(lambda: self.update_lasers(self.laser_controller.lasers["laser405"]))
             self.slider_laser1.valueChanged.connect(
-                lambda: self.update_lasers("laser640"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser640"]))
             self.slider_laser2.valueChanged.connect(
-                lambda: self.update_lasers("laser561"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser561"]))
             self.slider_laser3.valueChanged.connect(
-                lambda: self.update_lasers("laser488"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser488"]))
             self.slider_laser4.valueChanged.connect(
-                lambda: self.update_lasers("laser405"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser405"]))
             self.spinBox_laser1.valueChanged.connect(
-                lambda: self.update_lasers("laser640"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser640"]))
             self.spinBox_laser2.valueChanged.connect(
-                lambda: self.update_lasers("laser561"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser561"]))
             self.spinBox_laser3.valueChanged.connect(
-                lambda: self.update_lasers("laser488"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser488"]))
             self.spinBox_laser4.valueChanged.connect(
-                lambda: self.update_lasers("laser405"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser405"]))
             self.lineEdit_exposure_1.textChanged.connect(
-                lambda: self.update_lasers("laser640"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser640"]))
             self.lineEdit_exposure_2.textChanged.connect(
-                lambda: self.update_lasers("laser561"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser561"]))
             self.lineEdit_exposure_3.textChanged.connect(
-                lambda: self.update_lasers("laser488"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser488"]))
             self.lineEdit_exposure_4.textChanged.connect(
-                lambda: self.update_lasers("laser405"))
+                lambda: self.update_lasers(self.laser_controller.lasers["laser405"]))
             self.buttonGroup.buttonClicked.connect(
                 lambda: self.update_current_laser(
                     self.buttonGroup.checkedButton().objectName()))
@@ -435,6 +426,25 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if self.laser_controller is not None: return
         try:
             self.laser_controller = LaserController(settings=self.config)
+
+            self.spinBox_laser1.setValue(self.laser_controller.lasers["laser640"].power)
+            self.spinBox_laser2.setValue(self.laser_controller.lasers["laser561"].power)
+            self.spinBox_laser3.setValue(self.laser_controller.lasers["laser488"].power)
+            self.spinBox_laser4.setValue(self.laser_controller.lasers["laser405"].power)
+            self.lineEdit_exposure_1.setText(str(self.laser_controller.lasers["laser640"].exposure_time))
+            self.lineEdit_exposure_2.setText(str(self.laser_controller.lasers["laser561"].exposure_time))
+            self.lineEdit_exposure_3.setText(str(self.laser_controller.lasers["laser488"].exposure_time))
+            self.lineEdit_exposure_4.setText(str(self.laser_controller.lasers["laser405"].exposure_time))
+            self.checkBox_laser1.setChecked(self.laser_controller.lasers["laser640"].volume_enabled)
+            self.checkBox_laser2.setChecked(self.laser_controller.lasers["laser561"].volume_enabled)
+            self.checkBox_laser3.setChecked(self.laser_controller.lasers["laser488"].volume_enabled)
+            self.checkBox_laser4.setChecked(self.laser_controller.lasers["laser405"].volume_enabled)
+
+            self.update_lasers(self.laser_controller.lasers["laser640"])
+            self.update_lasers(self.laser_controller.lasers["laser561"])
+            self.update_lasers(self.laser_controller.lasers["laser488"])
+            self.update_lasers(self.laser_controller.lasers["laser405"])
+
             try:
                 for laser in self.laser_controller.lasers.values():
                     structured.single_line_onoff(onoff=False, pin=laser.pin)
@@ -488,14 +498,28 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if self.microscope is not None:
             self.microscope.disconnect()
 
+        if self.laser_controller:
+            # shut off lasers
+            print("shutting off lasers")
+            try:
+                for laser in self.laser_controller.lasers.values():
+                    structured.single_line_onoff(onoff=False, pin=laser.pin)
+            except:
+                display_error_message(
+                    f"Unable to connect to niqadmx device. <br><br>{traceback.format_exc()}"
+                )
+            if self.stop_event:
+                print("Stopping Live Imaging")
+                self.stop_event.set()
+                print("Thread stopped")
         # edit config
         piescope.utils.write_config(self.config_path, self.config)
+        print("Finished")
 
     ## Movement functions ##
     def move_to_light_microscope(
         self, x=+49.9092e-3, y=-0.1143e-3
     ):  # TODO: Alex wants one function
-        # TODO: Stage shift in fluorescence
         if not self.liveCheck:
             print("Cannot move stage, live imaging currently running")
             return
@@ -508,6 +532,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def move_to_electron_microscope(self, x=-49.9092e-3, y=+0.1143e-3):
         if not self.liveCheck:
+            print("Cannot move stage, live imaging currently running")
             print("Cannot move stage, live imaging currently running")
             return
         try:
@@ -827,37 +852,51 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 current_laser, float(selected_laser_info[2].text()) * 1000
             )
 
-            print(current_laser)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
+    # put volume enabled into update_lasers
     def update_volume_lasers(self, laser_name: str, enabled: bool = False):
         self.laser_controller.lasers[laser_name].volume_enabled = enabled
-        print(self.laser_controller.lasers)
+
+        for config_laser in self.config['lm']['lasers']:
+            if config_laser['name'] == laser_name:
+                config_laser['volume_enabled'] = enabled
+            
 
     def update_lasers(self, laser: Laser):
         self.logger.debug("Updating laser dictionary")
         try:
             # laser_selected, laser_power, exposure_time, widget_spinbox, widget_slider, widget_textexposure
             LASER_INFO = {
-                "laser640": [self.spinBox_laser1, self.lineEdit_exposure_1, ],
-                "laser561": [self.spinBox_laser2, self.lineEdit_exposure_2, ],
-                "laser488": [self.spinBox_laser3, self.lineEdit_exposure_3, ],
-                "laser405": [self.spinBox_laser4, self.lineEdit_exposure_4, ],
+                "laser640": [self.spinBox_laser1, self.lineEdit_exposure_1, self.checkBox_laser1],
+                "laser561": [self.spinBox_laser2, self.lineEdit_exposure_2, self.checkBox_laser2],
+                "laser488": [self.spinBox_laser3, self.lineEdit_exposure_3, self.checkBox_laser3],
+                "laser405": [self.spinBox_laser4, self.lineEdit_exposure_4, self.checkBox_laser4],
             }
 
-            laser_power = float(LASER_INFO[laser][0].text())
+            laser_power = float(LASER_INFO[laser.name][0].text())
             exposure_time = float(
-                LASER_INFO[laser][1].text()) * 1000  # ms -> us
+                LASER_INFO[laser.name][1].text()) * 1000  # ms -> us
+            volume_enabled = LASER_INFO[laser.name][2].isChecked()
 
             # Update current laser for single/live imaging and sttings
+            for config_laser in self.config['lm']['lasers']:
+                if config_laser['name'] == laser.name:
+                    # pass
+                    config_laser['power'] = laser_power
+                    config_laser['exposure_time'] = exposure_time/1000
+                    config_laser['volume_enabled'] = volume_enabled
+                    print(f'config_laser = {config_laser}')
+            
             self.update_current_laser(
                 self.buttonGroup.checkedButton().objectName())
             self.laser_controller.set_laser_power(
-                self.laser_controller.lasers[laser], laser_power
+                self.laser_controller.lasers[laser.name], laser_power
             )
+
             self.laser_controller.set_exposure_time(
-                self.laser_controller.lasers[laser], exposure_time
+                self.laser_controller.lasers[laser.name], exposure_time
             )
 
         except Exception as e:
@@ -1223,7 +1262,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             arduino=self.arduino,
             settings=self.config,
         )
-        print("VOLUME: ", volume.shape)
 
         meta = {
             "z_slice_distance": str(z_slice_distance),
@@ -1233,7 +1271,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         }
 
         max_intensity = piescope.utils.max_intensity_projection(volume)
-        print("MAX INTENSITY", max_intensity.shape)
 
         rgb = piescope.utils.rgb_image(max_intensity, colour_dict=colour_dict)
         self.image_light = rgb
