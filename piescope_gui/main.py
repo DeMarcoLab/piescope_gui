@@ -45,9 +45,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     ## Initialisation functions ##
     def read_config_file(self):
         # read config file
-        config_path = os.path.join(
+        self.config_path = os.path.join(
             os.path.dirname(piescope.__file__), "config.yml")
-        self.config = piescope.utils.read_config(config_path)
+        self.config = piescope.utils.read_config(self.config_path)
 
         # set ip_address and online status
         self.ip_address = self.config["system"]["ip_address"]
@@ -136,7 +136,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.arduino = None
 
         if self.online:
-            # self.connect_to_fibsem_microscope()
+            self.connect_to_fibsem_microscope()
             self.connect_to_basler_detector()
             self.connect_to_laser_controller()
             self.connect_to_objective_controller()
@@ -430,6 +430,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 f"Unable to connect to lm objective controller. <br><br>{traceback.format_exc()}"
             )
 
+    # TODO: CHECK THE LASER CONNECTION ACTUALLY IS ON
     def connect_to_laser_controller(self):
         if self.laser_controller is not None: return
         try:
@@ -486,6 +487,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.objective_stage.disconnect()
         if self.microscope is not None:
             self.microscope.disconnect()
+
+        # edit config
+        piescope.utils.write_config(self.config_path, self.config)
 
     ## Movement functions ##
     def move_to_light_microscope(
@@ -1199,6 +1203,15 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 return
         num_z_slices = int(round(volume_height / z_slice_distance) + 1)
 
+        colour_dict = []
+        for laser in self.laser_controller.lasers.values():
+            if laser.volume_enabled:
+                colour_dict.append(laser.colour)
+
+        if colour_dict == []:
+            display_error_message('No lasers chosen for volume')
+            return
+
         volume = piescope.lm.volume.acquire_volume(
             num_z_slices=num_z_slices,
             z_slice_distance=z_slice_distance,
@@ -1221,13 +1234,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         max_intensity = piescope.utils.max_intensity_projection(volume)
         print("MAX INTENSITY", max_intensity.shape)
-
-        colour_dict = []
-        for laser in self.laser_controller.lasers.values():
-            if laser.volume_enabled:
-                colour_dict.append(laser.colour)
-
-        print(colour_dict)
 
         rgb = piescope.utils.rgb_image(max_intensity, colour_dict=colour_dict)
         self.image_light = rgb
