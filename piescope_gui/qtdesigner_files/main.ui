@@ -1667,6 +1667,9 @@
               </property>
               <item row="5" column="0" colspan="2">
                <widget class="QPushButton" name="pushButton_milling">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
@@ -1680,6 +1683,9 @@
               </item>
               <item row="2" column="0" colspan="2">
                <widget class="QPushButton" name="pushButton_correlation">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>0</width>

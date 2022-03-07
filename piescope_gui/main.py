@@ -136,7 +136,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.arduino = None
 
         if self.online:
-            self.connect_to_fibsem_microscope()
+            # self.connect_to_fibsem_microscope()
             self.connect_to_basler_detector()
             self.connect_to_laser_controller()
             self.connect_to_objective_controller()
@@ -175,13 +175,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         if not self.online: return
         self.pushButton_initialise_stage.clicked.connect(
-            self.initialise_objective_stage)
+            self.connect_to_objective_controller)
         self.pushButton_initialise_stage.clicked.connect(
             lambda: self.update_connections())
         
         self.connect_microscope.clicked.connect(
             lambda: self.connect_to_fibsem_microscope(
-                ip_address=self.ip_address))
+                ))
         self.connect_microscope.clicked.connect(
             lambda: self.update_connections())
 
