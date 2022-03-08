@@ -65,16 +65,14 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
             self.parent().microscope.patterning.clear_patterns()
             c_x, c_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
             lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, c_x, c_y, self.parent().config['lamella'])
-            l_y = lower_pattern.center_y - lower_pattern.width 
-
 
             def update_rectangle_pattern(adorned_image, rectangle, pattern):
                 image_width = adorned_image.width
                 image_height = adorned_image.height
                 pixel_size =  adorned_image.metadata.binary_result.pixel_size.x
 
-                width = lower_pattern.width / pixel_size
-                height = lower_pattern.height / pixel_size
+                width = pattern.width / pixel_size
+                height = pattern.height / pixel_size
                 rectangle_left = (image_width / 2) + (pattern.center_x / pixel_size) - (width/2)
                 rectangle_bottom = (image_height / 2) - (pattern.center_y / pixel_size) - (height/2)
                 rectangle.set_width(width)

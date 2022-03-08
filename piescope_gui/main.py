@@ -900,6 +900,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.laser_controller.lasers[laser.name], exposure_time
             )
 
+            self.laser_controller.set_volume_enabled(self.laser_controller.lasers[laser.name], volume_enabled)
+
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -1246,6 +1248,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         colour_dict = []
         for laser in self.laser_controller.lasers.values():
             if laser.volume_enabled:
+                print(f'This laser is volume enabled: {laser}')
                 colour_dict.append(laser.colour)
 
         if colour_dict == []:
@@ -1336,7 +1339,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 output_filename + image_ext + "_" +
                 str(copy_count) + "temp_.tiff"
             )
-            open(tempfile, "w+")
+            # open(tempfile, "w+")
 
             output_filename = (
                 output_filename + image_ext + "_" + str(copy_count) + ".tiff"
@@ -1352,11 +1355,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 lambda: self.milling(display_image=window.pass_image())
             )
 
-            if os.path.isfile(tempfile):
-                os.remove(tempfile)
+            # if os.path.isfile(tempfile):
+            #     os.remove(tempfile)
 
         except Exception as e:
-            if os.path.isfile(tempfile):
+            if os.path.isfile(tempfile): 
                 os.remove(tempfile)
             display_error_message(traceback.format_exc())
     
