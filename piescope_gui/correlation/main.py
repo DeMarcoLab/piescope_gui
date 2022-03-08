@@ -24,7 +24,7 @@ from skimage.transform import AffineTransform
 from piescope_gui._version import __version__
 
 
-def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_path):
+def open_correlation_window(parent_gui, fluorescence_image, fibsem_image, output_path):
     """Opens a new window to perform correlation
 
     Parameters
@@ -46,25 +46,25 @@ def open_correlation_window(main_gui, fluorescence_image, fibsem_image, output_p
     global output
     global fluorescence_original
 
-    gui = main_gui
+    gui = parent_gui
     fluorescence_original = fluorescence_image
 
-    if type(fluorescence_image) == str:
-        print("Image 1 given as path")
-        fluorescence_image_rgb = skimage.color.gray2rgb(plt.imread(fluorescence_image))
-    else:
-        print("Image 1 given as array")
-        fluorescence_image_rgb = np.copy(fluorescence_image)
+    # if type(fluorescence_image) == str:
+    #     print("Image 1 given as path")
+    #     fluorescence_image_rgb = skimage.color.gray2rgb(plt.imread(fluorescence_image))
+    # else:
+    print("Image 1 given as array")
+    fluorescence_image_rgb = np.copy(fluorescence_image)
 
-    if type(fibsem_image) == str:
-        print("Image 2 given as path")
-        fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
-    else:
-        fibsem_data = np.copy(fibsem_image.data)
-        print("Image 2 given as array")
-        fibsem_image = skimage.color.gray2rgb(fibsem_data)
+    # if type(fibsem_image) == str:
+    #     print("Image 2 given as path")
+    #     fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
+    # else:
+    fibsem_data = np.copy(fibsem_image.data)
+    print("Image 2 given as array")
+    fibsem_image = skimage.color.gray2rgb(fibsem_data)
 
-        fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
+    fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
 
     img1 = fluorescence_image_rgb
     img2 = fibsem_image

@@ -83,3 +83,4 @@ docs/_build/
 
 # PyBuilder
 target/
+piescope_gui/piescope_workspace.code-workspace

@@ -16,7 +16,7 @@ import skimage.transform
 from piescope import fibsem
 
 from piescope_gui.utils import display_error_message, timestamp
-
+    
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +42,7 @@ def open_milling_window(parent_gui, display_image, adorned_ion_image):
 
 
 class _MainWindow(QMainWindow):
-    def __init__(self, parent=None, adorned_ion_image=None):
+    def __init__(self, parent=None, adorned_ion_image=None, display_image=None):
         super().__init__(parent=parent)
         self.adorned_ion_image = adorned_ion_image
         self.create_window()
@@ -170,13 +170,19 @@ class _MainWindow(QMainWindow):
 
         self.setCentralWidget(widget)
         self.rect = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
+        self.rect2 = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
+            
         self.wp.canvas.ax11.add_patch(self.rect)
+        self.wp.canvas.ax11.add_patch(self.rect2)
         self.rect.set_visible(False)
+        self.rect2.set_visible(False)
+        self.rect.set_hatch("//////")
+        self.rect2.set_hatch("//////")
 
         self.wp.canvas.mpl_connect('button_press_event', self.on_click)
-        self.wp.canvas.mpl_connect('motion_notify_event', self.on_motion)
+        # self.wp.canvas.mpl_connect('motion_notify_event', self.on_motion)
         self.wp.canvas.mpl_connect('button_release_event', self.on_release)
-
+        
     def create_conn(self):
         self.exitButton.clicked.connect(self.menu_quit)
 
@@ -270,35 +276,65 @@ class _MainWindow(QMainWindow):
                 logger.debug(self.dragged)
                 self.on_press = True
 
-    def on_motion(self, event):
-        if event.button == 1 or event.button == 3 and self.on_press:
-            if (self.xclick is not None and self.yclick is not None):
-                x0, y0 = self.xclick, self.yclick
-                self.x1, self.y1 = event.xdata, event.ydata
+    # def on_motion(self, event):
+    #     if event.button == 1 or event.button == 3 and self.on_press:
+    #         if (self.xclick is not None and self.yclick is not None):
+    #             x0, y0 = self.xclick, self.yclick
+    #             self.x1, self.y1 = event.xdata, event.ydata
 
-                if (self.x1 is not None or self.y1 is not None):
-                    self.dragged = True
-                    self.rect.set_width(self.x1 - x0)
-                    self.rect.set_height(self.y1 - y0)
-                    self.rect.set_xy((x0, y0))
-                    self.rect.set_visible(True)
-                    logger.debug("x0 %s", str(x0))
-                    logger.debug("y0 %s", str(y0))
-                    logger.debug("x1 %s", str(self.x1))
-                    logger.debug("y1 %s", str(self.y1))
-                    self.wp.canvas.draw()
+    #             if (self.x1 is not None or self.y1 is not None):
+    #                 self.dragged = True
+    #                 # return
+    #                 # self.rect.set_width(self.x1 - x0)
+    #                 # self.rect.set_height(self.y1 - y0)
+    #                 # self.rect.set_xy((x0, y0))
+    #                 # self.rect.set_visible(True)
+    #                 # logger.debug("x0 %s", str(x0))
+    #                 # logger.debug("y0 %s", str(y0))
+    #                 # logger.debug("x1 %s", str(self.x1))
+    #                 # logger.debug("y1 %s", str(self.y1))
+    #                 # self.wp.canvas.draw()
 
     def on_release(self, event):
-        if event.button == 1 and self.dragged:
-            logger.debug(self.dragged)
-            try:
-                self.x1_label2.setText("%.1f" % self.x1)
-            except Exception as e:
-                display_error_message("Mouse released outside image. Please try again")
-            self.x0_label2.setText("%.1f" % self.xclick)
-            self.y0_label2.setText("%.1f" % self.yclick)
-            self.y1_label2.setText("%.1f" % self.y1)
+        # if event.button == 1 and self.dragged:
+        #     return
+        #     logger.debug(self.dragged)
+        #     try:
+        #         self.x1_label2.setText("%.1f" % self.x1)
+        #     except Exception as e:
+        #         display_error_message("Mouse released outside image. Please try again")
+        #     self.x0_label2.setText("%.1f" % self.xclick)
+        #     self.y0_label2.setText("%.1f" % self.yclick)
+        #     self.y1_label2.setText("%.1f" % self.y1)
+        if event.button == 1:
+            self.parent().microscope.patterning.clear_patterns()
+            c_x, c_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_ion_image)
+            lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, c_x, c_y, self.parent().config['lamella'])
+            l_y = lower_pattern.center_y - lower_pattern.width 
 
+            image_width = self.adorned_ion_image.width
+            image_height = self.adorned_ion_image.height
+            pixel_size =  self.adorned_ion_image.metadata.binary_result.pixel_size.x
+
+            l_width = lower_pattern.width / pixel_size
+            l_height = lower_pattern.height / pixel_size
+            rectangle_left = (image_width / 2) + (lower_pattern.center_x / pixel_size) - (l_width/2)
+            rectangle_bottom = (image_height / 2) - (lower_pattern.center_y / pixel_size) - (l_height/2)
+            self.rect.set_width(l_width)
+            self.rect.set_height(l_height)
+            self.rect.set_xy((rectangle_left, rectangle_bottom))
+            self.rect.set_visible(True)
+        
+            u_width = upper_pattern.width / pixel_size
+            u_height = upper_pattern.height / pixel_size
+            rectangle2_left = (image_width / 2) + (upper_pattern.center_x / pixel_size) - (u_width/2)
+            rectangle2_bottom = (image_height / 2) - (upper_pattern.center_y / pixel_size) - (u_height/2)
+            self.rect2.set_width(u_width)
+            self.rect2.set_height(u_height)
+            self.rect2.set_xy((rectangle2_left, rectangle2_bottom))
+            self.rect2.set_visible(True)
+            self.wp.canvas.draw()
+        
 
 class _WidgetPlot(QWidget):
     def __init__(self, *args, **kwargs):
@@ -362,3 +398,41 @@ class _PlotCanvas(FigureCanvasQTAgg):
     def mouseClicked(self, event):
         x = event.xdata
         y = event.ydata
+
+
+
+def mill_trench_patterns(microscope, c_x, c_y, settings: dict):
+    """Calculate the trench milling patterns"""
+
+    centre_x = c_x
+    centre_y = c_y
+
+    lamella_width = float(settings["lamella_width"])
+    lamella_height = float(settings["lamella_height"])
+    trench_height = float(settings["trench_height"])
+    upper_trench_height = float(trench_height / settings["size_ratio"])
+    offset = float(settings["offset"])
+    milling_depth = float(settings["milling_depth"])
+
+    centre_upper_y = centre_y + (lamella_height / 2 + upper_trench_height / 2 + offset)
+    centre_lower_y = centre_y - (lamella_height / 2 + trench_height / 2 + offset)
+
+    lower_pattern = microscope.patterning.create_cleaning_cross_section(
+        centre_x,
+        centre_lower_y,
+        lamella_width,
+        trench_height,
+        milling_depth,
+    )
+    lower_pattern.scan_direction = "BottomToTop"
+
+    upper_pattern = microscope.patterning.create_cleaning_cross_section(
+        centre_x,
+        centre_upper_y,
+        lamella_width,
+        upper_trench_height,
+        milling_depth,
+    )
+    upper_pattern.scan_direction = "TopToBottom"
+
+    return [lower_pattern, upper_pattern]

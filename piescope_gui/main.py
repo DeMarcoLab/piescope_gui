@@ -623,7 +623,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return new_position
     
     ## Imaging functions ##
-    def get_FIB_image(self, autosave=True):
+    def get_FIB_image(self, autosave=False):
         try:
             if self.checkBox_Autocontrast.isChecked():
                 self.image_ion = self.autocontrast_ion_beam()
@@ -653,7 +653,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(traceback.format_exc())
 
-    def get_SEM_image(self, autosave=True):
+    def get_SEM_image(self, autosave=False):
         try:
             if self.checkBox_Autocontrast.isChecked():
                 self.autocontrast_ion_beam(view=1)
@@ -1325,6 +1325,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             image_ext = os.path.sep + "correlated_image_" + timestamp()
             copy_count = 1
 
+            # override avoidance
             while os.path.isfile(
                 output_filename + image_ext + "_" + str(copy_count) + ".tiff"
             ):
@@ -1365,10 +1366,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self, "Open Milling Image", filter="Images (*.bmp *.tif *.tiff *.jpg)"
             )
 
-            adorned_image = piescope.utils.load_image(filename)
+            correlated_adorned_image = piescope.utils.load_image(filename)
 
             piescope_gui.milling.open_milling_window(
-                self, adorned_image.data, adorned_image
+                self, correlated_adorned_image.data, correlated_adorned_image
             )
 
         except Exception as e:
@@ -1377,7 +1378,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def mill_window_from_correlation(self, window):
         aligned_image = window.menu_quit()
         try:
-            piescope_gui.milling.open_milling_window(
+            self.milling_window = piescope_gui.milling.open_milling_window(
                 self, aligned_image, self.image_ion
             )
         except Exception:
@@ -1390,6 +1391,7 @@ def main():
     app.aboutToQuit.connect(qt_app.disconnect)  # cleanup & teardown
     qt_app.show()
     sys.exit(app.exec_())
+    # app.exec_()
 
 
 if __name__ == "__main__":
