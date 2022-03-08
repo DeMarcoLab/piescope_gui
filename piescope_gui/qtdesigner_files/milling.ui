@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Milling Window</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -43,10 +43,10 @@
            <number>6</number>
           </property>
           <item row="5" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_center_distance"/>
           </item>
           <item row="21" column="0" colspan="2">
-           <widget class="QPushButton" name="pushButton_3">
+           <widget class="QPushButton" name="pushButton_save_position">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -89,7 +89,7 @@
            </widget>
           </item>
           <item row="17" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_6"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_lower_width"/>
           </item>
           <item row="7" column="0" colspan="2">
            <widget class="QLabel" name="label_4">
@@ -109,7 +109,7 @@
            </widget>
           </item>
           <item row="10" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_upper_width"/>
           </item>
           <item row="14" column="0">
            <widget class="QLabel" name="label_9">
@@ -136,10 +136,10 @@
            </widget>
           </item>
           <item row="8" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_upper_height"/>
           </item>
           <item row="19" column="0" colspan="2">
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pushButton_start_milling">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -165,10 +165,10 @@
            </widget>
           </item>
           <item row="14" column="1">
-           <widget class="QDoubleSpinBox" name="doubleSpinBox_5"/>
+           <widget class="QDoubleSpinBox" name="doubleSpinBox_lower_height"/>
           </item>
           <item row="20" column="0" colspan="2">
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pushButton_stop_milling">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -315,6 +315,15 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_image">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>

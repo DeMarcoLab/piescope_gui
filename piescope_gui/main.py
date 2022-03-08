@@ -86,6 +86,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.live_imaging_running = False
         self.image_light = None
         self.image_ion = None
+        self.milling_position = None
 
         # threading event used to start/stop live imaging
         self.stop_event = None
@@ -243,7 +244,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.to_electron_microscope.clicked.connect(
             lambda: self.move_to_electron_microscope())
         self.pushButton_milling.clicked.connect(
-            lambda: self.milling())
+            lambda: self.milling(mode='load'))
 
     def update_laser_connections(self):
         # all subsequent connections require the laser controller
@@ -1348,7 +1349,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             window.show()
 
             window.exitButton.clicked.connect(
-                lambda: self.mill_window_from_correlation(window)
+                lambda: self.milling(display_image=window.pass_image())
             )
 
             if os.path.isfile(tempfile):
@@ -1359,7 +1360,31 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 os.remove(tempfile)
             display_error_message(traceback.format_exc())
     
-    def milling(self):
+    def milling(self, mode=None, display_image=None):
+        # display_image = self.image_light
+
+        if self.image_ion is None:
+            display_error_message('No ion image loaded')
+            return
+
+        if mode == 'load':
+            filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Open Milling Image", filter="Images (*.bmp *.tif *.tiff *.jpg)"
+            )
+            correlated_adorned_image = piescope.utils.load_image(filename)
+
+            milling_window = piescope_gui.milling.GUIMillingWindow(parent_gui=self, adorned_image=correlated_adorned_image)
+        else:
+            aligned_image = display_image
+            if aligned_image is None:
+                display_error_message('No aligned image loaded')
+                return
+            milling_window = piescope_gui.milling.GUIMillingWindow(parent_gui=self, adorned_image=self.image_ion, display_image=aligned_image)
+        
+        milling_window.show()
+
+
+    def milling2(self):
         try:
 
             filename, _ = QtWidgets.QFileDialog.getOpenFileName(

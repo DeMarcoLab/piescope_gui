@@ -220,7 +220,7 @@ class _CorrelationWindow(QMainWindow):
         self.pickButton.clicked.connect(self.pickmodechange)
         self.delButton.clicked.connect(self.delCP)
 
-    def menu_quit(self):
+    def pass_image(self):
         matched_points_dict = self.get_dictlist()
         # TODO: correlation fix
         # result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)

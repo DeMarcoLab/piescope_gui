@@ -1,23 +1,143 @@
 import logging
 import traceback
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-from matplotlib.patches import Rectangle
 import numpy as np
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
 import skimage
 import skimage.color
 import skimage.io
 import skimage.transform
-
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
+from matplotlib.patches import Rectangle
 from piescope import fibsem
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 
+import piescope_gui.qtdesigner_files.milling as gui_milling
 from piescope_gui.utils import display_error_message, timestamp
-    
+
 logger = logging.getLogger(__name__)
+
+class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
+    def __init__(self, parent_gui, adorned_image, display_image=None):
+        super().__init__(parent=parent_gui)
+        self.setupUi(self)
+        
+        global image
+
+        if display_image is None:
+            display_image = adorned_image.data
+        
+        
+        # self.parent = parent_gui
+        self.display_image = display_image
+        image = self.display_image
+        
+        self.adorned_image = adorned_image
+
+        self.milling_position = None
+
+        self.wp = _WidgetPlot(self)
+        self.label_image.setLayout(QtWidgets.QVBoxLayout())
+        self.label_image.layout().addWidget(self.wp)
+
+        self.upper_rectangle = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
+        self.lower_rectangle = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
+
+        self.wp.canvas.ax11.add_patch(self.upper_rectangle)
+        self.wp.canvas.ax11.add_patch(self.lower_rectangle)
+
+        self.upper_rectangle.set_visible(False)
+        self.upper_rectangle.set_hatch('//////')
+        self.lower_rectangle.set_visible(False)
+        self.lower_rectangle.set_hatch('//////')
+
+        self.wp.canvas.mpl_connect('button_press_event', self.on_click)
+
+        self.xclick = None
+        self.yclick = None
+    
+    def on_click(self, event):
+        if event.button == 1 and event.inaxes is not None:
+            self.xclick = event.xdata
+            self.yclick = event.ydata
+            self.parent().microscope.patterning.clear_patterns()
+            c_x, c_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
+            lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, c_x, c_y, self.parent().config['lamella'])
+            l_y = lower_pattern.center_y - lower_pattern.width 
+
+
+            def update_rectangle_pattern(adorned_image, rectangle, pattern):
+                image_width = adorned_image.width
+                image_height = adorned_image.height
+                pixel_size =  adorned_image.metadata.binary_result.pixel_size.x
+
+                width = lower_pattern.width / pixel_size
+                height = lower_pattern.height / pixel_size
+                rectangle_left = (image_width / 2) + (pattern.center_x / pixel_size) - (width/2)
+                rectangle_bottom = (image_height / 2) - (pattern.center_y / pixel_size) - (height/2)
+                rectangle.set_width(width)
+                rectangle.set_height(height)
+                rectangle.set_xy((rectangle_left, rectangle_bottom))
+                rectangle.set_visible(True)
+            
+            update_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.upper_rectangle, pattern=upper_pattern)
+            update_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.lower_rectangle, pattern=lower_pattern)
+
+            self.wp.canvas.draw()
+        
+    def setup_connections(self):
+        self.pushButton_save_position.clicked.connect(self.save_milling_position)
+        self.pushButton_start_milling.clicked.connect(self.start_patterning)
+        self.pushButton_stop_milling.clicked.connect(self.stop_patterning)
+
+    def save_milling_position(self):
+        if self.milling_position:
+            # TODO: calculate milling position correctly (raw position + click shift)
+            self.parent().milling_position = self.milling_position
+
+    def start_patterning(self):
+        # TODO: This wont actually change the currents to mill correctly
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = "Idle"
+            # state = self.parent().microscope.patterning.state
+            if state != "Idle":
+                logger.warning(
+                    "Can't start milling pattern! "
+                    "Patterning state is not currently Idle.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
+                # self.parent().microscope.patterning.start()
+                print('Started milling pattern.')
+        except Exception:
+            display_error_message(traceback.format_exc())
+
+    def stop_patterning(self):
+        from autoscript_core.common import ApplicationServerException
+        try:
+            state = "Running"
+            # state = self.parent().microscope.patterning.state
+            if state != "Running":
+                logger.warning(
+                    "Can't stop milling pattern! "
+                    "Patterning state is not running.\n"
+                    "microscope.patterning.state = {}".format(state)
+                    )
+                return
+            else:
+            #     self.parent().microscope.patterning.stop()
+                print('Stopped milling pattern.')
+        except Exception:
+            display_error_message(
+                "microscope.patterning.state = {}\n".format(state) +
+                traceback.format_exc()
+                )
+
+
 
 
 def open_milling_window(parent_gui, display_image, adorned_ion_image):
@@ -58,283 +178,8 @@ class _MainWindow(QMainWindow):
         self.xclick = None
         self.yclick = None
 
-        q1 = QTimer(self)
-        q1.setSingleShot(False)
-        q1.start(10000)
 
-    def create_window(self):
-        self.setWindowTitle("Milling Parameter Selection")
 
-        widget = QWidget(self)
-
-        vlay = QVBoxLayout(widget)
-        hlay = QHBoxLayout()
-
-        self.wp = _WidgetPlot(self)
-        vlay.addWidget(self.wp)
-
-        button_width = 230
-        button_height = 60
-        label_width = 60
-
-        self.exitButton = QPushButton("Exit")
-        self.exitButton.setFixedWidth(button_width)
-        self.exitButton.setFixedHeight(button_height)
-        self.exitButton.setStyleSheet("font-size: 16px;")
-
-        self.button_move_to_fibsem = QPushButton("Move to FIBSEM")
-        self.button_move_to_fibsem.setFixedWidth(button_width)
-        self.button_move_to_fibsem.setFixedHeight(button_height)
-        self.button_move_to_fibsem.setStyleSheet("font-size: 16px;")
-
-        self.button_move_to_fluorescence = QPushButton("Move to fluorescence")
-        self.button_move_to_fluorescence.setFixedWidth(button_width)
-        self.button_move_to_fluorescence.setFixedHeight(button_height)
-        self.button_move_to_fluorescence.setStyleSheet("font-size: 16px;")
-
-        self.pattern_creation_button = QPushButton("Add milling pattern")
-        self.pattern_creation_button.setFixedWidth(button_width)
-        self.pattern_creation_button.setFixedHeight(button_height)
-        self.pattern_creation_button.setStyleSheet("font-size: 16px;")
-
-        self.pattern_start_button = QPushButton("Start milling pattern")
-        self.pattern_start_button.setFixedWidth(button_width)
-        self.pattern_start_button.setFixedHeight(button_height)
-        self.pattern_start_button.setStyleSheet("font-size: 16px;")
-
-        self.pattern_pause_button = QPushButton("Pause milling pattern")
-        self.pattern_pause_button.setFixedWidth(button_width)
-        self.pattern_pause_button.setFixedHeight(button_height)
-        self.pattern_pause_button.setStyleSheet("font-size: 16px;")
-
-        self.pattern_stop_button = QPushButton("Stop milling pattern")
-        self.pattern_stop_button.setFixedWidth(button_width)
-        self.pattern_stop_button.setFixedHeight(button_height)
-        self.pattern_stop_button.setStyleSheet("font-size: 16px;")
-
-        self.x0_label = QLabel("X0:")
-        self.x0_label.setFixedHeight(30)
-        self.x0_label.setStyleSheet("font-size: 16px;")
-
-        self.x0_label2 = QLabel("")
-        self.x0_label2.setFixedWidth(label_width)
-        self.x0_label2.setFixedHeight(30)
-        self.x0_label2.setStyleSheet("font-size: 16px;")
-
-        self.y0_label = QLabel("Y0:")
-        self.y0_label.setFixedHeight(30)
-        self.y0_label.setStyleSheet("font-size: 16px;")
-
-        self.y0_label2 = QLabel("")
-        self.y0_label2.setFixedWidth(label_width)
-        self.y0_label2.setFixedHeight(30)
-        self.y0_label2.setStyleSheet("font-size: 16px;")
-
-        self.x1_label = QLabel("X1:")
-        self.x1_label.setFixedHeight(30)
-        self.x1_label.setStyleSheet("font-size: 16px;")
-
-        self.x1_label2 = QLabel("")
-        self.x1_label2.setFixedWidth(label_width)
-        self.x1_label2.setFixedHeight(30)
-        self.x1_label2.setStyleSheet("font-size: 16px;")
-
-        self.y1_label = QLabel("Y1:")
-        self.y1_label.setFixedHeight(30)
-        self.y1_label.setStyleSheet("font-size: 16px;")
-
-        self.y1_label2 = QLabel("")
-        self.y1_label2.setFixedWidth(label_width)
-        self.y1_label2.setFixedHeight(30)
-        self.y1_label2.setStyleSheet("font-size: 16px;")
-
-        spacerItem = QtWidgets.QSpacerItem(0, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-
-        hlay.addWidget(self.x0_label)
-        hlay.addWidget(self.x0_label2)
-        hlay.addWidget(self.x1_label)
-        hlay.addWidget(self.x1_label2)
-        hlay.addWidget(self.y0_label)
-        hlay.addWidget(self.y0_label2)
-        hlay.addWidget(self.y1_label)
-        hlay.addWidget(self.y1_label2)
-        # hlay.addSpacerItem(spacerItem)
-        hlay.addWidget(self.button_move_to_fibsem)
-        hlay.addWidget(self.button_move_to_fluorescence)
-        hlay.addWidget(self.pattern_creation_button)
-        hlay.addWidget(self.pattern_start_button)
-        hlay.addWidget(self.pattern_pause_button)
-        hlay.addWidget(self.pattern_stop_button)
-        hlay.addWidget(self.exitButton)
-        vlay.addLayout(hlay)
-
-        self.setCentralWidget(widget)
-        self.rect = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
-        self.rect2 = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
-            
-        self.wp.canvas.ax11.add_patch(self.rect)
-        self.wp.canvas.ax11.add_patch(self.rect2)
-        self.rect.set_visible(False)
-        self.rect2.set_visible(False)
-        self.rect.set_hatch("//////")
-        self.rect2.set_hatch("//////")
-
-        self.wp.canvas.mpl_connect('button_press_event', self.on_click)
-        # self.wp.canvas.mpl_connect('motion_notify_event', self.on_motion)
-        self.wp.canvas.mpl_connect('button_release_event', self.on_release)
-        
-    def create_conn(self):
-        self.exitButton.clicked.connect(self.menu_quit)
-
-        self.button_move_to_fibsem.clicked.connect(
-            lambda: self.parent().move_to_electron_microscope())
-        self.button_move_to_fluorescence.clicked.connect(
-            lambda: self.parent().move_to_light_microscope())
-
-        self.pattern_creation_button.clicked.connect(self.add_milling_pattern)
-        self.pattern_start_button.clicked.connect(self.start_patterning)
-        self.pattern_pause_button.clicked.connect(self.pause_patterning)
-        self.pattern_stop_button.clicked.connect(self.stop_patterning)
-
-    def menu_quit(self):
-        self.close()
-
-    def add_milling_pattern(self):
-        try:
-            fibsem.create_rectangular_pattern(
-                self.parent().microscope, self.adorned_ion_image,
-                self.xclick, self.x1, self.yclick, self.y1, depth=1e-6)
-            print('Added milling pattern to the FIBSEM microscope.')
-        except Exception:
-            display_error_message(traceback.format_exc())
-
-    def start_patterning(self):
-        from autoscript_core.common import ApplicationServerException
-        try:
-            state = self.parent().microscope.patterning.state
-            if state != "Idle":
-                logger.warning(
-                    "Can't start milling pattern! "
-                    "Patterning state is not currently Idle.\n"
-                    "microscope.patterning.state = {}".format(state)
-                    )
-                return
-            else:
-                self.parent().microscope.patterning.start()
-                print('Started milling pattern.')
-        except Exception:
-            display_error_message(traceback.format_exc())
-
-    def pause_patterning(self):
-        from autoscript_core.common import ApplicationServerException
-        try:
-            state = self.parent().microscope.patterning.state
-            if state != "Running":
-                logger.warning(
-                    "Can't pause milling pattern! "
-                    "Patterning state is not currently running.\n"
-                    "microscope.patterning.state = {}".format(state)
-                    )
-                return
-            else:
-                self.parent().microscope.patterning.pause()
-                print('Paused milling pattern.')
-        except Exception:
-            display_error_message(
-                "microscope.patterning.state = {}\n".format(state) +
-                traceback.format_exc()
-                )
-
-    def stop_patterning(self):
-        from autoscript_core.common import ApplicationServerException
-        try:
-            state = self.parent().microscope.patterning.state
-            if state != "Running" and state != "Paused":
-                logger.warning(
-                    "Can't stop milling pattern! "
-                    "Patterning state is not running or paused.\n"
-                    "microscope.patterning.state = {}".format(state)
-                    )
-                return
-            else:
-                self.parent().microscope.patterning.stop()
-                print('Stopped milling pattern.')
-        except Exception:
-            display_error_message(
-                "microscope.patterning.state = {}\n".format(state) +
-                traceback.format_exc()
-                )
-
-    def on_click(self, event):
-        if event.button == 1 or event.button == 3:
-            if event.inaxes is not None:
-                self.xclick = event.xdata
-                self.yclick = event.ydata
-                logger.debug(self.xclick)
-                logger.debug(self.yclick)
-                self.dragged = False
-                logger.debug(self.dragged)
-                self.on_press = True
-
-    # def on_motion(self, event):
-    #     if event.button == 1 or event.button == 3 and self.on_press:
-    #         if (self.xclick is not None and self.yclick is not None):
-    #             x0, y0 = self.xclick, self.yclick
-    #             self.x1, self.y1 = event.xdata, event.ydata
-
-    #             if (self.x1 is not None or self.y1 is not None):
-    #                 self.dragged = True
-    #                 # return
-    #                 # self.rect.set_width(self.x1 - x0)
-    #                 # self.rect.set_height(self.y1 - y0)
-    #                 # self.rect.set_xy((x0, y0))
-    #                 # self.rect.set_visible(True)
-    #                 # logger.debug("x0 %s", str(x0))
-    #                 # logger.debug("y0 %s", str(y0))
-    #                 # logger.debug("x1 %s", str(self.x1))
-    #                 # logger.debug("y1 %s", str(self.y1))
-    #                 # self.wp.canvas.draw()
-
-    def on_release(self, event):
-        # if event.button == 1 and self.dragged:
-        #     return
-        #     logger.debug(self.dragged)
-        #     try:
-        #         self.x1_label2.setText("%.1f" % self.x1)
-        #     except Exception as e:
-        #         display_error_message("Mouse released outside image. Please try again")
-        #     self.x0_label2.setText("%.1f" % self.xclick)
-        #     self.y0_label2.setText("%.1f" % self.yclick)
-        #     self.y1_label2.setText("%.1f" % self.y1)
-        if event.button == 1:
-            self.parent().microscope.patterning.clear_patterns()
-            c_x, c_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_ion_image)
-            lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, c_x, c_y, self.parent().config['lamella'])
-            l_y = lower_pattern.center_y - lower_pattern.width 
-
-            image_width = self.adorned_ion_image.width
-            image_height = self.adorned_ion_image.height
-            pixel_size =  self.adorned_ion_image.metadata.binary_result.pixel_size.x
-
-            l_width = lower_pattern.width / pixel_size
-            l_height = lower_pattern.height / pixel_size
-            rectangle_left = (image_width / 2) + (lower_pattern.center_x / pixel_size) - (l_width/2)
-            rectangle_bottom = (image_height / 2) - (lower_pattern.center_y / pixel_size) - (l_height/2)
-            self.rect.set_width(l_width)
-            self.rect.set_height(l_height)
-            self.rect.set_xy((rectangle_left, rectangle_bottom))
-            self.rect.set_visible(True)
-        
-            u_width = upper_pattern.width / pixel_size
-            u_height = upper_pattern.height / pixel_size
-            rectangle2_left = (image_width / 2) + (upper_pattern.center_x / pixel_size) - (u_width/2)
-            rectangle2_bottom = (image_height / 2) - (upper_pattern.center_y / pixel_size) - (u_height/2)
-            self.rect2.set_width(u_width)
-            self.rect2.set_height(u_height)
-            self.rect2.set_xy((rectangle2_left, rectangle2_bottom))
-            self.rect2.set_visible(True)
-            self.wp.canvas.draw()
-        
 
 class _WidgetPlot(QWidget):
     def __init__(self, *args, **kwargs):
