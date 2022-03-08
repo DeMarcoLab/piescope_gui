@@ -28,6 +28,7 @@ import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
+# TODO: add arduino code to repo
 # TODO: Slider as double
 
 
@@ -616,7 +617,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return
 
         # check if live imaging is possible
-        # TODO: add self.live_imaging_running checks for other actions (volume etc)
         if self.live_imaging_running:
             self.button_live_image_FM.setDown(True)
             print("Can't take image, live imaging currently running")
@@ -1043,8 +1043,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_error_message(msg)
                         return
 
-            # make a copy of the rgb to display with crosshair
-            # TODO: move this later in the process
             crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
             if settings["imaging"]["lm"]["filter_strength"] > 0:
                 image = ndi.median_filter(
@@ -1072,10 +1070,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             image = self.image_ion.data
 
             # make a copy of the rgb to display with crosshair
-            # TODO: move this later in the process
             crosshair = piescope.utils.create_crosshair(self.image_ion, self.config)
 
-            # TODO: can this be moved to after all image modifications (probably)
             plt.axis("off")
             if self.canvas_FIBSEM:
                 self.label_image_FIBSEM.layout().removeWidget(self.canvas_FIBSEM)
@@ -1135,7 +1131,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             x_move = StagePosition(x=x, y=0, z=0)
             y_move = StagePosition(x=0, y=y, z=0)
-            # TODO: CHECK
+            # TODO: Test out on FIB when working
             yz_move = piescope.fibsem.y_corrected_stage_movement(
                 y,
                 stage_tilt=self.microscope.specimen.stage.current_position.t,
@@ -1204,8 +1200,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             display_error_message("Mirror controller is not connected.")
             return
 
-        # TODO: helper function
-        # make sure volume_height is a positive integer
+        if self.live_imaging_running:
+            display_error_message('Live imaging running, cannot take volue')
         try:
             volume_height = int(self.lineEdit_volume_height.text())
         except ValueError:
@@ -1290,93 +1286,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         # Update display
         self.update_display(modality=Modality.Light, settings=self.config)
-
-    def acquire_volume2(self, mode=ImagingType.WIDEFIELD, autosave=True):
-        print("Acquiring fluorescence volume image...")
-        try:  # TODO: shorten the amount of calls under the try, or at least split
-            max_intensity = piescope.utils.max_intensity_projection(volume)
-            if autosave is True:
-                # # from old ssaving of MIP, RAW, RGB, might be useful
-                # reconstruct = 0
-                # raw = 0
-                # mip = 0
-                #
-                # # RAW - (ZMipYX)
-                # if raw == 1:
-                #     volume_mip = np.copy(volume)
-                #     if volume_mip.ndim == 6:
-                #         # piescope.utils.max_intensity_projection(volume_mip, )
-                #         for channel, (
-                #                 laser_name, (laser_power, exposure_time)) in enumerate(
-                #             laser_dict.items()):
-                #             max_intensity = np.max(volume_mip[channel],
-                #                                    axis=(0, 2))
-                #             save_filename = (
-                #                     self.lineEdit_save_destination_FM +
-                #                     'Raw_' + str(
-                #                 laser_name) + '_' + self.lineEdit_save_filename_FM.text() + '.tif')
-                #             piescope.utils.save_image(max_intensity,
-                #                                       save_filename,
-                #                                       metadata=meta)  # ZMipYX
-                #             print('Saved: {}'.format(save_filename))
-                #
-                # # MIP (CAZPYX)
-                # if mip == 1:
-                #     volume_mip = np.copy(volume)
-                #     if volume_mip.ndim == 6:
-                #         # piescope.utils.max_intensity_projection(volume_mip, )
-                #         for channel, (
-                #                 laser_name, (laser_power, exposure_time)) in enumerate(
-                #             laser_dict.items()):
-                #             max_intensity = np.max(volume_mip[channel],
-                #                                    axis=(0, 2))
-                #             save_filename = (
-                #                     self.lineEdit_save_destination_FM +
-                #                     'Raw_' + str(
-                #                 laser_name) + '_' + self.lineEdit_save_filename_FM.text() + '.tif')
-                #             piescope.utils.save_image(max_intensity,
-                #                                       save_filename,
-                #                                       metadata=meta)  # ZMipYX
-                #             print('Saved: {}'.format(save_filename))
-                #
-                # # Save volume by colour as (AZP[YX])
-                # if reconstruct == 1:
-                #     for channel, (
-                #             laser_name, (laser_power, exposure_time)) in enumerate(
-                #         laser_dict.items()):
-                #         save_filename = (self.lineEdit_save_destination_FM +
-                #                          'Volume_' + str(
-                #                     laser_name) + '_' + self.lineEdit_save_filename_FM.text() + '.tif')
-                #         save_volume = np.copy(
-                #             volume[channel[0], :, :, :, :, :])
-                #         laser_meta = {'laser': str(laser_name)}
-                #         meta.update(laser_meta)
-                #         piescope.utils.save_image(save_volume, save_filename,
-                #                                   metadata=meta)
-                #         print('Saved: {}'.format(save_filename))
-
-                # Save volume
-                save_filename = os.path.join(
-                    self.save_destination_FM,
-                    "Volume_" + self.lineEdit_save_filename_FM.text() + ".tif",
-                )
-                piescope.utils.save_image(volume, save_filename, metadata=meta)
-                print("Saved: {}".format(save_filename))
-                # Save maximum intensity projection
-                save_filename_max_intensity = os.path.join(
-                    self.save_destination_FM,
-                    "MIP_" + self.lineEdit_save_filename_FM.text() + ".tif",
-                )
-                piescope.utils.save_image(
-                    max_intensity, save_filename_max_intensity, metadata=meta
-                )
-                print("Saved: {}".format(save_filename_max_intensity))
-            # Update display
-            rgb = piescope.utils.rgb_image(max_intensity)
-            self.image_light = rgb
-            self.update_display(modality=Modality.Light, settings=self.config)
-        except Exception as e:
-            display_error_message(traceback.format_exc())
 
     def correlateim(self):
         tempfile = "C:"
