@@ -13,17 +13,26 @@ from piescope import fibsem
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from autoscript_sdb_microscope_client.structures import StagePosition
+import piescope
+from autoscript_sdb_microscope_client.enumerations import CoordinateSystem
 
 import piescope_gui.qtdesigner_files.milling as gui_milling
 from piescope_gui.utils import display_error_message, timestamp
 
 logger = logging.getLogger(__name__)
 
+MICRON_TO_METRE = 1e-6
+METRE_TO_MICRON = 1e6
+
 class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
     def __init__(self, parent_gui, adorned_image, display_image=None):
         super().__init__(parent=parent_gui)
         self.setupUi(self)
-        
+
+        self.settings = self.parent().config['lamella'].copy()
+        print(f'Loaded settings: {self.settings}')
+
         global image
 
         if display_image is None:
@@ -55,45 +64,100 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
 
         self.wp.canvas.mpl_connect('button_press_event', self.on_click)
 
+        self.center_x = 0
+        self.center_y = 0
         self.xclick = None
         self.yclick = None
-    
+
+        self.doubleSpinBox_milling_depth.setValue(float(self.settings['milling_depth']) * METRE_TO_MICRON)
+        self.doubleSpinBox_lamella_height.setValue(float(self.settings['lamella_height']) * METRE_TO_MICRON)
+        self.doubleSpinBox_lamella_width.setValue(float(self.settings['lamella_width']) * METRE_TO_MICRON)
+        self.doubleSpinBox_upper_height.setValue(float(self.settings['upper_height']) * METRE_TO_MICRON)
+        self.doubleSpinBox_lower_height.setValue(float(self.settings['lower_height']) * METRE_TO_MICRON)
+
+        self.setup_connections()
+
     def on_click(self, event):
         if event.button == 1 and event.inaxes is not None:
             self.xclick = event.xdata
             self.yclick = event.ydata
-            self.parent().microscope.patterning.clear_patterns()
-            c_x, c_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
-            lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, c_x, c_y, self.parent().config['lamella'])
+            self.center_x, self.center_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
+            self.draw_milling_patterns()
 
-            def update_rectangle_pattern(adorned_image, rectangle, pattern):
-                image_width = adorned_image.width
-                image_height = adorned_image.height
-                pixel_size =  adorned_image.metadata.binary_result.pixel_size.x
+    def draw_milling_patterns(self):  
+        self.parent().microscope.patterning.clear_patterns()
+        lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, self.center_x, self.center_y, self.settings)
 
-                width = pattern.width / pixel_size
-                height = pattern.height / pixel_size
-                rectangle_left = (image_width / 2) + (pattern.center_x / pixel_size) - (width/2)
-                rectangle_bottom = (image_height / 2) - (pattern.center_y / pixel_size) - (height/2)
-                rectangle.set_width(width)
-                rectangle.set_height(height)
-                rectangle.set_xy((rectangle_left, rectangle_bottom))
-                rectangle.set_visible(True)
-            
-            update_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.upper_rectangle, pattern=upper_pattern)
-            update_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.lower_rectangle, pattern=lower_pattern)
+        def draw_rectangle_pattern(adorned_image, rectangle, pattern):
+            image_width = adorned_image.width
+            image_height = adorned_image.height
+            pixel_size =  adorned_image.metadata.binary_result.pixel_size.x
 
-            self.wp.canvas.draw()
-        
+            width = pattern.width / pixel_size
+            height = pattern.height / pixel_size
+            rectangle_left = (image_width / 2) + (pattern.center_x / pixel_size) - (width/2)
+            rectangle_bottom = (image_height / 2) - (pattern.center_y / pixel_size) - (height/2)
+            rectangle.set_width(width)
+            rectangle.set_height(height)
+            rectangle.set_xy((rectangle_left, rectangle_bottom))
+            rectangle.set_visible(True)
+
+        try:
+            draw_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.upper_rectangle, pattern=upper_pattern)
+            draw_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.lower_rectangle, pattern=lower_pattern)
+        except:
+            #TODO: properly handle these exceptions, when pattern is outside
+            import piescope_gui.main as piescope_gui_main
+            piescope_gui_main.display_error_message(traceback.format_exc())
+        self.wp.canvas.draw()
+
     def setup_connections(self):
-        self.pushButton_save_position.clicked.connect(self.save_milling_position)
-        self.pushButton_start_milling.clicked.connect(self.start_patterning)
-        self.pushButton_stop_milling.clicked.connect(self.stop_patterning)
+        self.pushButton_save_position.clicked.connect(lambda: self.save_milling_position())
+        self.pushButton_start_milling.clicked.connect(lambda: self.start_patterning())
+        self.pushButton_stop_milling.clicked.connect(lambda: self.stop_patterning())
+
+        self.doubleSpinBox_milling_depth.textChanged.connect(lambda: self.update_milling_patterns())
+        self.doubleSpinBox_lamella_height.valueChanged.connect(lambda: self.update_milling_patterns())
+        self.doubleSpinBox_lamella_width.valueChanged.connect(lambda: self.update_milling_patterns())
+        self.doubleSpinBox_upper_height.valueChanged.connect(lambda: self.update_milling_patterns())
+        self.doubleSpinBox_lower_height.valueChanged.connect(lambda: self.update_milling_patterns())
+
+    def update_milling_patterns(self):
+        print('updating milling patterns')
+        self.settings['milling_depth'] = self.doubleSpinBox_milling_depth.value() * MICRON_TO_METRE
+        self.settings['lamella_height'] = self.doubleSpinBox_lamella_height.value() * MICRON_TO_METRE
+        self.settings['lamella_width'] = self.doubleSpinBox_lamella_width.value() * MICRON_TO_METRE
+        self.settings['upper_height'] = self.doubleSpinBox_upper_height.value() * MICRON_TO_METRE
+        self.settings['lower_height'] = self.doubleSpinBox_lower_height.value() * MICRON_TO_METRE
+        self.draw_milling_patterns()
 
     def save_milling_position(self):
-        if self.milling_position:
+        if self.xclick is not None:
             # TODO: calculate milling position correctly (raw position + click shift)
-            self.parent().milling_position = self.milling_position
+            x_move = StagePosition(x=self.center_x, y=0, z=0)
+            # TODO: CHECK for non-liftout
+            yz_move = piescope.fibsem.y_corrected_stage_movement(
+                self.center_y,
+                stage_tilt=self.parent().microscope.specimen.stage.current_position.t,
+                settings=self.parent().config,
+                image=self.parent().image_ion
+            )
+            self.parent().microscope.specimen.stage.set_default_coordinate_system(CoordinateSystem.RAW)
+            current_position = self.parent().microscope.specimen.stage.current_position
+            print(f'Current position: {current_position}')
+            self.parent().microscope.specimen.stage.set_default_coordinate_system(CoordinateSystem.SPECIMEN)
+            
+            self.parent().milling_position = StagePosition(x=current_position.x + x_move.x, 
+                                                            y=current_position.y + yz_move.y, 
+                                                            z=current_position.z + yz_move.z,
+                                                            r=current_position.r,
+                                                            t=current_position.t,
+                                                            coordinate_system=current_position.coordinate_system)
+
+            print(f'New position: {self.parent().milling_position}')
+            self.parent().microscope.patterning.clear_patterns()
+
+
 
     def start_patterning(self):
         # TODO: This wont actually change the currents to mill correctly
@@ -134,50 +198,6 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                 "microscope.patterning.state = {}\n".format(state) +
                 traceback.format_exc()
                 )
-
-
-
-
-def open_milling_window(parent_gui, display_image, adorned_ion_image):
-    """Opens a new window to perform correlation
-
-    Parameters
-    ----------
-    parent_gui : PyQt5 Window
-    display_image : numpy ndarray
-        Image to display in milling GUI window.
-    adorned_ion_image : Adorned Image
-        Adorned image with image as the .data attribute and metadata passed from
-        the fibsem image on display in the main window
-
-    """
-    global image
-    image = display_image
-
-    window = _MainWindow(parent=parent_gui, adorned_ion_image=adorned_ion_image)
-    window.show()
-    return window
-
-
-class _MainWindow(QMainWindow):
-    def __init__(self, parent=None, adorned_ion_image=None, display_image=None):
-        super().__init__(parent=parent)
-        self.adorned_ion_image = adorned_ion_image
-        self.create_window()
-        self.create_conn()
-
-        self.show()
-        self.showMaximized()
-        self.wp.canvas.fig.subplots_adjust(
-            left=0.01, bottom=0.01, right=0.99, top=0.99)
-
-        self.x1 = None
-        self.y1 = None
-        self.xclick = None
-        self.yclick = None
-
-
-
 
 class _WidgetPlot(QWidget):
     def __init__(self, *args, **kwargs):
@@ -252,19 +272,18 @@ def mill_trench_patterns(microscope, c_x, c_y, settings: dict):
 
     lamella_width = float(settings["lamella_width"])
     lamella_height = float(settings["lamella_height"])
-    trench_height = float(settings["trench_height"])
-    upper_trench_height = float(trench_height / settings["size_ratio"])
-    offset = float(settings["offset"])
+    lower_trench_height = float(settings["lower_height"])
+    upper_trench_height = float(settings["upper_height"])
     milling_depth = float(settings["milling_depth"])
 
-    centre_upper_y = centre_y + (lamella_height / 2 + upper_trench_height / 2 + offset)
-    centre_lower_y = centre_y - (lamella_height / 2 + trench_height / 2 + offset)
+    centre_upper_y = centre_y + (lamella_height / 2 + upper_trench_height / 2 )
+    centre_lower_y = centre_y - (lamella_height / 2 + lower_trench_height / 2 )
 
     lower_pattern = microscope.patterning.create_cleaning_cross_section(
         centre_x,
         centre_lower_y,
         lamella_width,
-        trench_height,
+        lower_trench_height,
         milling_depth,
     )
     lower_pattern.scan_direction = "BottomToTop"

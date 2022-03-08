@@ -350,7 +350,7 @@ class _PlotCanvas(FigureCanvas):
         self.figureActive = False
         self.axesActive = None
         self.CPactive = None
-        self.pickmode = False
+        self.pickmode = True
         self.pickMode_changed = True
         self.cpChanged = False
         self.cursorGUI = "arrow"

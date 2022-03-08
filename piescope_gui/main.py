@@ -32,8 +32,8 @@ from piescope_gui.utils import display_error_message, timestamp
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
-    def __init__(self):
-        super(GUIMainWindow, self).__init__()
+    def __init__(self, parent_gui=None):
+        super().__init__(parent=parent_gui)
         self.setupUi(MainGui=self)
         self.read_config_file()
         self.setup_logging()
@@ -521,7 +521,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def move_to_light_microscope(
         self, x=+49.9092e-3, y=-0.1143e-3
     ):  # TODO: Alex wants one function
-        if not self.liveCheck:
+        if self.live_imaging_running:
             print("Cannot move stage, live imaging currently running")
             return
         try:
@@ -532,7 +532,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             print("Moved to light microscope.")
 
     def move_to_electron_microscope(self, x=-49.9092e-3, y=+0.1143e-3):
-        if not self.liveCheck:
+        if self.live_imaging_running:
             print("Cannot move stage, live imaging currently running")
             print("Cannot move stage, live imaging currently running")
             return
@@ -1146,19 +1146,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             from autoscript_sdb_microscope_client.structures import StagePosition
 
             x_move = StagePosition(x=x, y=0, z=0)
-            y_move = StagePosition(x=0, y=y, z=0)
-            # TODO: CHECK
+            # TODO: CHECK for non-liftout
             yz_move = piescope.fibsem.y_corrected_stage_movement(
                 y,
                 stage_tilt=self.microscope.specimen.stage.current_position.t,
                 settings=self.config,
+                image=self.image_ion
             )
 
-            if self.config["imaging"]["ib"]["pretilt"] != 0:
-                y_move = yz_move
-
             self.microscope.specimen.stage.relative_move(x_move)
-            self.microscope.specimen.stage.relative_move(y_move)
+            self.microscope.specimen.stage.relative_move(yz_move)
 
             if modality == Modality.Light:
                 self.fluorescence_image(
@@ -1187,11 +1184,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.lineEdit_save_destination_FM.setText(directory_path)
                 return directory_path
             elif modality == "FIBSEM":
-                if not self.checkBox_save_destination_FIBSEM.isChecked():
-                    self.save_destination_FIBSEM = directory_path
-                    self.lineEdit_save_destination_FIBSEM.setText(
-                        directory_path)
-                    return directory_path
+                self.save_destination_FIBSEM = directory_path
+                self.lineEdit_save_destination_FIBSEM.setText(
+                    directory_path)
+                return directory_path
             elif modality == "correlation":
                 self.save_destination_correlation = directory_path
                 self.correlation_output_path.setText(directory_path)
@@ -1317,6 +1313,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if fluorescence_image == [] or fluorescence_image == "":
                 raise ValueError("No first image selected")
             fibsem_image = self.image_ion
+
+            beam_type = fibsem_image.metadata.acquisition.beam_type
+            if beam_type != "Ion":
+                display_error_message('Need to correlate with an ion image (for the moment)')
+                return
+
             if fibsem_image == [] or fibsem_image == "":
                 raise ValueError("No second image selected")
 
@@ -1339,7 +1341,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 output_filename + image_ext + "_" +
                 str(copy_count) + "temp_.tiff"
             )
-            # open(tempfile, "w+")
 
             output_filename = (
                 output_filename + image_ext + "_" + str(copy_count) + ".tiff"
@@ -1355,62 +1356,38 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 lambda: self.milling(display_image=window.pass_image())
             )
 
-            # if os.path.isfile(tempfile):
-            #     os.remove(tempfile)
-
         except Exception as e:
             if os.path.isfile(tempfile): 
                 os.remove(tempfile)
             display_error_message(traceback.format_exc())
     
     def milling(self, mode=None, display_image=None):
-        # display_image = self.image_light
-
-        if self.image_ion is None:
-            display_error_message('No ion image loaded')
-            return
 
         if mode == 'load':
             filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open Milling Image", filter="Images (*.bmp *.tif *.tiff *.jpg)"
             )
             correlated_adorned_image = piescope.utils.load_image(filename)
+            self.milling_window = piescope_gui.milling.GUIMillingWindow(parent_gui=self, adorned_image=correlated_adorned_image)
+            self.microscope.imaging.set_active_view(2)
 
-            milling_window = piescope_gui.milling.GUIMillingWindow(parent_gui=self, adorned_image=correlated_adorned_image)
         else:
             aligned_image = display_image
             if aligned_image is None:
                 display_error_message('No aligned image loaded')
                 return
-            milling_window = piescope_gui.milling.GUIMillingWindow(parent_gui=self, adorned_image=self.image_ion, display_image=aligned_image)
+            self.milling_window = piescope_gui.milling.GUIMillingWindow(parent_gui=self, adorned_image=self.image_ion, display_image=aligned_image)
+            self.microscope.imaging.set_active_view(2)
         
-        milling_window.show()
+        if self.parent() is not None:
+            self.milling_window.pushButton_save_position.setEnabled(True)
+        else:
+            self.milling_window.pushButton_start_milling.setEnabled(True)
+            self.milling_window.pushButton_stop_milling.setEnabled(True)
 
-
-    def milling2(self):
-        try:
-
-            filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Open Milling Image", filter="Images (*.bmp *.tif *.tiff *.jpg)"
-            )
-
-            correlated_adorned_image = piescope.utils.load_image(filename)
-
-            piescope_gui.milling.open_milling_window(
-                self, correlated_adorned_image.data, correlated_adorned_image
-            )
-
-        except Exception as e:
-            display_error_message(traceback.format_exc())
-    
-    def mill_window_from_correlation(self, window):
-        aligned_image = window.menu_quit()
-        try:
-            self.milling_window = piescope_gui.milling.open_milling_window(
-                self, aligned_image, self.image_ion
-            )
-        except Exception:
-            display_error_message(traceback.format_exc())
+        self.milling_window.pushButton_save_position.clicked.connect(lambda: self.close())
+        self.milling_window.pushButton_save_position.clicked.connect(lambda: self.milling_window.close())
+        self.milling_window.show()
 
 def main():
     """Launch the `piescope_gui` main application window."""
