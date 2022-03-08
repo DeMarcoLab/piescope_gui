@@ -222,11 +222,8 @@ class _CorrelationWindow(QMainWindow):
 
     def pass_image(self):
         matched_points_dict = self.get_dictlist()
-        # TODO: correlation fix
-        # result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original = correlate_images(img1, img2, output, matched_points_dict)
         result = correlate_images(img1, img2, output, matched_points_dict)
         self.close()
-        # return result, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original, output, matched_points_dict
         return result
 
     def get_dictlist(self):

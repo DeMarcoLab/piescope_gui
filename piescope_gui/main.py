@@ -30,6 +30,7 @@ from piescope_gui.utils import display_error_message, timestamp
 
 # TODO: add arduino code to repo
 # TODO: Slider as double
+# TODO: clean up correlation file structure
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):

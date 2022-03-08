@@ -37,12 +37,12 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
 
         if display_image is None:
             display_image = adorned_image.data
-        
-        
+
+
         # self.parent = parent_gui
         self.display_image = display_image
         image = self.display_image
-        
+
         self.adorned_image = adorned_image
 
         self.milling_position = None
@@ -84,7 +84,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
             self.center_x, self.center_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
             self.draw_milling_patterns()
 
-    def draw_milling_patterns(self):  
+    def draw_milling_patterns(self):
         self.parent().microscope.patterning.clear_patterns()
         lower_pattern, upper_pattern = mill_trench_patterns(self.parent().microscope, self.center_x, self.center_y, self.settings)
 
@@ -133,9 +133,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
 
     def save_milling_position(self):
         if self.xclick is not None:
-            # TODO: calculate milling position correctly (raw position + click shift)
             x_move = StagePosition(x=self.center_x, y=0, z=0)
-            # TODO: CHECK for non-liftout
             yz_move = piescope.fibsem.y_corrected_stage_movement(
                 self.center_y,
                 stage_tilt=self.parent().microscope.specimen.stage.current_position.t,
@@ -146,9 +144,9 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
             current_position = self.parent().microscope.specimen.stage.current_position
             print(f'Current position: {current_position}')
             self.parent().microscope.specimen.stage.set_default_coordinate_system(CoordinateSystem.SPECIMEN)
-            
-            self.parent().milling_position = StagePosition(x=current_position.x + x_move.x, 
-                                                            y=current_position.y + yz_move.y, 
+
+            self.parent().milling_position = StagePosition(x=current_position.x + x_move.x,
+                                                            y=current_position.y + yz_move.y,
                                                             z=current_position.z + yz_move.z,
                                                             r=current_position.r,
                                                             t=current_position.t,
