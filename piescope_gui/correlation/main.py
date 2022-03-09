@@ -1,5 +1,4 @@
 import os
-import os.path as p
 import time
 
 import skimage.util
@@ -24,96 +23,15 @@ from skimage.transform import AffineTransform
 from piescope_gui._version import __version__
 
 
-def open_correlation_window(parent_gui, fluorescence_image, fibsem_image, output_path):
-    """Opens a new window to perform correlation
+from piescope import correlation
 
-    Parameters
-    ----------
-    main_gui : PyQt5 Window
-
-    fluorescence_image : numpy.array with shape: (rows, columns) or path
-        to numpy.array with shape: (rows, columns)
-
-    fibsem_image : expecting Adorned Image or path to Adorned image
-
-    output_path : path to save location
-    """
-    global img1
-    global img2
-    global img1_path
-    global img2_path
-    global gui
-    global output
-    global fluorescence_original
-
-    gui = parent_gui
-    fluorescence_original = fluorescence_image
-
-    # if type(fluorescence_image) == str:
-    #     print("Image 1 given as path")
-    #     fluorescence_image_rgb = skimage.color.gray2rgb(plt.imread(fluorescence_image))
-    # else:
-    print("Image 1 given as array")
-    fluorescence_image_rgb = np.copy(fluorescence_image)
-
-    # if type(fibsem_image) == str:
-    #     print("Image 2 given as path")
-    #     fibsem_image = skimage.color.gray2rgb(plt.imread(fibsem_image))
-    # else:
-    fibsem_data = np.copy(fibsem_image.data)
-    print("Image 2 given as array")
-    fibsem_image = skimage.color.gray2rgb(fibsem_data)
-
-    fluorescence_image_rgb = skimage.transform.resize(fluorescence_image_rgb, fibsem_image.shape)
-
-    img1 = fluorescence_image_rgb
-    img2 = fibsem_image
-    output = output_path
-
-    window = _CorrelationWindow(parent=gui)
-    return window
-
-
-def correlate_images(fluorescence_image_rgb, fibsem_image, output, matched_points_dict):
-    """Correlates two images using points chosen by the user
-
-    Parameters
-    ----------
-    fluorescence_image_rgb :
-        umpy array with shape (cols, rows, channels)
-    fibsem_image : AdornedImage.
-        Expecting .data attribute of shape (cols, rows, channels)
-    output : str
-        Path to save location
-
-    matched_points_dict : dict
-    Dictionary of points selected in the correlation window
-    """
-    if matched_points_dict == []:
-        print('No control points selected, exiting.')
-        return
-
-    src, dst = point_coords(matched_points_dict)
-    transformation = calculate_transform(src, dst)
-    fluorescence_image_aligned = apply_transform(fluorescence_image_rgb, transformation)
-    result = overlay_images(fluorescence_image_aligned, fibsem_image.data)
-    result = skimage.util.img_as_ubyte(result)
-
-    # TODO: the only imports here should be numpy arrays, not AdornedImagE
-    # TODO: get rid of this, saving should happen outside the function
-    # overlay_adorned_image = AdornedImage(result)
-    # overlay_adorned_image.metadata = gui.fibsem_image.metadata
-    # save_text(output, transformation, matched_points_dict)
-    # plt.imsave(output, result)
-    # overlay_adorned_image.save(output)
-
-    return result#, overlay_adorned_image, fluorescence_image_rgb, fluorescence_original
-
-
-class _CorrelationWindow(QMainWindow):
+class CorrelationWindow(QMainWindow):
     """Main correlation window"""
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, fluorescence_image=None, fibsem_image=None, output_path=None):
         super().__init__(parent=parent)
+        self.image_light = fluorescence_image
+        self.image_ion = fibsem_image
+        self.output_path = output_path
         self.create_window()
         self.create_conn()
 
@@ -141,7 +59,7 @@ class _CorrelationWindow(QMainWindow):
         hlay.addLayout(vlay)
         hlay.addLayout(vlay2)
 
-        self.wp = _WidgetPlot(self)
+        self.wp = _WidgetPlot(fluorescence_image=self.image_light, fibsem_image=self.image_ion)
         vlay.addWidget(self.wp)
 
         self.help = QTextEdit()
@@ -222,7 +140,7 @@ class _CorrelationWindow(QMainWindow):
 
     def pass_image(self):
         matched_points_dict = self.get_dictlist()
-        result = correlate_images(img1, img2, output, matched_points_dict)
+        result = correlation.correlate_images(self.image_light, self.image_ion, self.output_path, matched_points_dict)
         self.close()
         return result
 
@@ -323,20 +241,22 @@ class _CorrelationWindow(QMainWindow):
 
 
 class _WidgetPlot(QWidget):
-    def __init__(self, *args, **kwargs):
-        QWidget.__init__(self, *args, **kwargs)
+    def __init__(self, fluorescence_image, fibsem_image):
+        QWidget.__init__(self)
         self.setLayout(QVBoxLayout())
-        self.canvas = _PlotCanvas(self)
+        self.canvas = _PlotCanvas(self, fluorescence_image, fibsem_image)
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.layout().addWidget(self.toolbar)
         self.layout().addWidget(self.canvas)
 
 
 class _PlotCanvas(FigureCanvas):
-    def __init__(self, parent=None):
+    def __init__(self, parent, fluorescence_image, fibsem_image):
         self.fig = Figure()
         FigureCanvas.__init__(self, self.fig)
 
+        self.fluorescence_image = fluorescence_image
+        self.fibsem_image = fibsem_image
         self.setParent(parent)
         FigureCanvas.setSizePolicy(
             self, QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -363,8 +283,8 @@ class _PlotCanvas(FigureCanvas):
         self.ax12 = self.fig.add_subplot(
             gs0[1], xticks=[], yticks=[], title="Image 2: Select Points")
 
-        self.ax11.imshow(img1)
-        self.ax12.imshow(img2)
+        self.ax11.imshow(self.fluorescence_image)
+        self.ax12.imshow(self.fibsem_image)
 
     def updateCanvas(self, event=None):
         ax11_xlim = self.ax11.get_xlim()
@@ -536,169 +456,3 @@ class _ControlPoint:
         }
 
         return dict
-
-
-def point_coords(matched_points_dict):
-    """Create source & destination coordinate numpy arrays from cpselect dict.
-
-    Matched points is an array where:
-    * the number of rows is equal to the number of points selected.
-    * the first column is the point index label.
-    * the second and third columns are the source x, y coordinates.
-    * the last two columns are the destination x, y coordinates.
-
-    Parameters
-    ----------
-    matched_points_dict : dict
-        Dictionary returned from cpselect containing matched point coordinates.
-
-    Returns
-    -------
-    (src, dst)
-        Row, column coordaintes of source and destination matched points.
-        Tuple contains two N x 2 ndarrays, where N is the number of points.
-    """
-
-    matched_points = np.array([list(point.values())
-                               for point in matched_points_dict])
-    src = np.flip(matched_points[:, 1:3], axis=1)  # flip for row, column index
-    dst = np.flip(matched_points[:, 3:], axis=1)   # flip for row, column index
-
-    return src, dst
-
-
-def calculate_transform(src, dst, model=AffineTransform()):
-    """Calculate transformation matrix from matched coordinate pairs.
-
-    Parameters
-    ----------
-    src : ndarray
-        Matched row, column coordinates from source image.
-    dst : ndarray
-        Matched row, column coordinates from destination image.
-    model : scikit-image transformation class, optional.
-        By default, model=AffineTransform()
-
-
-    Returns
-    -------
-    ndarray
-        Transformation matrix.
-    """
-
-    model.estimate(src, dst)
-    print('Transformation matrix:')
-    print(model.params)
-
-    return model.params
-
-
-def apply_transform(image, transformation, inverse=True, multichannel=True):
-    """Apply transformation to a 2D image.
-
-    Parameters
-    ----------
-    image : ndarray
-        Input image array. 2D grayscale image expected, or
-        2D plus color channels if multichannel kwarg is set to True.
-    transformation : ndarray
-        Affine transformation matrix. 3 x 3 shape.
-    inverse : bool, optional
-        Inverse transformation, eg: aligning source image coords to destination
-        By default `inverse=True`.
-    multichannel : bool, optional
-        Treat the last dimension as color, transform each color separately.
-        By default `multichannel=True`.
-
-    Returns
-    -------
-    ndarray
-        Image warped by transformation matrix.
-    """
-
-    if inverse:
-        transformation = np.linalg.inv(transformation)
-
-    if not multichannel:
-        if image.ndim == 2:
-            image = skimage.color.gray2rgb(image)
-        elif image.ndim != transformation.shape[0] - 1:
-            raise ValueError('Unexpected number of image dimensions for the '
-                             'input transformation. Did you need to use: '
-                             'multichannel=True ?')
-
-    # move channel axis to the front for easier iteration over array
-    image = np.moveaxis(image, -1, 0)
-    warped_img = np.array([ndi.affine_transform((img_channel), transformation)
-                           for img_channel in image])
-    warped_img = np.moveaxis(warped_img, 0, -1)
-
-    return warped_img
-
-
-def overlay_images(fluorescence_image, fibsem_image, transparency=0.5):
-    """Blend two RGB images together.
-
-    Parameters
-    ----------
-    fluorescence_image : ndarray
-        2D RGB image.
-    fibsem_image : ndarray
-        2D RGB image.
-    transparency : float, optional
-        Transparency alpha parameter between 0 - 1, by default 0.5
-
-    Returns
-    -------
-    ndarray
-        Blended 2D RGB image.
-    """
-
-    fluorescence_image = skimage.img_as_float(fluorescence_image)
-    fibsem_image = skimage.img_as_float(fibsem_image)
-    blended = transparency * fluorescence_image + (1 - transparency) * fibsem_image
-    blended = np.clip(blended, 0, 1)
-
-    return blended
-
-
-def save_text(output_filename, transformation, matched_points_dict):
-    """Save text summary of transformation matrix and image control points.
-
-    Parameters
-    ----------
-    output_filename : str
-        Filename for saving output overlay image file.
-    transformation : ndarray
-        Transformation matrix relating the two images.
-    matched_points_dict : list of dict
-        User selected matched control point pairs.
-
-    Returns
-    -------
-    str
-        Filename of output text file.
-    """
-
-    output_text_filename = os.path.splitext(output_filename)[0] + '.txt'
-    with open(output_text_filename, 'w') as f:
-        f.write(_timestamp() + '\n')
-        f.write('PIEScope GUI version {}\n'.format(__version__))
-        f.write('\nTRANSFORMATION MATRIX\n')
-        f.write(str(transformation) + '\n')
-        f.write('\nUSER SELECTED CONTROL POINTS\n')
-        f.write(str(matched_points_dict) + '\n')
-
-    return output_text_filename
-
-
-def _timestamp():
-    """Create timestamp string of current local time.
-
-    Returns
-    -------
-    str
-        Timestamp string
-    """
-    timestamp = time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
-    return timestamp
