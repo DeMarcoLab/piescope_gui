@@ -27,11 +27,12 @@ from piescope import correlation
 
 class CorrelationWindow(QMainWindow):
     """Main correlation window"""
-    def __init__(self, parent=None, fluorescence_image=None, fibsem_image=None, output_path=None):
+    def __init__(self, parent=None, fluorescence_image=None, fibsem_image=None, output_path=None, settings=None):
         super().__init__(parent=parent)
         self.image_light = fluorescence_image
         self.image_ion = fibsem_image
         self.output_path = output_path
+        self.settings=settings
         self.create_window()
         self.create_conn()
 
@@ -140,7 +141,7 @@ class CorrelationWindow(QMainWindow):
 
     def pass_image(self):
         matched_points_dict = self.get_dictlist()
-        result = correlation.correlate_images(self.image_light, self.image_ion, self.output_path, matched_points_dict)
+        result = correlation.correlate_images(self.image_light, self.image_ion, self.output_path, matched_points_dict, self.settings)
         self.close()
         return result
 

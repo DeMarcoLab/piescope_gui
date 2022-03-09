@@ -28,9 +28,9 @@ import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
-# TODO: add arduino code to repo
-# TODO: Slider as double
-# TODO: clean up correlation file structure
+# TODO: (NOT YET) add serial connection checks (if needed)
+# TODO: (NOT YET) test out correct stage movements on FIB
+# TODO: (NOT YET) figure out what is happening with milling currents when FIB fixed
 
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
@@ -149,33 +149,31 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.connect_to_objective_controller()
             self.connect_to_mirror_controller()
             self.connect_to_arduino()
-            # TODO: Figure out these pins
-            # structured.single_line_onoff(onoff=False, pin='P13')
-            # structured.single_line_onoff(onoff=False, pin='P27')
             self.update_connections()
 
     def setup_connections(self):
         self.actionOpen_FM_Image.triggered.connect(
-            lambda: self.open_images(Modality.Light))
+            lambda: self.open_images(modality=Modality.Light))
         self.actionOpen_FIBSEM_Image.triggered.connect(
-            lambda: self.open_images(Modality.Ion))
+            lambda: self.open_images(modality=Modality.Ion))
         self.actionSave_FM_Image.triggered.connect(
-            lambda: self.save_image("FM"))
+            lambda: self.save_image(modality=Modality.Light))
         self.actionSave_FIBSEM_Image.triggered.connect(
-            lambda: self.save_image("FIBSEM"))
+            lambda: self.save_image(modality=Modality.Ion))
         self.button_save_destination_FM.clicked.connect(
-            lambda: self.fill_destination("FM"))
+            lambda: self.fill_destination(modality="FM"))
         self.button_save_destination_FIBSEM.clicked.connect(
-            lambda: self.fill_destination("FIBSEM"))
-        self.pushButton_save_FM.clicked.connect(lambda: self.save_image("FM"))
+            lambda: self.fill_destination(mode="FIBSEM"))
+        self.toolButton_correlation_output.clicked.connect(
+            lambda: self.fill_destination(mode="correlation"))
+        self.pushButton_save_FM.clicked.connect(
+            lambda: self.save_image(modality=Modality.Light))
         self.pushButton_save_FIBSEM.clicked.connect(
-            lambda: self.save_image("FIBSEM"))
+            lambda: self.save_image(modality=Modality.Ion))
         self.pushButton_load_FM.clicked.connect(
             lambda: self.open_images(Modality.Light))
         self.pushButton_load_FIBSEM.clicked.connect(
             lambda: self.open_images(Modality.Ion))
-        self.toolButton_correlation_output.clicked.connect(
-            lambda: self.fill_destination("correlation"))
         self.comboBox_cmap.currentTextChanged.connect(
             lambda: self.update_display(
                 modality=Modality.Light, settings=self.config))
@@ -459,7 +457,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 f"Unable to connect to lm objective controller. <br><br>{traceback.format_exc()}"
             )
 
-    # TODO: CHECK THE LASER CONNECTION ACTUALLY IS ON
     def connect_to_laser_controller(self):
         if self.laser_controller is not None:
             return
@@ -513,14 +510,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return
         try:
             self.detector = Basler(settings=self.config)
-            try:
-                structured.single_line_onoff(
-                    onoff=False, pin=self.config["imaging"]["lm"]["camera"]["pin"]
-                )
-            except:
-                display_error_message(
-                    f"Unable to connect to niqadmx device. <br><br>{traceback.format_exc()}"
-                )
         except:
             display_error_message(
                 f"Unable to connect to Basler device. <br><br>{traceback.format_exc()}"
@@ -585,7 +574,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 "background-color: #e3e3e3")
 
     def disconnect(self):
-        print("Running cleanup/teardown")
+        logging.info("Running cleanup/teardown")
         logging.debug("Running cleanup/teardown")
         # Change values in qtdesigner_files\main.py
         if self.objective_stage is not None and self.online:
@@ -598,7 +587,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         if self.laser_controller:
             # shut off lasers
-            print("shutting off lasers")
+            logging.info("shutting off lasers")
             try:
                 for laser in self.laser_controller.lasers.values():
                     structured.single_line_onoff(onoff=False, pin=laser.pin)
@@ -607,13 +596,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     f"Unable to connect to niqadmx device. <br><br>{traceback.format_exc()}"
                 )
             if self.stop_event:
-                print("Stopping Live Imaging")
+                logging.info("Stopping Live Imaging")
                 self.stop_event.set()
-                print("Thread stopped")
+                logging.info("Thread stopped")
         # edit config
         if self.config['system']['save_config_on_exit']:
             piescope.utils.write_config(self.config_path, self.config)
-        print("Finished")
+        logging.info("Disconnect finished. Shutting Down.")
 
     def move_to_microscope(self):
         try:
@@ -713,13 +702,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.microscope, self.camera_settings
             )
 
-            if autosave is True:
+            if self.config['imaging']['ib']['autosave'] is True:
                 save_filename = os.path.join(
                     self.save_destination_FIBSEM,
                     "I_" + self.lineEdit_save_filename_FIBSEM.text() + ".tif",
                 )
                 piescope.utils.save_image(self.image_ion, save_filename)
-                print("Saved: {}".format(save_filename))
+                logging.info("Saved: {}".format(save_filename))
 
             # Update display
             self.update_display(modality=Modality.Ion, settings=self.config)
@@ -742,13 +731,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.microscope, self.camera_settings
             )
 
-            if autosave is True:
+            if self.config['imaging']['ib']['autosave'] is True:
                 save_filename = os.path.join(
                     self.save_destination_FIBSEM,
                     "E_" + self.lineEdit_save_filename_FIBSEM.text() + ".tif",
                 )
                 piescope.utils.save_image(self.image_ion, save_filename)
-                print("Saved: {}".format(save_filename))
+                logging.info("Saved: {}".format(save_filename))
             # update display
             self.update_display(modality=Modality.Ion, settings=self.config)
         except Exception as e:
@@ -779,7 +768,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         # check if live imaging is possible
         if self.live_imaging_running:
             self.button_live_image_FM.setDown(True)
-            print("Can't take image, live imaging currently running")
+            logging.info("Can't take image, live imaging currently running")
             return
 
         # manually turn on laser if software mode
@@ -963,7 +952,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     config_laser['power'] = laser_power
                     config_laser['exposure_time'] = exposure_time/1000
                     config_laser['volume_enabled'] = volume_enabled
-                    print(f'config_laser = {config_laser}')
 
             self.laser_controller.set_laser_power(
                 self.laser_controller.lasers[laser.name], laser_power
@@ -1004,90 +992,26 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(traceback.format_exc())
 
-    def save_image(self, modality):  # TODO: standardise image saving - replace modality
+    def save_image(self, modality: Modality):
         """Save image on display"""
         try:
-            if modality == "FM":
-                if self.image_light is not None:
-                    display_image = self.image_light
-                    [save_base, ext] = os.path.splitext(
-                        self.lineEdit_save_filename_FM.text()
-                    )
-                    dest = (
-                        self.lineEdit_save_destination_FM.text()
-                        + os.path.sep
-                        + save_base
-                        + ".tif"
-                    )
-                    dir_exists = os.path.isdir(
-                        self.lineEdit_save_destination_FM.text())
-                    if not dir_exists:
-                        os.makedirs(self.lineEdit_save_destination_FM.text())
-                        piescope.utils.save_image(display_image, dest)
-                    else:
-                        exists = os.path.isfile(dest)
-                        if not exists:
-                            piescope.utils.save_image(display_image, dest)
-                        else:
-                            count = 1
-                            while exists:
-                                dest = (
-                                    self.lineEdit_save_destination_FM.text()
-                                    + os.path.sep
-                                    + save_base
-                                    + "("
-                                    + str(count)
-                                    + ").tif"
-                                )
-                                exists = os.path.isfile(dest)
-                                count = count + 1
-                                piescope.utils.save_image(display_image, dest)
-                else:
-                    display_error_message("No image to save")
+            if modality == Modality.Light:
+                image = self.image_light
+                save_path = self.lineEdit_save_destination_FM.text()
+                save_name = self.lineEdit_save_filename_FM.text()
+            elif modality == Modality.Ion or modality == Modality.Electron:
+                image = self.image_ion
+                save_path = self.lineEdit_save_destination_FIBSEM.text()
+                save_name = self.lineEdit_save_filename_FIBSEM.text()
 
-            elif modality == "FIBSEM":
-                if self.image_ion is not None:
-                    display_image = self.image_ion
-                    [save_base, ext] = os.path.splitext(
-                        self.lineEdit_save_filename_FIBSEM.text()
-                    )
-                    dest = (
-                        self.lineEdit_save_destination_FIBSEM.text()
-                        + os.path.sep
-                        + save_base
-                        + ".tif"
-                    )
-                    dir_exists = os.path.isdir(
-                        self.lineEdit_save_destination_FIBSEM.text()
-                    )
-                    if not dir_exists:
-                        os.makedirs(
-                            self.lineEdit_save_destination_FIBSEM.text())
-                        piescope.utils.save_image(display_image, dest)
-                    else:
-                        exists = os.path.isfile(dest)
-                        if not exists:
-                            piescope.utils.save_image(display_image, dest)
-                        else:
-                            count = 1
-                            while exists:
-                                dest = (
-                                    self.lineEdit_save_destination_FIBSEM.text()
-                                    + os.path.sep
-                                    + save_base
-                                    + "("
-                                    + str(count)
-                                    + ").tif"
-                                )
-                                exists = os.path.isfile(dest)
-                                count = count + 1
-                                piescope.utils.save_image(display_image, dest)
+            if image is None:
+                raise ValueError('Tried to save image but no image given')
 
-                else:
-                    display_error_message("No image to save")
-
+            os.makedirs(save_path, exist_ok=True)
+            dest = os.path.join(save_path, save_name)
+            piescope.utils.save_image(image, dest)
         except Exception as e:
-            display_error_message(traceback.format_exc())
+            display_error_message(f'{e}')
 
     def update_display(self, modality: Modality, settings: dict):
         if modality == Modality.Light:
@@ -1218,7 +1142,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             x_move = StagePosition(x=x, y=0, z=0)
             y_move = StagePosition(x=0, y=y, z=0)
-            # TODO: Test out on FIB when working
+
             yz_move = piescope.fibsem.y_corrected_stage_movement(
                 y,
                 stage_tilt=self.microscope.specimen.stage.current_position.t,
@@ -1240,7 +1164,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.update_display(modality=Modality.Ion,
                                     settings=self.config)
 
-    def fill_destination(self, modality):
+    def fill_destination(self, mode: str):
         """Fills the destination box with the text from the directory"""
         try:
             user_input = QtWidgets.QFileDialog.getExistingDirectory(
@@ -1251,16 +1175,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             else:
                 directory_path = os.path.normpath(user_input) + os.path.sep
 
-            if modality == "FM":
+            if mode == "FM":
                 self.save_destination_FM = directory_path
                 self.lineEdit_save_destination_FM.setText(directory_path)
                 return directory_path
-            elif modality == "FIBSEM":
+            elif mode == "FIBSEM":
                 self.save_destination_FIBSEM = directory_path
                 self.lineEdit_save_destination_FIBSEM.setText(
                     directory_path)
                 return directory_path
-            elif modality == "correlation":
+            elif mode == "correlation":
                 self.save_destination_correlation = directory_path
                 self.correlation_output_path.setText(directory_path)
                 return directory_path
@@ -1315,7 +1239,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         colour_dict = []
         for laser in self.laser_controller.lasers.values():
             if laser.volume_enabled:
-                print(f'This laser is volume enabled: {laser}')
+                logging.info(f'This laser is volume enabled: {laser}')
                 colour_dict.append(laser.colour)
 
         if colour_dict == []:
@@ -1356,7 +1280,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 "Volume_" + self.lineEdit_save_filename_FM.text() + ".tif",
             )
             piescope.utils.save_image(volume, save_filename, metadata=meta)
-            print("Saved: {}".format(save_filename))
+            logging.info("Saved: {}".format(save_filename))
 
             # Save maximum intensity projection
             save_filename_max_intensity = os.path.join(
@@ -1366,7 +1290,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             piescope.utils.save_image(
                 max_intensity, save_filename_max_intensity, metadata=meta
             )
-            print("Saved: {}".format(save_filename_max_intensity))
+            logging.info("Saved: {}".format(save_filename_max_intensity))
 
             # Save maximum intensity rgb
             save_filename_rgb = os.path.join(
@@ -1374,7 +1298,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 "RGB_" + self.lineEdit_save_filename_FM.text() + ".tif",
             )
             piescope.utils.save_image(rgb, save_filename_rgb, metadata=meta)
-            print("Saved: {}".format(save_filename_rgb))
+            logging.info("Saved: {}".format(save_filename_rgb))
 
         # Update display
         self.update_display(modality=Modality.Light, settings=self.config)
@@ -1416,15 +1340,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 correlation_image_lm, correlation_image_ion.shape)
 
             self.correlation_window = corr.CorrelationWindow(
-                parent=self, fluorescence_image=correlation_image_lm, 
-                fibsem_image=correlation_image_ion, output_path=output_path)
+                parent=self, fluorescence_image=correlation_image_lm,
+                fibsem_image=correlation_image_ion, output_path=output_path, settings=self.config)
 
-
-            # self.correlation_window = corr.open_correlation_window(
-            #     self, self.image_light, self.image_ion, output_path
-            # )
             self.correlation_window.showMaximized()
             self.correlation_window.show()
+
+            # on exit, run milling
             self.correlation_window.exitButton.clicked.connect(
                 lambda: self.milling(
                     display_image=self.correlation_window.pass_image())
@@ -1441,6 +1363,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.milling_window = piescope_gui.milling.GUIMillingWindow(
             parent_gui=self, adorned_image=self.image_ion, display_image=aligned_image)
         self.microscope.imaging.set_active_view(2)
+        self.milling_window.pushButton_save_correlated_image.clicked.connect(
+            lambda: piescope.utils.save_image(display_image, self.correlation_window.output_path))
 
         if self.parent() is not None:
             self.milling_window.pushButton_save_position.setEnabled(True)

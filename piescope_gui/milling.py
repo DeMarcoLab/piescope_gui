@@ -30,8 +30,11 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         super().__init__(parent=parent_gui)
         self.setupUi(self)
 
+        self.imaging_current = self.parent().microscope.beams.ion_beam.beam_current.value
+        logging.info(f'Imaging current recorded as: {self.imaging_current}')
+
         self.settings = self.parent().config['lamella'].copy()
-        print(f'Loaded settings: {self.settings}')
+        logging.info(f'Loaded settings: {self.settings}')
 
         global image
 
@@ -106,7 +109,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
             draw_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.upper_rectangle, pattern=upper_pattern)
             draw_rectangle_pattern(adorned_image=self.adorned_image, rectangle=self.lower_rectangle, pattern=lower_pattern)
         except:
-            #TODO: properly handle these exceptions, when pattern is outside
+            # NOTE: these exceptions happen when the pattern is too far outside of the FOV
             import piescope_gui.main as piescope_gui_main
             piescope_gui_main.display_error_message(traceback.format_exc())
         self.wp.canvas.draw()
@@ -122,8 +125,12 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         self.doubleSpinBox_upper_height.valueChanged.connect(lambda: self.update_milling_patterns())
         self.doubleSpinBox_lower_height.valueChanged.connect(lambda: self.update_milling_patterns())
 
+    def closeEvent(self, event):
+        self.set_ion_beam_current(self.imaging_current)
+        logging.info('Resetting ion beam current to imaging current')
+
     def update_milling_patterns(self):
-        print('updating milling patterns')
+        logging.info('updating milling patterns')
         self.settings['milling_depth'] = self.doubleSpinBox_milling_depth.value() * MICRON_TO_METRE
         self.settings['lamella_height'] = self.doubleSpinBox_lamella_height.value() * MICRON_TO_METRE
         self.settings['lamella_width'] = self.doubleSpinBox_lamella_width.value() * MICRON_TO_METRE
@@ -142,7 +149,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
             )
             self.parent().microscope.specimen.stage.set_default_coordinate_system(CoordinateSystem.RAW)
             current_position = self.parent().microscope.specimen.stage.current_position
-            print(f'Current position: {current_position}')
+            logging.info(f'Current position: {current_position}')
             self.parent().microscope.specimen.stage.set_default_coordinate_system(CoordinateSystem.SPECIMEN)
 
             self.parent().milling_position = StagePosition(x=current_position.x + x_move.x,
@@ -152,17 +159,20 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                                                             t=current_position.t,
                                                             coordinate_system=current_position.coordinate_system)
 
-            print(f'New position: {self.parent().milling_position}')
+            logging.info(f'New position: {self.parent().milling_position}')
             self.parent().microscope.patterning.clear_patterns()
 
-
+    def set_ion_beam_current(self, current):
+        logging.info(f'Setting current to {current}')
+        self.parent().microscope.beams.ion_beam.beam_current.value = current
 
     def start_patterning(self):
-        # TODO: This wont actually change the currents to mill correctly
+        milling_current = self.settings['milling_current']
+        logging.info(f'milling current read as: {milling_current}')
+
         from autoscript_core.common import ApplicationServerException
         try:
-            state = "Idle"
-            # state = self.parent().microscope.patterning.state
+            state = self.parent().microscope.patterning.state
             if state != "Idle":
                 logger.warning(
                     "Can't start milling pattern! "
@@ -171,8 +181,10 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                     )
                 return
             else:
+                self.parent().microscope.imaging.set_active_view(2)
+                self.set_ion_beam_current(current=milling_current)
                 # self.parent().microscope.patterning.start()
-                print('Started milling pattern.')
+                logging.info('Started milling pattern.')
         except Exception:
             display_error_message(traceback.format_exc())
 
@@ -190,7 +202,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                 return
             else:
             #     self.parent().microscope.patterning.stop()
-                print('Stopped milling pattern.')
+                logging.info('Stopped milling pattern.')
         except Exception:
             display_error_message(
                 "microscope.patterning.state = {}\n".format(state) +

@@ -12,7 +12,7 @@ __all__ = [
 
 def display_error_message(message):
     """PyQt dialog box displaying an error message."""
-    print('display_error_message')
+    logging.debug('display_error_message')
     logging.exception(message)
     error_dialog = QtWidgets.QErrorMessage()
     error_dialog.showMessage(message)
