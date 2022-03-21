@@ -28,8 +28,6 @@ import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
-# TODO: figure out what is happening with milling currents when FIB fixed
-# TODO: Test saving of multi-slice volumes
 # TODO: (NOT YET) add serial connection checks (if needed)
 # TODO: (NOT YET) Move objective forward/back with scroll wheel
 
@@ -1249,7 +1247,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         colour_dict = []
         for laser in self.laser_controller.lasers.values():
             if laser.volume_enabled:
-                logging.info(f'This laser is volume enabled: {laser}')
+                logging.debug(f'This laser is volume enabled: {laser.name}')
                 colour_dict.append(laser.colour)
 
         if colour_dict == []:
@@ -1287,7 +1285,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # save full volume
             save_filename = os.path.join(
                 self.save_destination_FM,
-                "Volume_" + self.lineEdit_save_filename_FM.text() + ".tif",
+                "Volume_" + self.lineEdit_save_filename_FM.text(),
             )
             piescope.utils.save_image(volume, save_filename, metadata=meta)
             logging.info("Saved: {}".format(save_filename))
@@ -1295,7 +1293,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # Save maximum intensity projection
             save_filename_max_intensity = os.path.join(
                 self.save_destination_FM,
-                "MIP_" + self.lineEdit_save_filename_FM.text() + ".tif",
+                "MIP_" + self.lineEdit_save_filename_FM.text(),
             )
             piescope.utils.save_image(
                 max_intensity, save_filename_max_intensity, metadata=meta
@@ -1305,7 +1303,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # Save maximum intensity rgb
             save_filename_rgb = os.path.join(
                 self.save_destination_FM,
-                "RGB_" + self.lineEdit_save_filename_FM.text() + ".tif",
+                "RGB_" + self.lineEdit_save_filename_FM.text(),
             )
             piescope.utils.save_image(rgb, save_filename_rgb, metadata=meta)
             logging.info("Saved: {}".format(save_filename_rgb))

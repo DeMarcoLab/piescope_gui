@@ -189,7 +189,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                 logging.info('Started milling pattern.')
                 self.parent().microscope.imaging.set_active_view(2)
                 self.set_ion_beam_current(current=milling_current)
-                self.parent().microscope.patterning.run() # TODO: investigate using .start() to not block
+                self.parent().microscope.patterning.run() # Note: investigate using .start() to not block
                 self.set_ion_beam_current(self.imaging_current)
                 logging.info("Finished milling pattern")
         except Exception:
