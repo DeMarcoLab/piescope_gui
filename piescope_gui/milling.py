@@ -80,6 +80,11 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
 
         self.setup_connections()
 
+
+        # initial pattern
+        self.center_x, self.center_y = 0, 0
+        self.draw_milling_patterns()
+
     def on_click(self, event):
         if event.button == 1 and event.inaxes is not None:
             self.xclick = event.xdata
@@ -181,18 +186,21 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                     )
                 return
             else:
+                logging.info('Started milling pattern.')
                 self.parent().microscope.imaging.set_active_view(2)
                 self.set_ion_beam_current(current=milling_current)
-                # self.parent().microscope.patterning.start()
-                logging.info('Started milling pattern.')
+                self.parent().microscope.patterning.run() # TODO: investigate using .start() to not block
+                self.set_ion_beam_current(self.imaging_current)
+                logging.info("Finished milling pattern")
         except Exception:
             display_error_message(traceback.format_exc())
+            self.set_ion_beam_current(self.imaging_current)
+
 
     def stop_patterning(self):
         from autoscript_core.common import ApplicationServerException
         try:
-            state = "Running"
-            # state = self.parent().microscope.patterning.state
+            state = self.parent().microscope.patterning.state
             if state != "Running":
                 logger.warning(
                     "Can't stop milling pattern! "
@@ -201,7 +209,8 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                     )
                 return
             else:
-            #     self.parent().microscope.patterning.stop()
+                self.parent().microscope.patterning.stop()
+                self.set_ion_beam_current(self.imaging_current)
                 logging.info('Stopped milling pattern.')
         except Exception:
             display_error_message(

@@ -2,7 +2,7 @@ import logging
 import time
 import numpy as np
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 __all__ = [
     'display_error_message',
@@ -16,6 +16,7 @@ def display_error_message(message):
     logging.exception(message)
     error_dialog = QtWidgets.QErrorMessage()
     error_dialog.showMessage(message)
+    error_dialog.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
     error_dialog.exec_()
     return error_dialog
 
