@@ -28,10 +28,13 @@ import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
 from piescope_gui.utils import display_error_message, timestamp
 
+# TODO: figure out what is happening with milling currents when FIB fixed
+# TODO: Test saving of multi-slice volumes
 # TODO: (NOT YET) add serial connection checks (if needed)
-# TODO: (NOT YET) test out correct stage movements on FIB
-# TODO: (NOT YET) figure out what is happening with milling currents when FIB fixed
+# TODO: (NOT YET) Move objective forward/back with scroll wheel
 
+MS_TO_US = 1000.0
+US_TO_MS = 1 / MS_TO_US
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def __init__(self, parent_gui=None):
@@ -463,6 +466,22 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             self.laser_controller = LaserController(settings=self.config)
 
+            # connect laser ui elements (spinbox, lineedit, checkbox) -> (power, exposure_time, volume_enabled)
+            self.laser_controller.set_double_spin_box(laser=self.laser_controller.lasers['laser640'], spinBox=self.doubleSpinBox_laser1)
+            self.laser_controller.set_double_spin_box(laser=self.laser_controller.lasers['laser561'], spinBox=self.doubleSpinBox_laser2)
+            self.laser_controller.set_double_spin_box(laser=self.laser_controller.lasers['laser488'], spinBox=self.doubleSpinBox_laser3)
+            self.laser_controller.set_double_spin_box(laser=self.laser_controller.lasers['laser405'], spinBox=self.doubleSpinBox_laser4)
+
+            self.laser_controller.set_line_edit(laser=self.laser_controller.lasers['laser640'], lineEdit=self.lineEdit_exposure_1)
+            self.laser_controller.set_line_edit(laser=self.laser_controller.lasers['laser561'], lineEdit=self.lineEdit_exposure_2)
+            self.laser_controller.set_line_edit(laser=self.laser_controller.lasers['laser488'], lineEdit=self.lineEdit_exposure_3)
+            self.laser_controller.set_line_edit(laser=self.laser_controller.lasers['laser405'], lineEdit=self.lineEdit_exposure_4)
+
+            self.laser_controller.set_check_box(laser=self.laser_controller.lasers['laser640'], checkBox=self.checkBox_laser1)
+            self.laser_controller.set_check_box(laser=self.laser_controller.lasers['laser561'], checkBox=self.checkBox_laser2)
+            self.laser_controller.set_check_box(laser=self.laser_controller.lasers['laser488'], checkBox=self.checkBox_laser3)
+            self.laser_controller.set_check_box(laser=self.laser_controller.lasers['laser405'], checkBox=self.checkBox_laser4)
+
             self.doubleSpinBox_laser1.setValue(
                 self.laser_controller.lasers["laser640"].power)
             self.doubleSpinBox_laser2.setValue(
@@ -880,42 +899,26 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return pos
 
     ## Laser functions ##
-    # TODO: dataclass this
     def update_current_laser(self, wavelength):
         self.logger.debug("Updating current laser")
-        LASER_WAVELENGTH_TO_POWER = {
-            "640 nm": [
-                "laser640",
-                self.doubleSpinBox_laser1,
-                self.lineEdit_exposure_1,
-            ],
-            "561 nm": [
-                "laser561",
-                self.doubleSpinBox_laser2,
-                self.lineEdit_exposure_2,
-            ],
-            "488 nm": [
-                "laser488",
-                self.doubleSpinBox_laser3,
-                self.lineEdit_exposure_3,
-            ],
-            "405 nm": [
-                "laser405",
-                self.doubleSpinBox_laser4,
-                self.lineEdit_exposure_4,
-            ],
+        
+        # TODO: change name of laser to wavelength, to clean up
+        LASER_WAVELENGTH_TO_NAME = {
+            "640 nm": "laser640",
+            "561 nm": "laser561",
+            "488 nm": "laser488",
+            "405 nm": "laser405",
         }
 
         try:
-            selected_laser_info = LASER_WAVELENGTH_TO_POWER[wavelength]
-            laser_name = selected_laser_info[0]
+            laser_name = LASER_WAVELENGTH_TO_NAME[wavelength]
             current_laser = self.laser_controller.lasers[laser_name]
             self.laser_controller.current_laser = current_laser
             self.laser_controller.set_laser_power(
-                current_laser, float(selected_laser_info[1].text())
+                current_laser, float(self.laser_controller.current_laser.spinBox.text())
             )
             self.laser_controller.set_exposure_time(
-                current_laser, float(selected_laser_info[2].text()) * 1000
+                current_laser, float(self.laser_controller.current_laser.lineEdit.text()) * MS_TO_US
             )
 
         except Exception as e:
@@ -932,25 +935,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def update_lasers(self, laser: Laser):
         self.logger.debug("Updating laser dictionary")
         try:
-            # laser_selected, laser_power, exposure_time, widget_spinbox, widget_slider, widget_textexposure
-            LASER_INFO = {
-                "laser640": [self.doubleSpinBox_laser1, self.lineEdit_exposure_1, self.checkBox_laser1],
-                "laser561": [self.doubleSpinBox_laser2, self.lineEdit_exposure_2, self.checkBox_laser2],
-                "laser488": [self.doubleSpinBox_laser3, self.lineEdit_exposure_3, self.checkBox_laser3],
-                "laser405": [self.doubleSpinBox_laser4, self.lineEdit_exposure_4, self.checkBox_laser4],
-            }
 
-            laser_power = float(LASER_INFO[laser.name][0].text())
-            exposure_time = float(
-                LASER_INFO[laser.name][1].text()) * 1000  # ms -> us
-            volume_enabled = LASER_INFO[laser.name][2].isChecked()
+            # TODO: clip the exposure time to zero, not empty string
+            laser_power = float(laser.spinBox.text())
+            exposure_time = float(laser.lineEdit.text()) * MS_TO_US  # ms -> us
+            volume_enabled = laser.volumeCheckBox.isChecked()
 
             # Update current laser for single/live imaging and sttings
             for config_laser in self.config['lm']['lasers']:
                 if config_laser['name'] == laser.name:
-                    # pass
                     config_laser['power'] = laser_power
-                    config_laser['exposure_time'] = exposure_time/1000
+                    config_laser['exposure_time'] = exposure_time * US_TO_MS
                     config_laser['volume_enabled'] = volume_enabled
 
             self.laser_controller.set_laser_power(
@@ -1118,10 +1113,20 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.canvas_FIBSEM.draw()
 
     def on_gui_click(self, event, modality):
+
+        # check if we have both types of images
+        if self.image_ion is None:
+            display_error_message("Unable to move, no FIBSEM Image available. Please get the last Electron / Ion Image")
+            return
+
         # don't allow double click functionality while zooming or panning, only stopping active window
         if modality == Modality.Light:
+            if self.image_light is None:
+                display_error_message("Unable to move, no Light Microscope Image available. Please take a light microscope image.")
+                return 
             image = self.image_light
-            pixel_size = self.config["imaging"]["lm"]["camera"]["pixel_size"]
+            magnification = self.config["imaging"]["lm"]["camera"]["objective_mag"] * self.config["imaging"]["lm"]["camera"]["telescope_mag"]
+            pixel_size = self.config["imaging"]["lm"]["camera"]["pixel_size"]  / magnification 
             if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
                 return
         else:
@@ -1160,7 +1165,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.update_display(modality=Modality.Light,
                                     settings=self.config)
             else:
-                self.get_FIB_image(autosave=False)
+                beam_type = image.metadata.acquisition.beam_type
+                if beam_type == "Ion":
+                    self.get_FIB_image(autosave=False)
+                if beam_type == "Electron":
+                    self.get_SEM_image(autosave=False)
+
                 self.update_display(modality=Modality.Ion,
                                     settings=self.config)
 
