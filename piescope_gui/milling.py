@@ -1,3 +1,4 @@
+import piescope.utils
 import logging
 import traceback
 
@@ -31,9 +32,11 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         self.setupUi(self)
 
         self.imaging_current = self.parent().microscope.beams.ion_beam.beam_current.value
+        self.set_ion_beam_current(self.imaging_current)
         logging.info(f'Imaging current recorded as: {self.imaging_current}')
 
         self.settings = self.parent().config['lamella'].copy()
+        self.config = self.parent().config
         logging.info(f'Loaded settings: {self.settings}')
 
         global image
@@ -41,6 +44,9 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         if display_image is None:
             display_image = adorned_image.data
 
+        self.liftout_enabled = True
+        if self.parent().parent() is not None:
+            self.liftout_enabled = True
 
         # self.parent = parent_gui
         self.display_image = display_image
@@ -48,17 +54,15 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
 
         self.adorned_image = adorned_image
 
-        self.milling_position = None
-
         self.wp = _WidgetPlot(self)
         self.label_image.setLayout(QtWidgets.QVBoxLayout())
         self.label_image.layout().addWidget(self.wp)
 
         self.upper_rectangle = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
         self.lower_rectangle = Rectangle((0, 0), 0.2, 0.2, color='yellow', fill=None, alpha=1)
-
-        self.wp.canvas.ax11.add_patch(self.upper_rectangle)
-        self.wp.canvas.ax11.add_patch(self.lower_rectangle)
+        if not self.liftout_enabled:
+            self.wp.canvas.ax11.add_patch(self.upper_rectangle)
+            self.wp.canvas.ax11.add_patch(self.lower_rectangle)
 
         self.upper_rectangle.set_visible(False)
         self.upper_rectangle.set_hatch('//////')
@@ -90,7 +94,15 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
             self.xclick = event.xdata
             self.yclick = event.ydata
             self.center_x, self.center_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
-            self.draw_milling_patterns()
+            if not self.liftout_enabled:
+                self.draw_milling_patterns()
+            else:                
+                crosshair = piescope.utils.create_crosshair(self.adorned_image, self.config, x=self.xclick, y=self.yclick)
+                self.wp.canvas.ax11.patches = []
+                for patch in crosshair.__dataclass_fields__:
+                    self.wp.canvas.ax11.add_patch(getattr(crosshair, patch))
+                    getattr(crosshair, patch).set_visible(True)
+                self.wp.canvas.draw()
 
     def draw_milling_patterns(self):
         self.parent().microscope.patterning.clear_patterns()
@@ -163,7 +175,6 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
                                                             r=current_position.r,
                                                             t=current_position.t,
                                                             coordinate_system=current_position.coordinate_system)
-
             logging.info(f'New position: {self.parent().milling_position}')
             self.parent().microscope.patterning.clear_patterns()
 

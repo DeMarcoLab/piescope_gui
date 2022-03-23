@@ -35,16 +35,22 @@ MS_TO_US = 1000.0
 US_TO_MS = 1 / MS_TO_US
 
 class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
+    window_close = QtCore.pyqtSignal()
     def __init__(self, parent_gui=None):
         super().__init__(parent=parent_gui)
         self.setupUi(MainGui=self)
+        self.setStyleSheet("""QPushButton {
+        border: 1px solid lightgray;
+        border-radius: 5px;
+        background-color: #e3e3e3; 
+        }""")
         self.read_config_file()
         self.setup_logging()
         self.setup_initial_values()
         self.initialise_image_frames()
         self.initialise_hardware()
         self.setup_connections()
-
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
     ## Initialisation functions ##
     def read_config_file(self):
         # read config file
@@ -1374,6 +1380,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.milling_window.pushButton_save_correlated_image.clicked.connect(
             lambda: piescope.utils.save_image(display_image, self.correlation_window.output_path))
 
+        # self.milling_window.window_close.connect(self.pass_milling_complete)
         if self.parent() is not None:
             self.milling_window.pushButton_save_position.setEnabled(True)
         else:
@@ -1384,17 +1391,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.close())
         self.milling_window.pushButton_save_position.clicked.connect(
             lambda: self.milling_window.close())
+        # self.milling_window.pushButton_save_position.clicked.connect(self.window_close.emit())
         self.milling_window.show()
 
-
+    def closeEvent(self, event):
+        event.accept()
+        self.window_close.emit()
+        # TODO: we need to disconnect on close too?
+        
 def main():
     """Launch the `piescope_gui` main application window."""
     app = QtWidgets.QApplication([])
-    app.setStyleSheet("""QPushButton {
-    border: 1px solid lightgray;
-    border-radius: 5px;
-    background-color: #e3e3e3; 
-    }""")
     qt_app = GUIMainWindow()
     app.aboutToQuit.connect(qt_app.disconnect)  # cleanup & teardown
     qt_app.show()
