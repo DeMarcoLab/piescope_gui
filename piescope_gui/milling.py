@@ -44,9 +44,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         if display_image is None:
             display_image = adorned_image.data
 
-        self.liftout_enabled = True
-        if self.parent().parent() is not None:
-            self.liftout_enabled = True
+        self.liftout_enabled = bool(self.parent().parent())         
 
         # self.parent = parent_gui
         self.display_image = display_image
@@ -85,9 +83,10 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         self.setup_connections()
 
 
-        # initial pattern
-        self.center_x, self.center_y = 0, 0
-        self.draw_milling_patterns()
+        if not self.liftout_enabled:
+            # initial pattern
+            self.center_x, self.center_y = 0, 0
+            self.draw_milling_patterns()
 
     def on_click(self, event):
         if event.button == 1 and event.inaxes is not None:
@@ -141,6 +140,13 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         self.doubleSpinBox_lamella_width.valueChanged.connect(lambda: self.update_milling_patterns())
         self.doubleSpinBox_upper_height.valueChanged.connect(lambda: self.update_milling_patterns())
         self.doubleSpinBox_lower_height.valueChanged.connect(lambda: self.update_milling_patterns())
+        
+        if self.liftout_enabled:
+            self.doubleSpinBox_milling_depth.setEnabled(False)
+            self.doubleSpinBox_lamella_height.setEnabled(False)
+            self.doubleSpinBox_lamella_width.setEnabled(False)
+            self.doubleSpinBox_upper_height.setEnabled(False)
+            self.doubleSpinBox_lower_height.setEnabled(False)
 
     def closeEvent(self, event):
         self.set_ion_beam_current(self.imaging_current)
