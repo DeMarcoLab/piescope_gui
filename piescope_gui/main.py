@@ -1347,7 +1347,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             import skimage.color
             correlation_image_lm = np.copy(self.image_light)
             correlation_image_ion = skimage.color.gray2rgb(
-                np.copy(self.image_ion.data))
+                np.copy(self.image_ion.data.astype(np.uint8)))
 
             # resize lm image to ion image size
             correlation_image_lm = skimage.transform.resize(
