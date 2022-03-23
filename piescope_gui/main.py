@@ -1391,13 +1391,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.close())
         self.milling_window.pushButton_save_position.clicked.connect(
             lambda: self.milling_window.close())
-        # self.milling_window.pushButton_save_position.clicked.connect(self.window_close.emit())
         self.milling_window.show()
 
     def closeEvent(self, event):
         event.accept()
         self.window_close.emit()
-        # TODO: we need to disconnect on close too?
         
 def main():
     """Launch the `piescope_gui` main application window."""
