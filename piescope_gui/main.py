@@ -44,6 +44,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         border-radius: 5px;
         background-color: #e3e3e3; 
         }""")
+        self.lock = threading.Lock()
         self.read_config_file()
         self.setup_logging()
         self.setup_initial_values()
@@ -51,6 +52,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.initialise_hardware()
         self.setup_connections()
         self.setWindowModality(QtCore.Qt.ApplicationModal)
+        
     ## Initialisation functions ##
     def read_config_file(self):
         # read config file
@@ -62,6 +64,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.ip_address = self.config["system"]["ip_address"]
         self.online = self.config["system"]["online"]
         self.trigger_mode = self.config["imaging"]["lm"]["trigger_mode"]
+
+        # imaging settings
+        self.filter_strength_lm = self.config["imaging"]["lm"]["filter_strength"]
 
     def setup_logging(self):
         start_time = piescope_gui.utils.timestamp()
@@ -120,14 +125,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FM = _FigureCanvas(self.figure_FM)
-        self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+        # self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
         self.canvas_FM.mpl_connect(
             "button_press_event",
             lambda event: self.on_gui_click(event, modality=Modality.Light),
         )
 
         self.label_image_FM.setLayout(QtWidgets.QVBoxLayout())
-        self.label_image_FM.layout().addWidget(self.toolbar_FM)
+        # self.label_image_FM.layout().addWidget(self.toolbar_FM)
         self.label_image_FM.layout().addWidget(self.canvas_FM)
 
         self.figure_FIBSEM = plt.figure()
@@ -182,8 +187,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_load_FIBSEM.clicked.connect(
             lambda: self.open_images(Modality.Ion))
         self.comboBox_cmap.currentTextChanged.connect(
-            lambda: self.update_display(
-                modality=Modality.Light, settings=self.config))
+            lambda: self.update_display(modality=Modality.Light))
 
         if not self.online:
             return
@@ -734,7 +738,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 logging.info("Saved: {}".format(save_filename))
 
             # Update display
-            self.update_display(modality=Modality.Ion, settings=self.config)
+            self.update_display(modality=Modality.Ion)
 
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -742,7 +746,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_last_FIB_image(self):
         try:
             self.image_ion = piescope.fibsem.last_ion_image(self.microscope)
-            self.update_display(modality=Modality.Ion, settings=self.config)
+            self.update_display(modality=Modality.Ion)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -762,7 +766,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 piescope.utils.save_image(self.image_ion, save_filename)
                 logging.info("Saved: {}".format(save_filename))
             # update display
-            self.update_display(modality=Modality.Ion, settings=self.config)
+            self.update_display(modality=Modality.Ion)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -770,7 +774,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         try:
             self.image_ion = piescope.fibsem.last_electron_image(
                 self.microscope)
-            self.update_display(modality=Modality.Ion, settings=self.config)
+            self.update_display(modality=Modality.Ion)
         except Exception as e:
             display_error_message(traceback.format_exc())
 
@@ -822,29 +826,27 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.image_light = image
 
-        self.update_display(modality=Modality.Light, settings=self.config)
+        self.update_display(modality=Modality.Light)
 
     def live_imaging_worker(
-        self, laser: Laser, stop_event: threading.Event, settings: dict
+        self, laser: Laser, stop_event: threading.Event, settings: dict, lock: threading.Lock
     ):
         self.live_imaging_running = True
         self.button_live_image_FM.setDown(True)
 
+        image_frame_interval = settings["imaging"]["lm"]["camera"]["image_frame_interval"]
+
         while not stop_event.isSet():
-            if settings["imaging"]["lm"]["trigger_mode"] == TriggerMode.Software:
-                self.laser_controller.emission_on(laser)
-            self.image_light = self.detector.camera_grab(
-                laser=laser, settings=self.config
-            )
-            if settings["imaging"]["lm"]["trigger_mode"] == TriggerMode.Software:
-                self.laser_controller.emission_off(laser)
 
-            self.update_display(modality=Modality.Light, settings=self.config)
-
-            if settings["imaging"]["lm"]["camera"]["image_frame_interval"] is not None:
-                stop_event.wait(
-                    settings["imaging"]["lm"]["camera"]["image_frame_interval"]
+            with lock: # thread fun
+                self.image_light = self.detector.camera_grab(
+                    laser=laser, settings=settings
                 )
+
+            self.update_display(modality=Modality.Light)
+
+            if image_frame_interval is not None:
+                stop_event.wait(image_frame_interval)
 
         self.detector.camera.Close()
         self.button_live_image_FM.setDown(False)
@@ -863,7 +865,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.stop_event = threading.Event()
                 self._thread = threading.Thread(
                     target=self.live_imaging_worker,
-                    args=(laser, self.stop_event, config),
+                    args=(laser, self.stop_event, config, self.lock),
                 )
                 self._thread.start()
             else:
@@ -881,6 +883,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         except Exception as e:
             display_error_message(traceback.format_exc())
+
+        # finally:
+        #     if self.lock.locked():
+        #         self.lock.release()
 
     ## Objective functions ##
     def objective_stage_position(self, testing=False):
@@ -986,7 +992,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.image_ion = image
                 old_mod = "FIBSEM"
 
-            self.update_display(modality, settings=self.config)
+            self.update_display(modality)
 
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -1012,7 +1018,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except Exception as e:
             display_error_message(f'{e}')
 
-    def update_display(self, modality: Modality, settings: dict):
+    def update_display(self, modality: Modality):
         if modality == Modality.Light:
             if self.image_light is None:
                 return
@@ -1050,11 +1056,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             crosshair = piescope.utils.create_crosshair(
                 self.image_light, self.config)
-            if settings["imaging"]["lm"]["filter_strength"] > 0:
-                image = ndi.median_filter(
-                    image, size=int(settings["imaging"]
-                                    ["lm"]["filter_strength"])
-                )
+            if self.filter_strength_lm > 0:
+                image = ndi.median_filter(image, size=int(self.filter_strength_lm))
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor(
@@ -1064,9 +1067,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             ax_FM.patches = []
             for patch in crosshair.__dataclass_fields__:
                 ax_FM.add_patch(getattr(crosshair, patch))
-            if self.toolbar_FM is None:
-                self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
-            self.label_image_FM.layout().addWidget(self.toolbar_FM)
+            # if self.toolbar_FM is None:
+            #     self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+            # self.label_image_FM.layout().addWidget(self.toolbar_FM)
             self.label_image_FM.layout().addWidget(self.canvas_FM)
             ax_FM.get_xaxis().set_visible(False)
             ax_FM.get_yaxis().set_visible(False)
@@ -1131,8 +1134,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             image = self.image_light
             magnification = self.config["imaging"]["lm"]["camera"]["objective_mag"] * self.config["imaging"]["lm"]["camera"]["telescope_mag"]
             pixel_size = self.config["imaging"]["lm"]["camera"]["pixel_size"]  / magnification 
-            if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
-                return
+            # if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
+            #     return
         else:
             image = self.image_ion
             pixel_size = image.metadata.binary_result.pixel_size.x
@@ -1164,10 +1167,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             if modality == Modality.Light:
                 self.fluorescence_image(
-                    laser=self.laser_controller.current_laser, settings=self.config
-                )
-                self.update_display(modality=Modality.Light,
-                                    settings=self.config)
+                    laser=self.laser_controller.current_laser)
+                self.update_display(modality=Modality.Light)
             else:
                 beam_type = image.metadata.acquisition.beam_type
                 if beam_type == "Ion":
@@ -1175,8 +1176,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 if beam_type == "Electron":
                     self.get_SEM_image(autosave=False)
 
-                self.update_display(modality=Modality.Ion,
-                                    settings=self.config)
+                self.update_display(modality=Modality.Ion)
 
     def fill_destination(self, mode: str):
         """Fills the destination box with the text from the directory"""
@@ -1315,7 +1315,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             logging.info("Saved: {}".format(save_filename_rgb))
 
         # Update display
-        self.update_display(modality=Modality.Light, settings=self.config)
+        self.update_display(modality=Modality.Light)
 
     def correlateim(self):
         try:
@@ -1404,7 +1404,6 @@ def main():
     app.aboutToQuit.connect(qt_app.disconnect)  # cleanup & teardown
     qt_app.show()
     sys.exit(app.exec_())
-    # app.exec_()
 
 
 if __name__ == "__main__":
