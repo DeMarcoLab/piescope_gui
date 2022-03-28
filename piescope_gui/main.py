@@ -67,6 +67,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         # imaging settings
         self.filter_strength_lm = self.config["imaging"]["lm"]["filter_strength"]
+        self.filter_strength_ib = self.config["imaging"]["ib"]["filter_strength"]
+
+        self.magnification_lm = self.config["imaging"]["lm"]["camera"]["objective_mag"] * self.config["imaging"]["lm"]["camera"]["telescope_mag"]
+        self.pixel_size_lm = self.config["imaging"]["lm"]["camera"]["pixel_size"]  / self.magnification_lm
+
 
     def setup_logging(self):
         start_time = piescope_gui.utils.timestamp()
@@ -945,29 +950,29 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def update_lasers(self, laser: Laser):
         self.logger.debug("Updating laser dictionary")
         try:
+            with self.lock:
+                # TODO: clip the exposure time to zero, not empty string
+                laser_power = float(laser.spinBox.text())
+                exposure_time = float(laser.lineEdit.text()) * MS_TO_US  # ms -> us
+                volume_enabled = laser.volumeCheckBox.isChecked()
 
-            # TODO: clip the exposure time to zero, not empty string
-            laser_power = float(laser.spinBox.text())
-            exposure_time = float(laser.lineEdit.text()) * MS_TO_US  # ms -> us
-            volume_enabled = laser.volumeCheckBox.isChecked()
+                # Update current laser for single/live imaging and sttings
+                for config_laser in self.config['lm']['lasers']:
+                    if config_laser['name'] == laser.name:
+                        config_laser['power'] = laser_power
+                        config_laser['exposure_time'] = exposure_time * US_TO_MS
+                        config_laser['volume_enabled'] = volume_enabled
 
-            # Update current laser for single/live imaging and sttings
-            for config_laser in self.config['lm']['lasers']:
-                if config_laser['name'] == laser.name:
-                    config_laser['power'] = laser_power
-                    config_laser['exposure_time'] = exposure_time * US_TO_MS
-                    config_laser['volume_enabled'] = volume_enabled
+                self.laser_controller.set_laser_power(
+                    self.laser_controller.lasers[laser.name], laser_power
+                )
 
-            self.laser_controller.set_laser_power(
-                self.laser_controller.lasers[laser.name], laser_power
-            )
+                self.laser_controller.set_exposure_time(
+                    self.laser_controller.lasers[laser.name], exposure_time
+                )
 
-            self.laser_controller.set_exposure_time(
-                self.laser_controller.lasers[laser.name], exposure_time
-            )
-
-            self.laser_controller.set_volume_enabled(
-                self.laser_controller.lasers[laser.name], volume_enabled)
+                self.laser_controller.set_volume_enabled(
+                    self.laser_controller.lasers[laser.name], volume_enabled)
 
         except Exception as e:
             display_error_message(traceback.format_exc())
@@ -1097,11 +1102,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 lambda event: self.on_gui_click(event, modality=Modality.Ion),
             )
 
-            if settings["imaging"]["ib"]["filter_strength"] > 0:
-                image = ndi.median_filter(
-                    image, size=int(settings["imaging"]
-                                    ["ib"]["filter_strength"])
-                )
+            if self.filter_strength_ib > 0:
+                image = ndi.median_filter(image, size=int(self.filter_strength_ib))
 
             self.figure_FIBSEM.clear()
             self.figure_FIBSEM.patch.set_facecolor(
@@ -1132,8 +1134,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 display_error_message("Unable to move, no Light Microscope Image available. Please take a light microscope image.")
                 return 
             image = self.image_light
-            magnification = self.config["imaging"]["lm"]["camera"]["objective_mag"] * self.config["imaging"]["lm"]["camera"]["telescope_mag"]
-            pixel_size = self.config["imaging"]["lm"]["camera"]["pixel_size"]  / magnification 
+            pixel_size = self.pixel_size_lm 
             # if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
             #     return
         else:
@@ -1166,9 +1167,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.microscope.specimen.stage.relative_move(yz_move)
 
             if modality == Modality.Light:
-                self.fluorescence_image(
-                    laser=self.laser_controller.current_laser)
-                self.update_display(modality=Modality.Light)
+                if not self.live_imaging_running:
+                    self.fluorescence_image(laser=self.laser_controller.current_laser, settings=self.config)
+                    self.update_display(modality=Modality.Light)
             else:
                 beam_type = image.metadata.acquisition.beam_type
                 if beam_type == "Ion":
