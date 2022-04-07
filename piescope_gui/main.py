@@ -1276,6 +1276,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             settings=self.config,
         )
 
+        #CPZAYX
         meta = {
             "z_slice_distance": str(z_slice_distance),
             "num_z_slices": str(num_z_slices),
@@ -1284,12 +1285,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         }
 
         max_intensity = piescope.utils.max_intensity_projection(volume)
+        #YXC
 
         rgb = piescope.utils.rgb_image(max_intensity, colour_dict=colour_dict)
         self.image_light = rgb
 
         if self.config["imaging"]["volume"]["autosave"]:
             # save full volume
+            #CPZAYX
             save_filename = os.path.join(
                 self.save_destination_FM,
                 "Volume_" + self.lineEdit_save_filename_FM.text(),
