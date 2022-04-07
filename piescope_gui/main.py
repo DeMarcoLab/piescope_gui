@@ -42,7 +42,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.setStyleSheet("""QPushButton {
         border: 1px solid lightgray;
         border-radius: 5px;
-        background-color: #e3e3e3; 
+        background-color: #e3e3e3;
         }""")
         self.lock = threading.Lock()
         self.read_config_file()
@@ -52,7 +52,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.initialise_hardware()
         self.setup_connections()
         self.setWindowModality(QtCore.Qt.ApplicationModal)
-        
+
     ## Initialisation functions ##
     def read_config_file(self):
         # read config file
@@ -916,7 +916,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     ## Laser functions ##
     def update_current_laser(self, wavelength):
         self.logger.debug("Updating current laser")
-        
+
         # TODO: change name of laser to wavelength, to clean up
         LASER_WAVELENGTH_TO_NAME = {
             "640 nm": "laser640",
@@ -1132,9 +1132,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if modality == Modality.Light:
             if self.image_light is None:
                 display_error_message("Unable to move, no Light Microscope Image available. Please take a light microscope image.")
-                return 
+                return
             image = self.image_light
-            pixel_size = self.pixel_size_lm 
+            pixel_size = self.pixel_size_lm
             # if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
             #     return
         else:
@@ -1397,13 +1397,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def closeEvent(self, event):
         event.accept()
         self.window_close.emit()
-        
+
 def main():
     """Launch the `piescope_gui` main application window."""
     app = QtWidgets.QApplication([])
     qt_app = GUIMainWindow()
     app.aboutToQuit.connect(qt_app.disconnect)  # cleanup & teardown
-    qt_app.show()
+    qt_app.showNormal()
+
+    # set into roughly middle of screen
+    desktop = QtWidgets.QDesktopWidget()
+    qt_app.move((desktop.width()-qt_app.width())/2, (desktop.height()-qt_app.height())/3.)
     sys.exit(app.exec_())
 
 
