@@ -268,6 +268,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             self.mirror_controller.move_to(StagePosition.HORIZONTAL)
             self.mirror_controller.set_mode(ImagingType.SIM)
             self.comboBox_pattern.setEnabled(True)
+            # self.comboBox_pattern.setCurrentText("0 deg")
             return
 
     def update_microscope_connections(self):
@@ -707,16 +708,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             distance = -abs(distance)
 
         try:
-            self.logger.debug(
-                "Relative move the objective stage by " "{}".format(distance)
-            )
-            ans = stage.move_relative(distance)
-            time.sleep(time_delay)
-            new_position = stage.current_position()
-            self.logger.debug(
-                "After relative move, objective stage is now at "
-                "position: {}".format(new_position)
-            )
+            with self.lock:
+                self.logger.debug(
+                    "Relative move the objective stage by " "{}".format(distance)
+                )
+                ans = stage.move_relative(distance)
+                time.sleep(time_delay)
+                new_position = stage.current_position()
+                self.logger.debug(
+                    "After relative move, objective stage is now at "
+                    "position: {}".format(new_position)
+                )
         except Exception as e:
             display_error_message(traceback.format_exc())
         else:
@@ -866,6 +868,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     "background-color: LightGreen")
 
                 self.comboBox_wavelength.setEnabled(False)
+                self.comboBox_cmap.setEnabled(False)
 
                 self.stop_event = threading.Event()
                 self._thread = threading.Thread(
@@ -875,6 +878,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self._thread.start()
             else:
                 self.comboBox_wavelength.setEnabled(True)
+                self.comboBox_cmap.setEnabled(True)
                 self.stop_event.set()
                 self.button_live_image_FM.setStyleSheet(
                     "background-color: #e3e3e3")
@@ -882,16 +886,13 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         except (KeyboardInterrupt, SystemExit):
 
             self.comboBox_wavelength.setEnabled(True)
+            self.comboBox_cmap.setEnabled(True)
             self.stop_event.set()
             self.button_live_image_FM.setStyleSheet(
                 "background-color: #e3e3e3")
 
         except Exception as e:
             display_error_message(traceback.format_exc())
-
-        # finally:
-        #     if self.lock.locked():
-        #         self.lock.release()
 
     ## Objective functions ##
     def objective_stage_position(self, testing=False):
