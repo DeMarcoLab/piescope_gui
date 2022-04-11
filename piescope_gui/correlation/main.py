@@ -96,8 +96,8 @@ class CorrelationWindow(QMainWindow):
                     'Control Point list</h2><p>Below in the table, all ' \
                     'your control points are listed. You can delete one or ' \
                     'more selected control points with the <b>delete</b> ' \
-                    'button.</p><h2>Return</h2><p>If you are finished, ' \
-                    'please press the <b>return</b> button below. You will' \
+                    'button.</p><h2>Correlate</h2><p>If you are finished, ' \
+                    'please press the <b>Correlate</b> button below. You will' \
                     ' come back to wherever you have been.</p></body></html>'
         help_html = help_header + help_body.format(
             os.path.join(os.path.dirname(__file__), "img/navbuttons.PNG"),
@@ -120,7 +120,7 @@ class CorrelationWindow(QMainWindow):
         self.pickButton.setFixedHeight(60)
         self.pickButton.setStyleSheet("color: red; font-size: 16px;")
 
-        self.exitButton = QPushButton("Return")
+        self.exitButton = QPushButton("Correlate")
         self.exitButton.setFixedHeight(60)
         self.exitButton.setStyleSheet("font-size: 16px;")
 
