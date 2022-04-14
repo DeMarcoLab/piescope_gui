@@ -264,7 +264,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         }
 
         self.mirror_controller.move_to(
-            stage_position=mirror_stage_positions[position])
+            mirror_position=mirror_stage_positions[position])
         return
 
     def update_imaging_type(self, mode='Widefield'):
@@ -298,7 +298,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             }
 
             self.mirror_controller.move_to(
-                stage_position=mirror_stage_positions[position])
+                mirror_position=mirror_stage_positions[position])
             return
 
     def update_microscope_connections(self):
