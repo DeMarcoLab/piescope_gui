@@ -19,7 +19,7 @@ from matplotlib.backends.backend_qt5agg import (
 from piescope.lm import arduino, mirror, structured
 from piescope.lm.detector import Basler
 from piescope.lm.laser import Laser, LaserController
-from piescope.lm.mirror import ImagingType, StagePosition
+from piescope.lm.mirror import ImagingType, MirrorPosition
 from piescope.utils import Modality, TriggerMode
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -237,21 +237,30 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return
 
         self.comboBox_imaging_type.setEnabled(True)
-        self.comboBox_pattern.setEnabled(True)
         self.update_imaging_type()
 
         self.comboBox_imaging_type.currentTextChanged.connect(
             lambda: self.update_imaging_type(mode=self.comboBox_imaging_type.currentText()))
         self.comboBox_pattern.currentTextChanged.connect(
-            lambda: self.update_pattern_position(position=self.comboBox_pattern.currentText()))
+            lambda: self.update_pattern_position(pattern=self.comboBox_pattern.currentText(), phase=self.comboBox_phase.currentText()))
+        self.comboBox_phase.currentTextChanged.connect(
+            lambda: self.update_pattern_position(pattern=self.comboBox_pattern.currentText(), phase=self.comboBox_phase.currentText()))
 
-    def update_pattern_position(self, position='0 deg'):
+    def update_pattern_position(self, pattern='0 deg', phase='0 deg'):
         """Move to the selected mirror stage angle"""
 
+        position = pattern + ' ' + phase
+
         mirror_stage_positions = {
-            "0 deg": StagePosition.HORIZONTAL,
-            "60 deg": StagePosition.SIXTY,
-            "120 deg": StagePosition.ONETWENTY
+            "0 deg 0 deg": MirrorPosition.HORIZONTAL,
+            "0 deg 120 deg": MirrorPosition.HORIZONTAL_120,
+            "0 deg 240 deg": MirrorPosition.HORIZONTAL_240,
+            "60 deg 0 deg": MirrorPosition.SIXTY,
+            "60 deg 120 deg": MirrorPosition.SIXTY_120,
+            "60 deg 240 deg": MirrorPosition.SIXTY_240,
+            "120 deg 0 deg": MirrorPosition.ONETWENTY,
+            "120 deg 120 deg": MirrorPosition.ONETWENTY_120,
+            "120 deg 240 deg": MirrorPosition.ONETWENTY_240,
         }
 
         self.mirror_controller.move_to(
@@ -260,15 +269,36 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def update_imaging_type(self, mode='Widefield'):
         if mode == 'Widefield':
-            self.mirror_controller.move_to(StagePosition.WIDEFIELD)
             self.mirror_controller.set_mode(ImagingType.WIDEFIELD)
+            self.mirror_controller.move_to(MirrorPosition.WIDEFIELD)
             self.comboBox_pattern.setEnabled(False)
+            self.comboBox_phase.setEnabled(False)
             return
         if mode == 'SIM':
-            self.mirror_controller.move_to(StagePosition.HORIZONTAL)
             self.mirror_controller.set_mode(ImagingType.SIM)
+
             self.comboBox_pattern.setEnabled(True)
-            # self.comboBox_pattern.setCurrentText("0 deg")
+            self.comboBox_phase.setEnabled(True)
+
+            pattern = self.comboBox_pattern.currentText()
+            phase = self.comboBox_phase.currentText()
+
+            position = pattern + ' ' + phase
+
+            mirror_stage_positions = {
+            "0 deg 0 deg": MirrorPosition.HORIZONTAL,
+            "0 deg 120 deg": MirrorPosition.HORIZONTAL_120,
+            "0 deg 240 deg": MirrorPosition.HORIZONTAL_240,
+            "60 deg 0 deg": MirrorPosition.SIXTY,
+            "60 deg 120 deg": MirrorPosition.SIXTY_120,
+            "60 deg 240 deg": MirrorPosition.SIXTY_240,
+            "120 deg 0 deg": MirrorPosition.ONETWENTY,
+            "120 deg 120 deg": MirrorPosition.ONETWENTY_120,
+            "120 deg 240 deg": MirrorPosition.ONETWENTY_240,
+            }
+
+            self.mirror_controller.move_to(
+                stage_position=mirror_stage_positions[position])
             return
 
     def update_microscope_connections(self):
