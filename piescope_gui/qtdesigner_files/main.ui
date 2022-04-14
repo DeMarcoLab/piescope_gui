@@ -1131,30 +1131,6 @@
                     <property name="spacing">
                      <number>3</number>
                     </property>
-                    <item row="3" column="1">
-                     <widget class="QComboBox" name="comboBox_imaging_type">
-                      <property name="enabled">
-                       <bool>false</bool>
-                      </property>
-                      <item>
-                       <property name="text">
-                        <string>Widefield</string>
-                       </property>
-                      </item>
-                      <item>
-                       <property name="text">
-                        <string>SIM</string>
-                       </property>
-                      </item>
-                     </widget>
-                    </item>
-                    <item row="3" column="0">
-                     <widget class="QLabel" name="label_16">
-                      <property name="text">
-                       <string>Imaging type:</string>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="2" column="1">
                      <widget class="QComboBox" name="comboBox_cmap">
                       <property name="enabled">
@@ -1202,6 +1178,70 @@
                       </item>
                      </widget>
                     </item>
+                    <item row="5" column="0">
+                     <widget class="QLabel" name="label_pattern">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="text">
+                       <string>Pattern: </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="label_imaging_type">
+                      <property name="text">
+                       <string>Imaging type:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="label_wavelength">
+                      <property name="text">
+                       <string>Wavelength:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="label_cmap">
+                      <property name="text">
+                       <string>Colour map:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="7" column="0">
+                     <widget class="QLabel" name="label_max_FM_value">
+                      <property name="maximumSize">
+                       <size>
+                        <width>16777215</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                      <property name="text">
+                       <string>Max Value: </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QComboBox" name="comboBox_imaging_type">
+                      <property name="enabled">
+                       <bool>false</bool>
+                      </property>
+                      <item>
+                       <property name="text">
+                        <string>Widefield</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>SIM</string>
+                       </property>
+                      </item>
+                     </widget>
+                    </item>
                     <item row="0" column="1">
                      <widget class="QComboBox" name="comboBox_wavelength">
                       <property name="enabled">
@@ -1229,33 +1269,6 @@
                       </item>
                      </widget>
                     </item>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="label_14">
-                      <property name="text">
-                       <string>Wavelength:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="2" column="0">
-                     <widget class="QLabel" name="label_15">
-                      <property name="text">
-                       <string>Colour map:</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item row="5" column="0">
-                     <widget class="QLabel" name="label">
-                      <property name="sizePolicy">
-                       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                        <horstretch>0</horstretch>
-                        <verstretch>0</verstretch>
-                       </sizepolicy>
-                      </property>
-                      <property name="text">
-                       <string>Pattern: </string>
-                      </property>
-                     </widget>
-                    </item>
                     <item row="5" column="1">
                      <widget class="QComboBox" name="comboBox_pattern">
                       <property name="enabled">
@@ -1279,16 +1292,38 @@
                      </widget>
                     </item>
                     <item row="6" column="0">
-                     <widget class="QLabel" name="label_max_FM_value">
+                     <widget class="QLabel" name="label_phase">
                       <property name="maximumSize">
                        <size>
-                        <width>16777215</width>
-                        <height>20</height>
+                        <width>74</width>
+                        <height>13</height>
                        </size>
                       </property>
                       <property name="text">
-                       <string>Max Value: </string>
+                       <string>Phase:</string>
                       </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="1">
+                     <widget class="QComboBox" name="comboBox_phase">
+                      <property name="enabled">
+                       <bool>true</bool>
+                      </property>
+                      <item>
+                       <property name="text">
+                        <string>0 deg</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>120 deg</string>
+                       </property>
+                      </item>
+                      <item>
+                       <property name="text">
+                        <string>240 deg</string>
+                       </property>
+                      </item>
                      </widget>
                     </item>
                    </layout>
@@ -2286,7 +2321,4 @@
  </tabstops>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
