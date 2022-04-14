@@ -40,7 +40,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         super().__init__(parent=parent_gui)
         self.setupUi(MainGui=self)
         self.setStyleSheet("""QPushButton {
-        border: 1px solid lightgray;
+        border: 1px solid #e3e3e3;
         border-radius: 5px;
         background-color: #e3e3e3;
         }""")
@@ -51,7 +51,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.initialise_image_frames()
         self.initialise_hardware()
         self.setup_connections()
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
 
     ## Initialisation functions ##
     def read_config_file(self):
