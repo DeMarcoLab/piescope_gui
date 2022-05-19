@@ -580,7 +580,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.detector = Hamamatsu(settings=self.config)
         except:
             display_error_message(
-                f"Unable to connect to Basler device. <br><br>{traceback.format_exc()}"
+                f"Unable to connect to light detector. <br><br>{traceback.format_exc()}"
             )
 
     def connect_to_fibsem_microscope(self):
