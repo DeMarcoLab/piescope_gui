@@ -890,7 +890,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if image_frame_interval is not None:
                 stop_event.wait(image_frame_interval)
 
-        self.detector.camera.Close()
+        self.detector.close_camera()
         self.button_live_image_FM.setDown(False)
         self.live_imaging_running = False
 
