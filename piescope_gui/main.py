@@ -17,7 +17,7 @@ from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT as _NavigationToolbar,
 )
 from piescope.lm import arduino, mirror, structured
-from piescope.lm.detector import Basler
+from piescope.lm.detector import Basler, Hamamatsu
 from piescope.lm.laser import Laser, LaserController
 from piescope.lm.mirror import ImagingType, MirrorPosition
 from piescope.utils import Modality, TriggerMode
@@ -161,7 +161,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         if self.online:
             self.connect_to_fibsem_microscope()
-            self.connect_to_basler_detector()
+            self.connect_to_light_detector()
             self.connect_to_laser_controller()
             self.connect_to_objective_controller()
             self.connect_to_mirror_controller()
@@ -199,7 +199,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_connect_objective.clicked.connect(
             self.connect_to_objective_controller)
         self.pushButton_connect_detector.clicked.connect(
-            self.connect_to_basler_detector)
+            self.connect_to_light_detector)
         self.pushButton_connect_microscope.clicked.connect(
             self.connect_to_fibsem_microscope)
         self.pushButton_connect_laser_controller.clicked.connect(
@@ -568,11 +568,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 f"Unable to connect to laser controller. <br><br>{traceback.format_exc()}"
             )
 
-    def connect_to_basler_detector(self):
+    def connect_to_light_detector(self):
         if self.detector is not None:
             return
         try:
-            self.detector = Basler(settings=self.config)
+            #TODO: make this a self.config[] thing
+            basler = False
+            if basler:
+                self.detector = Basler(settings=self.config)
+            else:
+                self.detector = Hamamatsu(settings=self.config)
         except:
             display_error_message(
                 f"Unable to connect to Basler device. <br><br>{traceback.format_exc()}"
