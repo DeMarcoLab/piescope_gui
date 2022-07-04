@@ -1061,8 +1061,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if modality == Modality.Light:
             if self.image_light is None:
                 return
-            max_value = self.image_light.max()
-            self.label_max_FM_value.setText(f"Max value: {str(max_value)}")
 
             # copy the current light image to modify and check shape etc.
             image = self.image_light
@@ -1093,20 +1091,32 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_error_message(msg)
                         return
 
+            # clip image values
+            MAX_FLOAT_VALUE = np.iinfo(image.dtype).max
+            min_value = self.doubleSpinBox_clip_min.value() * MAX_FLOAT_VALUE
+            max_value = self.doubleSpinBox_clip_max.value() * MAX_FLOAT_VALUE
+            image = np.clip(image, min_value, max_value)
+
+            # current_max_value = np.max(image)
+            self.label_max_FM_value.setText(f"Image Range: {np.min(image)} - {np.max(image)}")
+
             crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
             if self.filter_strength_lm > 0:
                 image = ndi.median_filter(image, size=int(self.filter_strength_lm))
+
+            fov_percent = 0.5 # TODO: attach to slider?, add to config
+            cy, cx = image.shape[0] //2 , image.shape[1] // 2
+            h, w = int(image.shape[0]*fov_percent / 2), int(image.shape[1]*fov_percent / 2)
+            image = image[cy -h : cy+ h, cx -w : cx+ w]
 
             if self.ax_FM is not None and self.toolbar_FM._active == "ZOOM":
                 x_lim = self.ax_FM.get_xlim()
                 y_lim = self.ax_FM.get_ylim()
             else:
-                fov_percent = 0.5 # TODO: attach to slider?, add to config
-                cy, cx = image.shape[0] //2 , image.shape[1] // 2
-                h, w = int(image.shape[0]*fov_percent / 2), int(image.shape[1]*fov_percent / 2)
-
-                x_lim = (cx-w, cx+w)
-                y_lim = (cy-h, cy+h)
+                # x_lim = (cx-w, cx+w)
+                # y_lim = (cy-h, cy+h)
+                x_lim = (0, image.shape[1])
+                y_lim = (0, image.shape[0])          
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor(
