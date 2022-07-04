@@ -130,14 +130,14 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FM = _FigureCanvas(self.figure_FM)
-        # self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+        self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
         self.canvas_FM.mpl_connect(
             "button_press_event",
             lambda event: self.on_gui_click(event, modality=Modality.Light),
         )
-
+        self.ax_FM = None
         self.label_image_FM.setLayout(QtWidgets.QVBoxLayout())
-        # self.label_image_FM.layout().addWidget(self.toolbar_FM)
+        self.label_image_FM.layout().addWidget(self.toolbar_FM)
         self.label_image_FM.layout().addWidget(self.canvas_FM)
 
         self.figure_FIBSEM = plt.figure()
@@ -885,7 +885,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     laser=laser, settings=settings
                 )
 
-            self.update_display(modality=Modality.Light)
+                self.update_display(modality=Modality.Light)
 
             if image_frame_interval is not None:
                 stop_event.wait(image_frame_interval)
@@ -1093,26 +1093,37 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_error_message(msg)
                         return
 
-            crosshair = piescope.utils.create_crosshair(
-                self.image_light, self.config)
+            crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
             if self.filter_strength_lm > 0:
                 image = ndi.median_filter(image, size=int(self.filter_strength_lm))
+
+            if self.ax_FM is not None and self.toolbar_FM._active == "ZOOM":
+                x_lim = self.ax_FM.get_xlim()
+                y_lim = self.ax_FM.get_ylim()
+            else:
+                fov_percent = 0.5 # TODO: attach to slider?, add to config
+                cy, cx = image.shape[0] //2 , image.shape[1] // 2
+                h, w = int(image.shape[0]*fov_percent / 2), int(image.shape[1]*fov_percent / 2)
+
+                x_lim = (cx-w, cx+w)
+                y_lim = (cy-h, cy+h)
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor(
                 (240 / 255, 240 / 255, 240 / 255))
-            ax_FM = self.figure_FM.add_subplot(111)
-            ax_FM.set_title("Light Microscope")
-            ax_FM.patches = []
+            self.ax_FM = self.figure_FM.add_subplot(111)
+            self.ax_FM.set_title("Light Microscope")
+            self.ax_FM.patches = []
             for patch in crosshair.__dataclass_fields__:
-                ax_FM.add_patch(getattr(crosshair, patch))
-            # if self.toolbar_FM is None:
-            #     self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
-            # self.label_image_FM.layout().addWidget(self.toolbar_FM)
-            self.label_image_FM.layout().addWidget(self.canvas_FM)
-            ax_FM.get_xaxis().set_visible(False)
-            ax_FM.get_yaxis().set_visible(False)
-            ax_FM.imshow(image, cmap=str(self.comboBox_cmap.currentText()))
+                self.ax_FM.add_patch(getattr(crosshair, patch))
+
+            self.ax_FM.get_xaxis().set_visible(False)
+            self.ax_FM.get_yaxis().set_visible(False)
+            self.ax_FM.imshow(image, cmap=str(self.comboBox_cmap.currentText()))
+
+            self.ax_FM.set_xlim(x_lim)
+            self.ax_FM.set_ylim(y_lim)
+
             # FIBSEM is image.data
             self.canvas_FM.draw()
 
@@ -1157,30 +1168,33 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def on_gui_click(self, event, modality):
 
-        # check if we have both types of images
-        if self.image_ion is None:
-            display_error_message("Unable to move, no FIBSEM Image available. Please get the last Electron / Ion Image")
-            return
+        if event.button == 1 and event.dblclick:
 
-        # don't allow double click functionality while zooming or panning, only stopping active window
-        if modality == Modality.Light:
+            # don't allow double click functionality while zooming or panning, only stopping active window
+            if modality == Modality.Light:
+                
+                image = self.image_light
+                pixel_size = self.pixel_size_lm
+                if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
+                    return
+            else:
+                image = self.image_ion
+                pixel_size = image.metadata.binary_result.pixel_size.x
+                if (
+                    self.toolbar_FIBSEM._active == "ZOOM"
+                    or self.toolbar_FIBSEM._active == "PAN"
+                ):
+                    return
+
+            # check if we have both types of images
             if self.image_light is None:
                 display_error_message("Unable to move, no Light Microscope Image available. Please take a light microscope image.")
                 return
-            image = self.image_light
-            pixel_size = self.pixel_size_lm
-            # if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
-            #     return
-        else:
-            image = self.image_ion
-            pixel_size = image.metadata.binary_result.pixel_size.x
-            if (
-                self.toolbar_FIBSEM._active == "ZOOM"
-                or self.toolbar_FIBSEM._active == "PAN"
-            ):
+
+            if self.image_ion is None:
+                display_error_message("Unable to move, no FIBSEM Image available. Please get the last Electron / Ion Image")
                 return
 
-        if event.button == 1 and event.dblclick:
             x, y = piescope_gui.utils.pixel_to_realspace_coordinate(
                 [event.xdata, event.ydata], image, pixel_size
             )
