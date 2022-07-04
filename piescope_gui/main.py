@@ -178,7 +178,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.actionSave_FIBSEM_Image.triggered.connect(
             lambda: self.save_image(modality=Modality.Ion))
         self.button_save_destination_FM.clicked.connect(
-            lambda: self.fill_destination(modality="FM"))
+            lambda: self.fill_destination(mode="FM"))
         self.button_save_destination_FIBSEM.clicked.connect(
             lambda: self.fill_destination(mode="FIBSEM"))
         self.toolButton_correlation_output.clicked.connect(
@@ -1028,10 +1028,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             if modality == Modality.Light:
                 self.image_light = image
-                old_mod = "FM"
             else:
                 self.image_ion = image
-                old_mod = "FIBSEM"
 
             self.update_display(modality)
 
