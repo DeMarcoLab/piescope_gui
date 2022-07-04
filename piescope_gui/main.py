@@ -17,7 +17,7 @@ from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT as _NavigationToolbar,
 )
 from piescope.lm import arduino, mirror, structured
-from piescope.lm.detector import Basler
+from piescope.lm.detector import Basler, Hamamatsu
 from piescope.lm.laser import Laser, LaserController
 from piescope.lm.mirror import ImagingType, MirrorPosition
 from piescope.utils import Modality, TriggerMode
@@ -125,19 +125,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.comboBox_resolution.setCurrentIndex(1)  # resolution "1536x1024"
 
     def initialise_image_frames(self):
-        self.figure_FM = plt.figure()
+        self.figure_FM = plt.figure(figsize=(4, 1))
         plt.axis("off")
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FM = _FigureCanvas(self.figure_FM)
-        # self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
+        self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
         self.canvas_FM.mpl_connect(
             "button_press_event",
             lambda event: self.on_gui_click(event, modality=Modality.Light),
         )
-
+        self.ax_FM = None
         self.label_image_FM.setLayout(QtWidgets.QVBoxLayout())
-        # self.label_image_FM.layout().addWidget(self.toolbar_FM)
+        self.label_image_FM.layout().addWidget(self.toolbar_FM)
         self.label_image_FM.layout().addWidget(self.canvas_FM)
 
         self.figure_FIBSEM = plt.figure()
@@ -151,6 +151,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
         self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
 
+        self.figure_histogram = plt.figure()
+        # plt.axis("off")
+        # plt.tight_layout()
+        # plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
+        self.canvas_histogram = _FigureCanvas(self.figure_histogram)
+
+        self.label_histogram.setLayout(QtWidgets.QVBoxLayout())
+        self.label_histogram.layout().addWidget(self.canvas_histogram)
+
+
     def initialise_hardware(self):
         self.microscope = None
         self.detector = None
@@ -161,7 +171,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         if self.online:
             self.connect_to_fibsem_microscope()
-            self.connect_to_basler_detector()
+            self.connect_to_light_detector()
             self.connect_to_laser_controller()
             self.connect_to_objective_controller()
             self.connect_to_mirror_controller()
@@ -178,7 +188,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.actionSave_FIBSEM_Image.triggered.connect(
             lambda: self.save_image(modality=Modality.Ion))
         self.button_save_destination_FM.clicked.connect(
-            lambda: self.fill_destination(modality="FM"))
+            lambda: self.fill_destination(mode="FM"))
         self.button_save_destination_FIBSEM.clicked.connect(
             lambda: self.fill_destination(mode="FIBSEM"))
         self.toolButton_correlation_output.clicked.connect(
@@ -199,7 +209,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_connect_objective.clicked.connect(
             self.connect_to_objective_controller)
         self.pushButton_connect_detector.clicked.connect(
-            self.connect_to_basler_detector)
+            self.connect_to_light_detector)
         self.pushButton_connect_microscope.clicked.connect(
             self.connect_to_fibsem_microscope)
         self.pushButton_connect_laser_controller.clicked.connect(
@@ -568,14 +578,19 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 f"Unable to connect to laser controller. <br><br>{traceback.format_exc()}"
             )
 
-    def connect_to_basler_detector(self):
+    def connect_to_light_detector(self):
         if self.detector is not None:
             return
         try:
-            self.detector = Basler(settings=self.config)
+            #TODO: make this a self.config[] thing
+            basler = False
+            if basler:
+                self.detector = Basler(settings=self.config)
+            else:
+                self.detector = Hamamatsu(settings=self.config)
         except:
             display_error_message(
-                f"Unable to connect to Basler device. <br><br>{traceback.format_exc()}"
+                f"Unable to connect to light detector. <br><br>{traceback.format_exc()}"
             )
 
     def connect_to_fibsem_microscope(self):
@@ -880,12 +895,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     laser=laser, settings=settings
                 )
 
-            self.update_display(modality=Modality.Light)
+                self.update_display(modality=Modality.Light)
 
             if image_frame_interval is not None:
                 stop_event.wait(image_frame_interval)
 
-        self.detector.camera.Close()
+        self.detector.close_camera()
         self.button_live_image_FM.setDown(False)
         self.live_imaging_running = False
 
@@ -1023,10 +1038,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             if modality == Modality.Light:
                 self.image_light = image
-                old_mod = "FM"
             else:
                 self.image_ion = image
-                old_mod = "FIBSEM"
 
             self.update_display(modality)
 
@@ -1058,8 +1071,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         if modality == Modality.Light:
             if self.image_light is None:
                 return
-            max_value = self.image_light.max()
-            self.label_max_FM_value.setText(f"Max value: {str(max_value)}")
 
             # copy the current light image to modify and check shape etc.
             image = self.image_light
@@ -1090,28 +1101,62 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                         display_error_message(msg)
                         return
 
-            crosshair = piescope.utils.create_crosshair(
-                self.image_light, self.config)
+            # clip image values
+            MAX_FLOAT_VALUE = np.iinfo(image.dtype).max
+            min_value = self.doubleSpinBox_clip_min.value() * MAX_FLOAT_VALUE
+            max_value = self.doubleSpinBox_clip_max.value() * MAX_FLOAT_VALUE
+            image = np.clip(image, min_value, max_value)
+
+            # current_max_value = np.max(image)
+            self.label_max_FM_value.setText(f"Image Range: {np.min(image)} - {np.max(image)}")
+
+            crosshair = piescope.utils.create_crosshair(self.image_light, self.config)
             if self.filter_strength_lm > 0:
                 image = ndi.median_filter(image, size=int(self.filter_strength_lm))
+
+            fov_percent = 0.5 # TODO: attach to slider?, add to config
+            cy, cx = image.shape[0] //2 , image.shape[1] // 2
+            h, w = int(image.shape[0]*fov_percent / 2), int(image.shape[1]*fov_percent / 2)
+            image = image[cy -h : cy+ h, cx -w : cx+ w]
+
+            if self.ax_FM is not None and self.toolbar_FM._active == "ZOOM":
+                x_lim = self.ax_FM.get_xlim()
+                y_lim = self.ax_FM.get_ylim()
+            else:
+                # x_lim = (cx-w, cx+w)
+                # y_lim = (cy-h, cy+h)
+                x_lim = (0, image.shape[1])
+                y_lim = (0, image.shape[0])          
 
             self.figure_FM.clear()
             self.figure_FM.patch.set_facecolor(
                 (240 / 255, 240 / 255, 240 / 255))
-            ax_FM = self.figure_FM.add_subplot(111)
-            ax_FM.set_title("Light Microscope")
-            ax_FM.patches = []
+            self.ax_FM = self.figure_FM.add_subplot(111)
+            self.ax_FM.set_title("Light Microscope")
+            self.ax_FM.patches = []
             for patch in crosshair.__dataclass_fields__:
-                ax_FM.add_patch(getattr(crosshair, patch))
-            # if self.toolbar_FM is None:
-            #     self.toolbar_FM = _NavigationToolbar(self.canvas_FM, self)
-            # self.label_image_FM.layout().addWidget(self.toolbar_FM)
-            self.label_image_FM.layout().addWidget(self.canvas_FM)
-            ax_FM.get_xaxis().set_visible(False)
-            ax_FM.get_yaxis().set_visible(False)
-            ax_FM.imshow(image, cmap=str(self.comboBox_cmap.currentText()))
+                self.ax_FM.add_patch(getattr(crosshair, patch))
+
+            self.ax_FM.get_xaxis().set_visible(False)
+            self.ax_FM.get_yaxis().set_visible(False)
+            self.ax_FM.imshow(image, cmap=str(self.comboBox_cmap.currentText()))
+
+            self.ax_FM.set_xlim(x_lim)
+            self.ax_FM.set_ylim(y_lim)
+
             # FIBSEM is image.data
             self.canvas_FM.draw()
+
+            # draw histogram
+            self.figure_histogram.clear()
+            ax_hist = self.figure_histogram.add_subplot(111)
+            ax_hist.hist(np.ravel(image), bins=30)
+            ax_hist.set_title("Image Histogram")
+            ax_hist.get_yaxis().set_visible(False)
+            ax_hist.grid()
+            ax_hist.set_xlim((0, max_value))
+            self.canvas_histogram.draw()
+
 
         else:
             image = self.image_ion.data
@@ -1154,30 +1199,33 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def on_gui_click(self, event, modality):
 
-        # check if we have both types of images
-        if self.image_ion is None:
-            display_error_message("Unable to move, no FIBSEM Image available. Please get the last Electron / Ion Image")
-            return
+        if event.button == 1 and event.dblclick:
 
-        # don't allow double click functionality while zooming or panning, only stopping active window
-        if modality == Modality.Light:
+            # don't allow double click functionality while zooming or panning, only stopping active window
+            if modality == Modality.Light:
+                
+                image = self.image_light
+                pixel_size = self.pixel_size_lm
+                if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
+                    return
+            else:
+                image = self.image_ion
+                pixel_size = image.metadata.binary_result.pixel_size.x
+                if (
+                    self.toolbar_FIBSEM._active == "ZOOM"
+                    or self.toolbar_FIBSEM._active == "PAN"
+                ):
+                    return
+
+            # check if we have both types of images
             if self.image_light is None:
                 display_error_message("Unable to move, no Light Microscope Image available. Please take a light microscope image.")
                 return
-            image = self.image_light
-            pixel_size = self.pixel_size_lm
-            # if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
-            #     return
-        else:
-            image = self.image_ion
-            pixel_size = image.metadata.binary_result.pixel_size.x
-            if (
-                self.toolbar_FIBSEM._active == "ZOOM"
-                or self.toolbar_FIBSEM._active == "PAN"
-            ):
+
+            if self.image_ion is None:
+                display_error_message("Unable to move, no FIBSEM Image available. Please get the last Electron / Ion Image")
                 return
 
-        if event.button == 1 and event.dblclick:
             x, y = piescope_gui.utils.pixel_to_realspace_coordinate(
                 [event.xdata, event.ydata], image, pixel_size
             )
