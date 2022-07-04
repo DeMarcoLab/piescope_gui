@@ -125,7 +125,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.comboBox_resolution.setCurrentIndex(1)  # resolution "1536x1024"
 
     def initialise_image_frames(self):
-        self.figure_FM = plt.figure()
+        self.figure_FM = plt.figure(figsize=(4, 1))
         plt.axis("off")
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
@@ -150,6 +150,16 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.label_image_FIBSEM.setLayout(QtWidgets.QVBoxLayout())
         self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
         self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
+
+        self.figure_histogram = plt.figure()
+        # plt.axis("off")
+        # plt.tight_layout()
+        # plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
+        self.canvas_histogram = _FigureCanvas(self.figure_histogram)
+
+        self.label_histogram.setLayout(QtWidgets.QVBoxLayout())
+        self.label_histogram.layout().addWidget(self.canvas_histogram)
+
 
     def initialise_hardware(self):
         self.microscope = None
@@ -1136,6 +1146,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             # FIBSEM is image.data
             self.canvas_FM.draw()
+
+            # draw histogram
+            self.figure_histogram.clear()
+            ax_hist = self.figure_histogram.add_subplot(111)
+            ax_hist.hist(np.ravel(image), bins=30)
+            ax_hist.set_title("Image Histogram")
+            ax_hist.get_yaxis().set_visible(False)
+            ax_hist.grid()
+            ax_hist.set_xlim((0, max_value))
+            self.canvas_histogram.draw()
+
 
         else:
             image = self.image_ion.data
