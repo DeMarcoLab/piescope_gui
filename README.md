@@ -11,7 +11,7 @@ via a PyQt graphical user interface.
 * Semi-automated registration & alignment of fluorescenc and FIB/SEM images, and overlaid images display.
 * Create ion beam milling patterns on the registered and overlaid images.
 
-![PIE-scope GUI screenshot with images](imgs/piescope_gui.png)
+![PIE-scope GUI screenshot with images](docs/imgs/piescope_gui2.png)
 
 ## Citation
 If you find this useful, please cite our work.
