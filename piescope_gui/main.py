@@ -23,6 +23,9 @@ from piescope.lm.mirror import ImagingType, MirrorPosition
 from piescope.utils import Modality, TriggerMode
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from fibsem import acquire, conversions
+from fibsem.structures import BeamType, ImageSettings, GammaSettings
+
 import piescope_gui.correlation.main as corr
 import piescope_gui.milling
 import piescope_gui.qtdesigner_files.main as gui_main
@@ -71,6 +74,21 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
         self.magnification_lm = self.config["imaging"]["lm"]["camera"]["objective_mag"] * self.config["imaging"]["lm"]["camera"]["telescope_mag"]
         self.pixel_size_lm = self.config["imaging"]["lm"]["camera"]["pixel_size"]  / self.magnification_lm
+
+
+        # TODO: update
+        self.image_settings = ImageSettings(
+            resolution="1536x1024",
+            dwell_time=1e-6,
+            hfw=150e-6,
+            autocontrast=self.checkBox_Autocontrast.isChecked(),
+            gamma = GammaSettings(enabled=False),
+            beam_type=BeamType.ION,
+            save=bool(self.config['imaging']['ib']['autosave']),
+            save_path=self.save_destination_FIBSEM,
+            label=str(self.lineEdit_save_filename_FIBSEM.text())
+        )
+
 
 
     def setup_logging(self):
@@ -326,17 +344,17 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.pushButton_stage_movement.setEnabled(True)
 
         self.comboBox_resolution.currentTextChanged.connect(
-            lambda: self.update_fibsem_settings())
+            lambda: self.update_image_settings())
         self.lineEdit_dwell_time.textChanged.connect(
-            lambda: self.update_fibsem_settings())
+            lambda: self.update_image_settings())
         self.button_get_image_FIB.clicked.connect(
-            lambda: self.get_FIB_image())
+            lambda: self.get_image(BeamType.ION, save=True))
         self.button_get_image_SEM.clicked.connect(
-            lambda: self.get_SEM_image())
+            lambda: self.get_image(BeamType.ELECTRON, save=True))
         self.button_last_image_FIB.clicked.connect(
-            lambda: self.get_last_FIB_image())
+            lambda: self.get_last_image(BeamType.ION))
         self.button_last_image_SEM.clicked.connect(
-            lambda: self.get_last_SEM_image())
+            lambda: self.get_last_image(BeamType.ELECTRON))
         self.pushButton_stage_movement.clicked.connect(self.move_to_microscope)
 
     def update_laser_connections(self):
@@ -457,21 +475,32 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             lambda: self.move_absolute_objective_stage(
                 self.objective_stage))
 
-    def update_fibsem_settings(self):
+    def update_image_settings(self):
         if not self.microscope and self.online:
             self.connect_to_fibsem_microscope()
         try:
             dwell_time = float(self.lineEdit_dwell_time.text()) * 1.0e-6
             resolution = self.comboBox_resolution.currentText()
-            fibsem_settings = piescope.fibsem.update_camera_settings(
-                dwell_time, resolution
-            )
-            self.camera_settings = fibsem_settings
-            return fibsem_settings
+            self.image_settings.resolution = resolution
+            self.image_settings.dwell_time = dwell_time
         except Exception as e:
-            display_error_message(
-                f"Unable to update FIB-SEM settings {traceback.format_exc()}"
-            )
+            display_error_message(f"Unable to update image settings: {e}")
+
+    # def update_fibsem_settings(self):
+    #     if not self.microscope and self.online:
+    #         self.connect_to_fibsem_microscope()
+    #     try:
+    #         dwell_time = float(self.lineEdit_dwell_time.text()) * 1.0e-6
+    #         resolution = self.comboBox_resolution.currentText()
+    #         fibsem_settings = piescope.fibsem.update_camera_settings(
+    #             dwell_time, resolution
+    #         )
+    #         self.camera_settings = fibsem_settings
+    #         return fibsem_settings
+    #     except Exception as e:
+    #         display_error_message(
+    #             f"Unable to update FIB-SEM settings {traceback.format_exc()}"
+    #         )
 
     ## Connection functions ##
     def connect_to_arduino(self):
@@ -588,9 +617,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.detector = Basler(settings=self.config)
             else:
                 self.detector = Hamamatsu(settings=self.config)
-        except:
+        except Exception as e:
             display_error_message(
-                f"Unable to connect to light detector. <br><br>{traceback.format_exc()}"
+                f"Unable to connect to light detector. <br><br>{e}"
             )
 
     def connect_to_fibsem_microscope(self):
@@ -598,12 +627,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             return
         """Connect to the FIBSEM microscope."""
         try:
-            self.microscope = piescope.fibsem.initialise(
-                ip_address=self.ip_address)
-            self.camera_settings = self.update_fibsem_settings()
+            from fibsem import utils as fibsem_utils 
+            self.microscope = fibsem_utils.connect_to_microscope(self.ip_address)
+            # self.camera_settings = self.update_fibsem_settings()
         except Exception as e:
             display_error_message(
-                f"Unable to connect to the FIB-SEM. <br><br>{traceback.format_exc()}"
+                f"Unable to connect to the FIB-SEM Microscope. <br><br>{e}"
             )
 
     def update_connection_button_ui(self):
@@ -771,71 +800,104 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 str(float(new_position) / 1000))
             return new_position
 
-    ## Imaging functions ##
-    def get_FIB_image(self, autosave=False):
+    def get_image(self, beam_type: BeamType, save: bool = False):
         try:
-            if self.checkBox_Autocontrast.isChecked():
-                self.autocontrast_ion_beam()
-
-            self.image_ion = piescope.fibsem.new_ion_image(
-                self.microscope, self.camera_settings
-            )
-
-            if self.config['imaging']['ib']['autosave'] is True:
-                save_filename = os.path.join(
-                    self.save_destination_FIBSEM,
-                    "I_" + self.lineEdit_save_filename_FIBSEM.text() + ".tif",
-                )
-                piescope.utils.save_image(self.image_ion, save_filename)
-                logging.info("Saved: {}".format(save_filename))
+            self.image_settings.autocontrast=self.checkBox_Autocontrast.isChecked()
+            self.image_settings.beam_type=beam_type
+            self.image_settings.save=save
+            self.image_settings.save_path=self.save_destination_FIBSEM
+            self.image_settings.label=str(self.lineEdit_save_filename_FIBSEM.text())
+            self.image_ion = acquire.new_image(self.microscope, self.image_settings)
 
             # Update display
-            self.update_display(modality=Modality.Ion)
+            modality = Modality.Ion if BeamType is BeamType.ION else Modality.Electron
+            self.update_display(modality=modality)
 
         except Exception as e:
-            display_error_message(traceback.format_exc())
+            display_error_message(f"Unable to get {beam_type} image: {e}")
 
-    def get_last_FIB_image(self):
+
+    ## Imaging functions ##
+    # def get_FIB_image(self, autosave=False):
+    #     try:
+    #         if self.checkBox_Autocontrast.isChecked():
+    #             self.autocontrast_ion_beam()
+
+    #         self.image_ion = piescope.fibsem.new_ion_image(
+    #             self.microscope, self.camera_settings
+    #         )
+
+    #         if self.config['imaging']['ib']['autosave'] is True:
+    #             save_filename = os.path.join(
+    #                 self.save_destination_FIBSEM,
+    #                 "I_" + self.lineEdit_save_filename_FIBSEM.text() + ".tif",
+    #             )
+    #             piescope.utils.save_image(self.image_ion, save_filename)
+    #             logging.info("Saved: {}".format(save_filename))
+
+    #         # Update display
+    #         self.update_display(modality=Modality.Ion)
+
+    #     except Exception as e:
+    #         display_error_message(traceback.format_exc())
+
+    def get_last_image(self, beam_type: BeamType):
         try:
-            self.image_ion = piescope.fibsem.last_ion_image(self.microscope)
-            self.update_display(modality=Modality.Ion)
+            self.image_ion = acquire.last_image(self.microscope, beam_type)
+            modality = Modality.Ion if BeamType is BeamType.ION else Modality.Electron
+            self.update_display(modality=modality)
         except Exception as e:
-            display_error_message(traceback.format_exc())
+            display_error_message(f"Unable to get last image: {e}")
 
-    def get_SEM_image(self, autosave=False):
-        try:
-            if self.checkBox_Autocontrast.isChecked():
-                self.autocontrast_ion_beam(view=1)
-            self.image_ion = piescope.fibsem.new_electron_image(
-                self.microscope, self.camera_settings
-            )
+    # def get_last_FIB_image(self):
+    #     try:
+    #         self.image_ion = acquire.last_image(self.microscope, BeamType.ION)
+    #         self.update_display(modality=Modality.Ion)
+    #     except Exception as e:
+    #         display_error_message(traceback.format_exc())
 
-            if self.config['imaging']['ib']['autosave'] is True:
-                save_filename = os.path.join(
-                    self.save_destination_FIBSEM,
-                    "E_" + self.lineEdit_save_filename_FIBSEM.text() + ".tif",
-                )
-                piescope.utils.save_image(self.image_ion, save_filename)
-                logging.info("Saved: {}".format(save_filename))
-            # update display
-            self.update_display(modality=Modality.Ion)
-        except Exception as e:
-            display_error_message(traceback.format_exc())
+    # def get_SEM_image(self, autosave=False):
+    #     try:
+    #         # if self.checkBox_Autocontrast.isChecked():
+    #         #     self.autocontrast_ion_beam(view=1)
+    #         # self.image_ion = piescope.fibsem.new_electron_image(
+    #         #     self.microscope, self.camera_settings
+    #         # )
 
-    def get_last_SEM_image(self):
-        try:
-            self.image_ion = piescope.fibsem.last_electron_image(
-                self.microscope)
-            self.update_display(modality=Modality.Ion)
-        except Exception as e:
-            display_error_message(traceback.format_exc())
+    #         # if self.config['imaging']['ib']['autosave'] is True:
+    #         #     save_filename = os.path.join(
+    #         #         self.save_destination_FIBSEM,
+    #         #         "E_" + self.lineEdit_save_filename_FIBSEM.text() + ".tif",
+    #         #     )
+    #             # piescope.utils.save_image(self.image_ion, save_filename)
+    #         #     logging.info("Saved: {}".format(save_filename))
 
-    def autocontrast_ion_beam(self, view=2):
-        try:
-            self.microscope.imaging.set_active_view(view)  # the ion beam view
-            piescope.fibsem.autocontrast(self.microscope, view=view)
-        except Exception as e:
-            display_error_message(traceback.format_exc())
+
+    #         # take image
+    #         image_settings = ImageSettings(
+    #             resolution="1536x1024",
+    #             dwell_time=1e-6,
+    #             hfw=150e-6,
+    #             autocontrast=self.checkBox_Autocontrast.isChecked(),
+    #             gamma = GammaSettings(enabled=False),
+    #             beam_type=BeamType.ELECTRON,
+    #             save=self.config['imaging']['ib']['autosave'],
+    #             save_path=self.save_destination_FIBSEM,
+    #             label=self.lineEdit_save_filename_FIBSEM.text()
+    #         )
+    #         self.image_ion = acquire.new_image(self.microscope, image_settings)
+
+    #         # update display
+    #         self.update_display(modality=Modality.Ion)
+    #     except Exception as e:
+    #         display_error_message(traceback.format_exc())
+
+    # def get_last_SEM_image(self):
+    #     try:
+    #         self.image_ion = acquire.last_image(self.microscope, BeamType.ELECTRON)
+    #         self.update_display(modality=Modality.Ion)
+    #     except Exception as e:
+    #         display_error_message(traceback.format_exc())
 
     def fluorescence_image(
         self, laser: Laser, settings: dict,
@@ -1226,7 +1288,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 display_error_message("Unable to move, no FIBSEM Image available. Please get the last Electron / Ion Image")
                 return
 
-            x, y = piescope_gui.utils.pixel_to_realspace_coordinate(
+            x, y = conversions.pixel_to_realspace_coordinate(
                 [event.xdata, event.ydata], image, pixel_size
             )
 

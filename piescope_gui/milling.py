@@ -18,6 +18,8 @@ from autoscript_sdb_microscope_client.structures import StagePosition
 import piescope
 from autoscript_sdb_microscope_client.enumerations import CoordinateSystem
 
+from fibsem import conversions
+
 import piescope_gui.qtdesigner_files.milling as gui_milling
 from piescope_gui.utils import display_error_message, timestamp
 
@@ -92,7 +94,7 @@ class GUIMillingWindow(gui_milling.Ui_MillingWindow, QtWidgets.QMainWindow):
         if event.button == 1 and event.inaxes is not None:
             self.xclick = event.xdata
             self.yclick = event.ydata
-            self.center_x, self.center_y = fibsem.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
+            self.center_x, self.center_y = conversions.pixel_to_realspace_coordinate((self.xclick, self.yclick), self.adorned_image)
             if not self.liftout_enabled:
                 self.draw_milling_patterns()
             else:                
