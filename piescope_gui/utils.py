@@ -20,7 +20,7 @@ def display_error_message(message):
     error_dialog.exec_()
     return error_dialog
 
-
+# TODO: replace
 def timestamp():
     """Create timestamp string of current local time.
 
@@ -32,42 +32,43 @@ def timestamp():
     timestamp = time.strftime('%d-%b-%Y_%H-%M%p', time.localtime())
     return timestamp
 
-def move_relative(microscope, x=0.0, y=0.0, z=0.0, r=0.0, t=0.0, settings=None):
-    """Move the sample stage in ion or electron beam view and take new image
+# def move_relative(microscope, x=0.0, y=0.0, z=0.0, r=0.0, t=0.0, settings=None):
+#     """Move the sample stage in ion or electron beam view and take new image
 
-    Parameters
-    ----------
-    microscope : Autoscript microscope object.
-    x : float, optional
-        Relative movement in x in realspace co-ordinates.
-    y : float, optional
-        Relative movement in y in realspace co-ordinates.
+#     Parameters
+#     ----------
+#     microscope : Autoscript microscope object.
+#     x : float, optional
+#         Relative movement in x in realspace co-ordinates.
+#     y : float, optional
+#         Relative movement in y in realspace co-ordinates.
 
-    Returns
-    -------
-    StagePosition
-        FIBSEM microscope sample stage position after moving.
-        If the returned stage position is called 'stage_pos' then:
-        stage_pos.x = the x position of the FIBSEM sample stage (in meters)
-        stage_pos.y = the y position of the FIBSEM sample stage (in meters)
-        stage_pos.z = the z position of the FIBSEM sample stage (in meters)
-        stage_pos.r = the rotation of the FIBSEM sample stage (in radians)
-        stage_pos.t = the tilt of the FIBSEM sample stage (in radians)
-    """
-    current_position_x = microscope.specimen.stage.current_position.x
-    current_position_y = microscope.specimen.stage.current_position.y
-    if current_position_x > 10e-3 or current_position_x < -10e-3:
-        logging.error("Not under electron microscope, please reposition")
-        return
-    new_position = StagePosition(x=x, y=y, z=z, r=r, t=t)
-    microscope.specimen.stage.relative_move(new_position, settings=settings)
-    logging.info(f"Old position: {current_position_x*1e6}, {current_position_y*1e6}")
-    logging.info(f"Moving by: {x*1e6}, {y*1e6}")
-    logging.info(
-        f"New position: {(current_position_x + x)*1e6}, {(current_position_y + y)*1e6}\n"
-    )
+#     Returns
+#     -------
+#     StagePosition
+#         FIBSEM microscope sample stage position after moving.
+#         If the returned stage position is called 'stage_pos' then:
+#         stage_pos.x = the x position of the FIBSEM sample stage (in meters)
+#         stage_pos.y = the y position of the FIBSEM sample stage (in meters)
+#         stage_pos.z = the z position of the FIBSEM sample stage (in meters)
+#         stage_pos.r = the rotation of the FIBSEM sample stage (in radians)
+#         stage_pos.t = the tilt of the FIBSEM sample stage (in radians)
+#     """
+#     current_position_x = microscope.specimen.stage.current_position.x
+#     current_position_y = microscope.specimen.stage.current_position.y
+#     if current_position_x > 10e-3 or current_position_x < -10e-3:
+#         logging.error("Not under electron microscope, please reposition")
+#         return
+#     from autoscript_sdb_microscope_client.structures import StagePosition
+#     new_position = StagePosition(x=x, y=y, z=z, r=r, t=t)
+#     microscope.specimen.stage.relative_move(new_position, settings=settings)
+#     logging.info(f"Old position: {current_position_x*1e6}, {current_position_y*1e6}")
+#     logging.info(f"Moving by: {x*1e6}, {y*1e6}")
+#     logging.info(
+#         f"New position: {(current_position_x + x)*1e6}, {(current_position_y + y)*1e6}\n"
+#     )
 
-    return microscope.specimen.stage.current_position
+#     return microscope.specimen.stage.current_position
 
 
 # def pixel_to_realspace_coordinate(coord, image, pixel_size):

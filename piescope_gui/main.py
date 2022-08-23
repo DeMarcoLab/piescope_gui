@@ -11,21 +11,20 @@ import piescope.fibsem
 import piescope.lm
 import piescope.utils
 import scipy.ndimage as ndi
+from fibsem import acquire, conversions, movement
+from fibsem import utils as fibsem_utils
+from fibsem.structures import BeamType
 from matplotlib import pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as _FigureCanvas
-from matplotlib.backends.backend_qt5agg import (
-    NavigationToolbar2QT as _NavigationToolbar,
-)
+from matplotlib.backends.backend_qt5agg import \
+    FigureCanvasQTAgg as _FigureCanvas
+from matplotlib.backends.backend_qt5agg import \
+    NavigationToolbar2QT as _NavigationToolbar
 from piescope.lm import arduino, mirror, structured
 from piescope.lm.detector import Basler, Hamamatsu
 from piescope.lm.laser import Laser, LaserController
 from piescope.lm.mirror import ImagingType, MirrorPosition
 from piescope.utils import Modality, TriggerMode
 from PyQt5 import QtCore, QtGui, QtWidgets
-
-from fibsem import acquire, conversions, movement
-from fibsem.structures import BeamType, ImageSettings, GammaSettings
-from fibsem import utils as fibsem_utils 
 
 import piescope_gui.correlation.main as corr
 import piescope_gui.milling
@@ -80,8 +79,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         self.magnification_lm = self.config["imaging"]["lm"]["camera"]["objective_mag"] * self.config["imaging"]["lm"]["camera"]["telescope_mag"]
         self.pixel_size_lm = self.config["imaging"]["lm"]["camera"]["pixel_size"]  / self.magnification_lm
 
-
-        
 
     def setup_logging(self):
         start_time = piescope_gui.utils.timestamp()
@@ -766,7 +763,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.logger.debug(
                     "Relative move the objective stage by " "{}".format(distance)
                 )
-                ans = stage.move_relative(distance)
+                ans = stage.move_relative(distance) # objective stage
                 time.sleep(time_delay)
                 new_position = stage.current_position()
                 self.logger.debug(
