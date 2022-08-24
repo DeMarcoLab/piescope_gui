@@ -153,6 +153,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
         # self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
+        self.current_click_event_id = None
 
         self.label_image_FIBSEM.setLayout(QtWidgets.QVBoxLayout())
         # self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
@@ -1130,6 +1131,8 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             plt.axis("off")
             if self.canvas_FIBSEM is not None:
+                if self.current_click_event_id:
+                    self.canvas_FIBSEM.mpl_disconnect(self.current_click_event_id) 
                 self.label_image_FIBSEM.layout().removeWidget(self.canvas_FIBSEM)
                 # self.label_image_FIBSEM.layout().removeWidget(self.toolbar_FIBSEM)
                 self.canvas_FIBSEM.deleteLater()
@@ -1137,7 +1140,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
             self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
 
-            self.canvas_FIBSEM.mpl_connect(
+            self.current_click_event_id = self.canvas_FIBSEM.mpl_connect(
                 "button_press_event",
                 lambda event: self.on_gui_click(event, modality=Modality.Ion),
             )
