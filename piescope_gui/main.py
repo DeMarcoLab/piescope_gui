@@ -152,10 +152,10 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
         plt.tight_layout()
         plt.subplots_adjust(left=0.0, right=1.0, top=1.0, bottom=0.01)
         self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
-        self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
+        # self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
 
         self.label_image_FIBSEM.setLayout(QtWidgets.QVBoxLayout())
-        self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
+        # self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
         self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
 
         self.figure_histogram = plt.figure()
@@ -699,9 +699,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def move_absolute_objective_stage(
         self, stage, position="", time_delay=0.3, testing=False
     ):
-        if position is "":
+        if position == "":
             position = self.label_objective_stage_saved_position.text()
-            if position is "":
+            if position == "":
                 display_error_message(
                     "Please provide user input to 'Move absolute' for the "
                     "objective stage (an empty string was received)."
@@ -737,9 +737,9 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def move_relative_objective_stage(
         self, stage, distance="", time_delay=0.3, direction="positive"
     ):
-        if distance is "":
+        if distance == "":
             distance = self.lineEdit_move_relative.text()
-            if distance is "":
+            if distance == "":
                 display_error_message(
                     "Please provide user input to 'Move relative' for the "
                     "objective stage (an empty string was received)."
@@ -795,7 +795,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
     def get_last_image(self, beam_type: BeamType):
         try:
             self.image_ion = acquire.last_image(self.microscope, beam_type)
-            modality = Modality.Ion if BeamType is BeamType.ION else Modality.Electron
+            modality = Modality.Ion if beam_type is BeamType.ION else Modality.Electron
             self.update_display(modality=modality)
         except Exception as e:
             display_error_message(f"Unable to get last image: {e}")
@@ -1096,7 +1096,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 (240 / 255, 240 / 255, 240 / 255))
             self.ax_FM = self.figure_FM.add_subplot(111)
             self.ax_FM.set_title("Light Microscope")
-            self.ax_FM.patches = []
+            self.ax_FM.patches.clear()
             for patch in crosshair.__dataclass_fields__:
                 self.ax_FM.add_patch(getattr(crosshair, patch))
 
@@ -1129,11 +1129,12 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 self.image_ion, self.config)
 
             plt.axis("off")
-            if self.canvas_FIBSEM:
+            if self.canvas_FIBSEM is not None:
                 self.label_image_FIBSEM.layout().removeWidget(self.canvas_FIBSEM)
-                self.label_image_FIBSEM.layout().removeWidget(self.toolbar_FIBSEM)
+                # self.label_image_FIBSEM.layout().removeWidget(self.toolbar_FIBSEM)
                 self.canvas_FIBSEM.deleteLater()
-                self.toolbar_FIBSEM.deleteLater()
+                # self.toolbar_FIBSEM.deleteLater()
+
             self.canvas_FIBSEM = _FigureCanvas(self.figure_FIBSEM)
 
             self.canvas_FIBSEM.mpl_connect(
@@ -1149,16 +1150,30 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 (240 / 255, 240 / 255, 240 / 255))
             ax_FIBSEM = self.figure_FIBSEM.add_subplot(111)
             ax_FIBSEM.set_title("FIBSEM")
-            ax_FIBSEM.patches = []
+            ax_FIBSEM.patches.clear()
             for patch in crosshair.__dataclass_fields__:
                 ax_FIBSEM.add_patch(getattr(crosshair, patch))
-            self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
-            self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
+            # self.toolbar_FIBSEM = _NavigationToolbar(self.canvas_FIBSEM, self)
+            # self.label_image_FIBSEM.layout().addWidget(self.toolbar_FIBSEM)
             self.label_image_FIBSEM.layout().addWidget(self.canvas_FIBSEM)
             ax_FIBSEM.get_xaxis().set_visible(False)
             ax_FIBSEM.get_yaxis().set_visible(False)
             ax_FIBSEM.imshow(image, cmap="gray")
             self.canvas_FIBSEM.draw()
+
+    def remove_canvas(self):
+        
+        if self.canvas_FIBSEM is not None:
+
+            self.label_image_FIBSEM.layout().removeWidget(self.canvas_FIBSEM)
+            # self.label_image_FIBSEM.layout().removeWidget(self.toolbar_FIBSEM)
+            self.canvas_FIBSEM.deleteLater()
+            # self.toolbar_FIBSEM.deleteLater()
+
+            # del self.canvas_FIBSEM
+            # del self.toolbar_FIBSEM
+
+            # TODO: replace this with update canvas, or just update the image
 
     def on_gui_click(self, event, modality):
 
@@ -1174,11 +1189,11 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             else:
                 image = self.image_ion
                 pixel_size = image.metadata.binary_result.pixel_size.x
-                if (
-                    self.toolbar_FIBSEM._active == "ZOOM"
-                    or self.toolbar_FIBSEM._active == "PAN"
-                ):
-                    return
+                # if (
+                #     self.toolbar_FIBSEM._active == "ZOOM"
+                #     or self.toolbar_FIBSEM._active == "PAN"
+                # ):
+                #     return
 
             # check if we have both types of images
             if self.image_light is None:
@@ -1199,7 +1214,6 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             else:
                 beam_type = BeamType[image.metadata.acquisition.beam_type.upper()]
 
-            input("DEBUG POINT -> NEW MOVEMENT")
             movement.move_stage_relative_with_corrected_movement(
                 self.microscope, self.settings, dx=dx, dy=dy, beam_type=beam_type 
             )
@@ -1209,7 +1223,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                     self.fluorescence_image(laser=self.laser_controller.current_laser, settings=self.config)
                     self.update_display(modality=Modality.Light)
             else:
-                beam_type = BeamType[image.metadata.acquisition.beam_type.upper]
+                beam_type = BeamType[image.metadata.acquisition.beam_type.upper()]
                 self.get_image(beam_type, save=False)
                 self.update_display(modality=Modality.Ion)
 
