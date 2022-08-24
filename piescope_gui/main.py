@@ -1083,7 +1083,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             h, w = int(image.shape[0]*fov_percent / 2), int(image.shape[1]*fov_percent / 2)
             image = image[cy -h : cy+ h, cx -w : cx+ w]
 
-            if self.ax_FM is not None and self.toolbar_FM._active == "ZOOM":
+            if self.ax_FM is not None and self.toolbar_FM.isActiveWindow() == "ZOOM":
                 x_lim = self.ax_FM.get_xlim()
                 y_lim = self.ax_FM.get_ylim()
             else:
@@ -1187,7 +1187,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
                 
                 image = self.image_light
                 pixel_size = self.pixel_size_lm
-                if self.toolbar_FM._active == "ZOOM" or self.toolbar_FM._active == "PAN":
+                if self.toolbar_FM.isActiveWindow() == "ZOOM" or self.toolbar_FM.isActiveWindow() == "PAN":
                     return
             else:
                 image = self.image_ion
@@ -1214,6 +1214,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             # updated movement
             if modality is Modality.Light:
                 beam_type = BeamType.ION 
+                dy = -dy # patented technology
             else:
                 beam_type = BeamType[image.metadata.acquisition.beam_type.upper()]
 
@@ -1460,8 +1461,8 @@ def main():
     qt_app.showNormal()
 
     # set into roughly middle of screen
-    desktop = QtWidgets.QDesktopWidget()
-    qt_app.move((desktop.width()-qt_app.width())/2, (desktop.height()-qt_app.height())/3.)
+    # desktop = QtWidgets.QDesktopWidget()
+    # qt_app.move((desktop.width()-qt_app.width())/2, (desktop.height()-qt_app.height())/3.)
     sys.exit(app.exec_())
 
 
