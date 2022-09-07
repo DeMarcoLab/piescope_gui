@@ -1078,7 +1078,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
             if self.filter_strength_lm > 0:
                 image = ndi.median_filter(image, size=int(self.filter_strength_lm))
 
-            fov_percent = 1. # TODO: attach to slider?, add to config
+            fov_percent = 0.25 # TODO: attach to slider?, add to config
             cy, cx = image.shape[0] //2 , image.shape[1] // 2
             h, w = int(image.shape[0]*fov_percent / 2), int(image.shape[1]*fov_percent / 2)
             image = image[cy -h : cy+ h, cx -w : cx+ w]
