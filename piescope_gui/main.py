@@ -7,7 +7,7 @@ import traceback
 
 import numpy as np
 import piescope
-import piescope.fibsem
+# import piescope.fibsem
 import piescope.lm
 import piescope.utils
 import scipy.ndimage as ndi
@@ -691,7 +691,7 @@ class GUIMainWindow(gui_main.Ui_MainGui, QtWidgets.QMainWindow):
 
     def move_to_microscope(self):
         try:
-            piescope.fibsem.move_to_microscope(
+            piescope.utils.move_to_microscope(
                 self.microscope, settings=self.config)
         except:
             display_error_message(
